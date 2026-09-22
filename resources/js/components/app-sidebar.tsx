@@ -67,6 +67,11 @@ const operatorNavItems: NavItem[] = [
         href: '/kalender',
         icon: Calendar,
     },
+    {
+        title: 'Pengaturan Sistem',
+        href: '/settings/system',
+        icon: Settings,
+    },
 ];
 
 export function AppSidebar() {

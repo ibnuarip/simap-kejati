@@ -34,7 +34,8 @@ export function NavMain({
                 {items.map((item) => {
                     if (item.items && item.items.length > 0) {
                         const isSubActive = item.items.some(
-                            (subItem) => subItem.href && isCurrentUrl(subItem.href),
+                            (subItem) =>
+                                subItem.href && isCurrentUrl(subItem.href),
                         );
 
                         return (
@@ -58,23 +59,32 @@ export function NavMain({
                                     <CollapsibleContent>
                                         <SidebarMenuSub>
                                             {item.items.map((subItem) => (
-                                                <SidebarMenuSubItem key={subItem.title}>
+                                                <SidebarMenuSubItem
+                                                    key={subItem.title}
+                                                >
                                                     <SidebarMenuSubButton
                                                         asChild
                                                         isActive={
                                                             subItem.href
-                                                                ? isCurrentUrl(subItem.href)
+                                                                ? isCurrentUrl(
+                                                                      subItem.href,
+                                                                  )
                                                                 : false
                                                         }
                                                     >
                                                         <Link
-                                                            href={subItem.href || '#'}
+                                                            href={
+                                                                subItem.href ||
+                                                                '#'
+                                                            }
                                                             prefetch
                                                         >
                                                             {subItem.icon && (
                                                                 <subItem.icon className="h-4 w-4" />
                                                             )}
-                                                            <span>{subItem.title}</span>
+                                                            <span>
+                                                                {subItem.title}
+                                                            </span>
                                                         </Link>
                                                     </SidebarMenuSubButton>
                                                 </SidebarMenuSubItem>
@@ -90,7 +100,9 @@ export function NavMain({
                         <SidebarMenuItem key={item.title}>
                             <SidebarMenuButton
                                 asChild
-                                isActive={item.href ? isCurrentUrl(item.href) : false}
+                                isActive={
+                                    item.href ? isCurrentUrl(item.href) : false
+                                }
                                 tooltip={{ children: item.title }}
                             >
                                 <Link href={item.href || '#'} prefetch>
