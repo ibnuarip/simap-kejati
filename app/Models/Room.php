@@ -1,0 +1,31 @@
+<?php
+
+namespace App\Models;
+
+use Database\Factories\RoomFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Room extends Model
+{
+    /** @use HasFactory<RoomFactory> */
+    use HasFactory;
+
+    protected $fillable = [
+        'name',
+        'location',
+        'capacity',
+        'description',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+        'capacity' => 'integer',
+    ];
+
+    public function events()
+    {
+        return $this->hasMany(Event::class);
+    }
+}
