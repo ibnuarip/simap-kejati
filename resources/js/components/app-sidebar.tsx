@@ -1,7 +1,16 @@
 import { Link } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid } from 'lucide-react';
+import {
+    Building2,
+    Calendar,
+    CalendarCheck,
+    Database,
+    LayoutDashboard,
+    Settings,
+    Tags,
+    UserCheck,
+    Users,
+} from 'lucide-react';
 import AppLogo from '@/components/app-logo';
-import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import {
@@ -16,24 +25,52 @@ import {
 import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
 
-const mainNavItems: NavItem[] = [
+const operatorNavItems: NavItem[] = [
     {
         title: 'Dashboard',
         href: dashboard(),
-        icon: LayoutGrid,
-    },
-];
-
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: FolderGit2,
+        icon: LayoutDashboard,
     },
     {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
+        title: 'Master Data',
+        icon: Database,
+        items: [
+            {
+                title: 'Data Pimpinan',
+                href: '/master/pimpinan',
+                icon: UserCheck,
+            },
+            {
+                title: 'Data Ruangan & Tempat',
+                href: '/master/ruangan',
+                icon: Building2,
+            },
+            {
+                title: 'Jenis / Kategori Kegiatan',
+                href: '/master/kategori',
+                icon: Tags,
+            },
+        ],
+    },
+    {
+        title: 'Kelola Pengguna',
+        href: '/users',
+        icon: Users,
+    },
+    {
+        title: 'Kelola Agenda',
+        href: '/agenda',
+        icon: CalendarCheck,
+    },
+    {
+        title: 'Kalender Agenda',
+        href: '/kalender',
+        icon: Calendar,
+    },
+    {
+        title: 'Pengaturan Sistem',
+        href: '/settings/system',
+        icon: Settings,
     },
 ];
 
@@ -53,11 +90,10 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={operatorNavItems} label="Platform" />
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
                 <NavUser />
             </SidebarFooter>
         </Sidebar>
