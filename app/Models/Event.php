@@ -5,6 +5,7 @@ namespace App\Models;
 use Database\Factories\EventFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Event extends Model
 {
@@ -31,22 +32,34 @@ class Event extends Model
         'end_time' => 'datetime',
     ];
 
-    public function leader()
+    /**
+     * @return BelongsTo<Leader, $this>
+     */
+    public function leader(): BelongsTo
     {
         return $this->belongsTo(Leader::class);
     }
 
-    public function room()
+    /**
+     * @return BelongsTo<Room, $this>
+     */
+    public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }
 
-    public function category()
+    /**
+     * @return BelongsTo<Category, $this>
+     */
+    public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
 
-    public function creator()
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }

@@ -5,6 +5,7 @@ namespace App\Models;
 use Database\Factories\RoomFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Room extends Model
 {
@@ -24,7 +25,10 @@ class Room extends Model
         'capacity' => 'integer',
     ];
 
-    public function events()
+    /**
+     * @return HasMany<Event, $this>
+     */
+    public function events(): HasMany
     {
         return $this->hasMany(Event::class);
     }
