@@ -1,0 +1,87 @@
+name: 🐛 Laporan Bug
+description: Laporkan bug untuk membantu kami memperbaikinya.
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Terima kasih telah melaporkan bug. Isi form berikut selengkap mungkin agar masalah dapat direproduksi dan diperbaiki lebih cepat.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Deskripsi masalah
+      description: Apa yang terjadi dan mengapa ini masalah?
+      placeholder: Ceritakan apa yang Anda lakukan dan apa yang salah.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Langkah reproduksi
+      description: Langkah-langkah untuk memicu bug.
+      placeholder: |
+        1. Login sebagai protokol
+        2. Buka halaman ...
+        3. Klik ...
+        ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Hasil yang diharapkan
+      description: Apa yang seharusnya terjadi.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Hasil yang terjadi
+      description: Apa yang sebenarnya terjadi.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: role
+    attributes:
+      label: Peran (role) yang dipakai
+      description: Role akun yang mengalami masalah.
+      options:
+        - Operator
+        - Protokol
+        - Kajati
+        - Wakajati
+        - Tidak yakin / lainnya
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Lingkungan
+      description: Sistem operasi, browser, versi PHP/Node (apabila relevan).
+      placeholder: Windows 11, Chrome 128, PHP 8.4, Node 24
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log / pesan error
+      description: Tempel pesan error dari console (browser/terminal) atau `storage/logs/laravel.log`.
+      render: shell
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Konfirmasi
+      options:
+        - label: Saya telah memastikan issue serupa belum pernah dilaporkan.
+          required: true

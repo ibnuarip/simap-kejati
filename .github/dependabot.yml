@@ -4,9 +4,62 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    cooldown:
-      default-days: 5
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "chore(actions)"
     groups:
       github-actions:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "composer"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    versioning-strategy: "increase-if-necessary"
+    commit-message:
+      prefix: "chore(composer)"
+    groups:
+      laravel:
+        patterns:
+          - "laravel/*"
+      pest:
+        patterns:
+          - "pestphp/*"
+      php-dev:
+        patterns:
+          - "phpunit/*"
+          - "mockery/*"
+          - "nunomaduro/*"
+          - "fakerphp/*"
+      php-misc:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    versioning-strategy: "increase"
+    commit-message:
+      prefix: "chore(npm)"
+    groups:
+      react-inertia:
+        patterns:
+          - "@inertiajs/*"
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
+      radix-ui:
+        patterns:
+          - "@radix-ui/*"
+      tailwind:
+        patterns:
+          - "tailwindcss"
+          - "@tailwindcss/*"
+      npm-misc:
         patterns:
           - "*"

@@ -47,7 +47,47 @@ class UserFactory extends Factory
     }
 
     /**
-     * Indicate that the model has two-factor authentication configured.
+     * Indicate that the user has the operator role.
+     */
+    public function operator(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'operator',
+        ]);
+    }
+
+    /**
+     * Indicate that the user has the protokol role.
+     */
+    public function protokol(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'protokol',
+        ]);
+    }
+
+    /**
+     * Indicate that the user has the kajati role.
+     */
+    public function kajati(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'kajati',
+        ]);
+    }
+
+    /**
+     * Indicate that the user has the wakajati role.
+     */
+    public function wakajati(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'wakajati',
+        ]);
+    }
+
+    /**
+     * Indicate that the user has two-factor authentication configured.
      */
     public function withTwoFactor(): static
     {

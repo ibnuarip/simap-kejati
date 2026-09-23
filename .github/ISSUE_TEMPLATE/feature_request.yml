@@ -1,0 +1,73 @@
+name: 💡 Permintaan Fitur
+description: Usulkan ide atau fitur baru untuk SIMAP (Sistem Informasi Manajemen Acara Protokol).
+title: "[Feature]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Jelaskan fitur yang Anda usulkan dengan fokus pada **masalah yang ingin diselesaikan**, bukan sekadar solusinya.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Masalah yang ingin diselesaikan
+      description: Apa kebutuhan/kesulitan yang mendasari permintaan ini?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Usulan solusi
+      description: Bagaimana Anda membayangkan fitur ini bekerja?
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Kriteria penerimaan (opsional)
+      description: Hal-hal yang harus terpenuhi agar fitur dianggap selesai.
+      placeholder: |
+        - Operator dapat ...
+        - Protokol dapat ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatif yang sudah dipertimbangkan (opsional)
+      description: Solusi/pendekatan lain yang pernah dicoba atau dipikirkan.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Cakupan
+      options:
+        - Backend (Laravel)
+        - Frontend (React/Inertia)
+        - Desain UI/UX
+        - Infrastruktur / CI-CD
+        - Lainnya
+    validations:
+      required: false
+
+  - type: textarea
+    id: references
+    attributes:
+      label: Referensi / lampiran (opsional)
+      description: Screenshot, mockup, tautan, atau dokumen pendukung.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Konfirmasi
+      options:
+        - label: Saya telah memastikan fitur ini belum pernah diusulkan sebelumnya.
+          required: true

@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Dokumentasi Laravel
+    url: https://laravel.com/docs
+    about: Pelajari framework Laravel sebelum membuka issue.
+  - name: Dokumentasi Inertia
+    url: https://inertiajs.com
+    about: Pelajari pola Inertia + React yang digunakan pada proyek ini.
