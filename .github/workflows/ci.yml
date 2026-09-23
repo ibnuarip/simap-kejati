@@ -143,7 +143,7 @@ jobs:
         run: npm run check
 
       - name: Generate Wayfinder files
-        run: php artisan wayfinder:generate
+        run: php artisan wayfinder:generate --with-form
 
       - name: Run TypeScript checks
         run: npm run types:check
