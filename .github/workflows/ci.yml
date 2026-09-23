@@ -83,6 +83,18 @@ jobs:
           cp .env.example .env
           php artisan key:generate --no-interaction
 
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: Build frontend assets
+        run: npm run build
+
       - name: Run tests (Pest)
         run: php artisan test
 
@@ -119,7 +131,7 @@ jobs:
           php artisan key:generate --no-interaction
 
       - name: Setup Node
-        uses: actions/setup-node@16447d9e88b106535c5716902e89a4062d5e7d32 # v8
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
           cache: npm
@@ -129,6 +141,9 @@ jobs:
 
       - name: Run frontend checks (vite-plus)
         run: npm run check
+
+      - name: Generate Wayfinder files
+        run: php artisan wayfinder:generate
 
       - name: Run TypeScript checks
         run: npm run types:check
