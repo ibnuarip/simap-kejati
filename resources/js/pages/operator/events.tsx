@@ -1,6 +1,6 @@
 import { Form, Head } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
-import { CalendarPlus, Pencil, Search, X } from 'lucide-react';
+import { CalendarClock, CalendarPlus, Pencil, Search, X } from 'lucide-react';
 import EventController from '@/actions/App/Http/Controllers/Operator/EventController';
 import { AgendaItemRow } from '@/components/agenda-item-row';
 import ConfirmDelete from '@/components/confirm-delete';
@@ -287,7 +287,7 @@ export default function OperatorEvents({
             </div>
 
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <DialogContent className="sm:max-w-xl">
+                <DialogContent className="max-h-[90dvh] overflow-y-auto overscroll-contain sm:max-w-2xl">
                     <DialogHeader>
                         <DialogTitle>
                             {editing ? 'Edit Agenda' : 'Tambah Agenda'}
@@ -519,27 +519,23 @@ function EventFields({
                 </div>
 
                 <div className="grid gap-2">
-                    <Label htmlFor="start_time">Mulai</Label>
-                    <Input
+                    <DatetimeLocalField
                         id="start_time"
-                        type="datetime-local"
                         name="start_time"
-                        required
-                        defaultValue={toDatetimeLocal(defaultValue?.start_time)}
+                        label="Mulai"
+                        defaultValue={defaultValue?.start_time}
+                        error={errors.start_time}
                     />
-                    <InputError message={errors.start_time} />
                 </div>
 
                 <div className="grid gap-2">
-                    <Label htmlFor="end_time">Selesai</Label>
-                    <Input
+                    <DatetimeLocalField
                         id="end_time"
-                        type="datetime-local"
                         name="end_time"
-                        required
-                        defaultValue={toDatetimeLocal(defaultValue?.end_time)}
+                        label="Selesai"
+                        defaultValue={defaultValue?.end_time}
+                        error={errors.end_time}
                     />
-                    <InputError message={errors.end_time} />
                 </div>
 
                 <div className="grid gap-2">
@@ -605,6 +601,71 @@ function EventFields({
                 <InputError message={errors.description} />
             </div>
         </>
+    );
+}
+
+type DatetimeLocalFieldProps = {
+    id: string;
+    name: string;
+    label: string;
+    defaultValue?: string | null;
+    error?: string;
+};
+
+function DatetimeLocalField({
+    id,
+    name,
+    label,
+    defaultValue,
+    error,
+}: DatetimeLocalFieldProps) {
+    const [value, setValue] = useState(
+        defaultValue ? toDatetimeLocal(defaultValue) : '',
+    );
+
+    return (
+        <div className="grid gap-2">
+            <Label htmlFor={id}>{label}</Label>
+            <Input
+                id={id}
+                name={name}
+                type="datetime-local"
+                required
+                step={60}
+                value={value}
+                onChange={(event) => setValue(event.target.value)}
+            />
+            <DatetimePreview value={value} />
+            <InputError message={error} />
+        </div>
+    );
+}
+
+function DatetimePreview({ value }: { value: string }) {
+    const parsed = useMemo(() => {
+        if (!value) {
+            return null;
+        }
+
+        const date = new Date(value);
+
+        return Number.isNaN(date.getTime()) ? null : date;
+    }, [value]);
+
+    if (!parsed) {
+        return null;
+    }
+
+    const formatted = new Intl.DateTimeFormat('id-ID', {
+        dateStyle: 'long',
+        timeStyle: 'short',
+    }).format(parsed);
+
+    return (
+        <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
+            <CalendarClock className="size-3.5 shrink-0" />
+            {formatted}
+        </p>
     );
 }
 

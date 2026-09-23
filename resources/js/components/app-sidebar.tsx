@@ -7,7 +7,6 @@ import {
     Database,
     LayoutDashboard,
     Printer,
-    Settings,
     Tags,
     UserCheck,
     Users,
@@ -38,7 +37,6 @@ import { index as protokolCalendar } from '@/routes/protokol/calendar';
 import { dashboard as protokolDashboard } from '@/routes/protokol';
 import { index as protokolEvents } from '@/routes/protokol/events';
 import { index as protokolExports } from '@/routes/protokol/exports';
-import { system as settingsSystem } from '@/routes/settings';
 import { index as usersIndex } from '@/routes/users';
 import type { NavItem, UserRole } from '@/types';
 
@@ -73,7 +71,7 @@ const operatorNavItems: SidebarNavItem[] = [
                 icon: Building2,
             },
             {
-                title: 'Jenis / Kategori Kegiatan',
+                title: 'Kategori Kegiatan',
                 href: categoriesIndex().url,
                 icon: Tags,
             },
@@ -93,11 +91,6 @@ const operatorNavItems: SidebarNavItem[] = [
         title: 'Kalender Agenda',
         href: calendarIndex().url,
         icon: Calendar,
-    },
-    {
-        title: 'Pengaturan Sistem',
-        href: settingsSystem().url,
-        icon: Settings,
     },
 ];
 

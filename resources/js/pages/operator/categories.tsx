@@ -54,7 +54,7 @@ export default function OperatorCategories({ categories }: Props) {
                 <div className="flex flex-wrap items-end justify-between gap-3">
                     <div className="flex flex-col gap-1">
                         <h1 className="text-2xl font-semibold tracking-tight">
-                            Jenis / Kategori Kegiatan
+                            Kategori Kegiatan
                         </h1>
                         <p className="text-muted-foreground text-sm">
                             Kelola kategori yang digunakan untuk mengelompokkan

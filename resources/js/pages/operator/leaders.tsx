@@ -124,8 +124,8 @@ export default function OperatorLeaders({ leaders }: Props) {
                                                     {getInitials(leader.name)}
                                                 </AvatarFallback>
                                             </Avatar>
-                                            <div className="flex min-w-0 flex-col items-start gap-1.5">
-                                                <p className="truncate font-semibold">
+                                            <div className="flex min-w-0 flex-1 flex-col items-start gap-1.5">
+                                                <p className="w-full truncate font-semibold">
                                                     {leader.name}
                                                 </p>
                                                 <div className="flex flex-wrap items-center gap-2">
@@ -158,28 +158,28 @@ export default function OperatorLeaders({ leaders }: Props) {
                                             <div className="flex flex-col gap-2.5 text-sm">
                                                 <span className="text-muted-foreground flex items-center gap-2">
                                                     <Mail className="size-4 shrink-0" />
-                                                    <span className="truncate">
+                                                    <span className="min-w-0 truncate">
                                                         {leader.email ??
                                                             'Tanpa email'}
                                                     </span>
                                                 </span>
                                                 <span className="text-muted-foreground flex items-center gap-2">
                                                     <Phone className="size-4 shrink-0" />
-                                                    <span className="truncate">
+                                                    <span className="min-w-0 truncate">
                                                         {leader.phone ??
                                                             'Tanpa telepon'}
                                                     </span>
                                                 </span>
                                                 <span className="text-muted-foreground flex items-center gap-2">
                                                     <IdCard className="size-4 shrink-0" />
-                                                    <span className="truncate">
+                                                    <span className="min-w-0 truncate">
                                                         {leader.nip ??
                                                             'Tanpa NIP'}
                                                     </span>
                                                 </span>
                                                 <span className="text-muted-foreground flex items-center gap-2">
                                                     <Activity className="size-4 shrink-0" />
-                                                    <span className="truncate">
+                                                    <span className="min-w-0 truncate">
                                                         {leader.events_count}{' '}
                                                         agenda terkait
                                                     </span>

@@ -67,7 +67,6 @@ test('operator routes are forbidden to other roles', function (string $route, st
         'users.index - kajati' => ['users.index', 'kajati'],
         'events.index - protokol' => ['events.index', 'protokol'],
         'calendar.index - wakajati' => ['calendar.index', 'wakajati'],
-        'settings.system - protokol' => ['settings.system', 'protokol'],
     ],
 );
 
@@ -84,5 +83,4 @@ test('operator can access operator routes', function (string $route) {
     'users.index',
     'events.index',
     'calendar.index',
-    'settings.system',
 ]);

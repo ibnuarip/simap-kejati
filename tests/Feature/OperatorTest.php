@@ -23,7 +23,34 @@ test('dashboard renders stats and recent activity for operators', function () {
             ->component('dashboard')
             ->has('stats')
             ->has('recentEvents')
-            ->has('upcomingEvents'));
+            ->has('upcomingEvents')
+            ->has('eventsTrend')
+            ->has('categoryDistribution'));
+});
+
+test('dashboard provides trend and category distribution data for charts', function () {
+    $operator = makeOperator();
+    $this->actingAs($operator);
+
+    $category = Category::factory()->create(['name' => 'Audiensi', 'color' => '#3B82F6']);
+    $otherCategory = Category::factory()->create(['name' => 'Kunjungan Kerja']);
+
+    Event::factory()->create(['category_id' => $category->id, 'created_at' => now()->subMonth()]);
+    Event::factory()->create(['category_id' => $category->id, 'created_at' => now()->subMonths(2)]);
+    Event::factory()->create(['category_id' => $otherCategory->id, 'created_at' => now()]);
+
+    $this->get(route('dashboard'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('dashboard')
+            ->has('eventsTrend', 6)
+            ->where('eventsTrend.3.total', 1)
+            ->where('eventsTrend.4.total', 1)
+            ->where('eventsTrend.5.total', 1)
+            ->where('eventsTrend.0.total', 0)
+            ->where('categoryDistribution.0.name', 'Audiensi')
+            ->where('categoryDistribution.0.color', '#3B82F6')
+            ->where('categoryDistribution.1.name', 'Kunjungan Kerja'));
 });
 
 test('operators can create a leader', function () {

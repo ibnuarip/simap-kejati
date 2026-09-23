@@ -9,7 +9,6 @@ use App\Http\Controllers\Operator\DashboardController as OperatorDashboardContro
 use App\Http\Controllers\Operator\EventController as OperatorEventController;
 use App\Http\Controllers\Operator\LeaderController as OperatorLeaderController;
 use App\Http\Controllers\Operator\RoomController as OperatorRoomController;
-use App\Http\Controllers\Operator\SystemController as OperatorSystemController;
 use App\Http\Controllers\Operator\UserController as OperatorUserController;
 use App\Http\Controllers\Protokol\CalendarController as ProtokolCalendarController;
 use App\Http\Controllers\Protokol\DashboardController as ProtokolDashboardController;
@@ -41,7 +40,6 @@ Route::middleware(['auth', 'verified', 'role:operator'])->group(function () {
         ->names('events')
         ->only(['index', 'store', 'update', 'destroy']);
     Route::get('calendar', [OperatorCalendarController::class, 'index'])->name('calendar.index');
-    Route::get('settings/system', [OperatorSystemController::class, 'index'])->name('settings.system');
 });
 
 // Tim Protokol

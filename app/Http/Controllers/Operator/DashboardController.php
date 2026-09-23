@@ -13,6 +13,8 @@ use Inertia\Response;
 
 class DashboardController extends Controller
 {
+    private const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+
     public function index(): Response
     {
         $eventsByStatus = Event::query()
@@ -20,6 +22,41 @@ class DashboardController extends Controller
             ->groupBy('status')
             ->pluck('total', 'status')
             ->map(fn (mixed $total): int => (int) $total);
+
+        $agendaCountsByMonth = Event::query()
+            ->whereNotNull('created_at')
+            ->where('created_at', '>=', now()->subMonths(5)->startOfMonth())
+            ->pluck('created_at')
+            ->countBy(fn ($createdAt): string => $createdAt->format('Y-m'));
+
+        $eventsTrend = collect(range(0, 5))->reverse()->map(function (int $offset) use ($agendaCountsByMonth): array {
+            $month = now()->subMonths($offset);
+
+            return [
+                'month' => $month->format('Y-m'),
+                'label' => self::MONTH_LABELS[$month->format('n') - 1],
+                'total' => $agendaCountsByMonth[$month->format('Y-m')] ?? 0,
+            ];
+        })->values();
+
+        $agendaCountsByCategory = Event::query()
+            ->whereNotNull('category_id')
+            ->selectRaw('category_id, COUNT(*) as total')
+            ->groupBy('category_id')
+            ->pluck('total', 'category_id')
+            ->map(fn (mixed $total): int => (int) $total);
+
+        $categoryDistribution = Category::query()
+            ->get()
+            ->map(fn (Category $category): array => [
+                'name' => $category->name,
+                'color' => $category->color ?? '#94A3B8',
+                'total' => $agendaCountsByCategory[$category->id] ?? 0,
+            ])
+            ->filter(fn (array $row): bool => $row['total'] > 0)
+            ->values()
+            ->sortByDesc(fn (array $row): int => $row['total'])
+            ->values();
 
         $upcomingEvents = Event::query()
             ->with(['leader', 'room', 'category'])
@@ -81,6 +118,8 @@ class DashboardController extends Controller
             ],
             'upcomingEvents' => $upcomingEvents->values(),
             'recentEvents' => $recentEvents->values(),
+            'eventsTrend' => $eventsTrend,
+            'categoryDistribution' => $categoryDistribution,
         ]);
     }
 }

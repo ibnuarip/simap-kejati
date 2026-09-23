@@ -73,22 +73,14 @@ export type DashboardRecentEvent = {
     creator: { id: number; name: string } | null;
 };
 
-export type SystemInfo = {
-    appName: string;
-    environment: string;
-    laravelVersion: string;
-    phpVersion: string;
-    debug: boolean;
-    database: string;
-    sessionDriver: string;
-    cacheStore: string;
-    queueConnection: string;
+export type EventTrendPoint = {
+    month: string;
+    label: string;
+    total: number;
 };
 
-export type SystemSummary = {
-    users: number;
-    events: number;
-    leaders: number;
-    rooms: number;
-    categories: number;
+export type CategoryDistribution = {
+    name: string;
+    color: string;
+    total: number;
 };

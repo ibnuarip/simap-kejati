@@ -1,18 +1,17 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import {
     Building2,
     CalendarCheck,
     CalendarClock,
-    CalendarPlus,
     Database,
     Tags,
     UserCheck,
-    UserPlus,
     Users,
 } from 'lucide-react';
 import { AgendaItemRow } from '@/components/agenda-item-row';
+import { AgendaTrendChart } from '@/components/charts/agenda-trend-chart';
+import { CategoryDistributionChart } from '@/components/charts/category-distribution-chart';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
@@ -21,17 +20,21 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { agendaStatusLabel, agendaStatusVariant } from '@/lib/agenda';
-import { index as calendarIndex } from '@/routes/calendar';
 import { dashboard as operatorDashboard } from '@/routes';
-import { index as eventsIndex } from '@/routes/events';
-import { index as leadersIndex } from '@/routes/master/leaders';
-import { index as usersIndex } from '@/routes/users';
-import type { AgendaItem, DashboardRecentEvent, DashboardStats } from '@/types';
+import type {
+    AgendaItem,
+    CategoryDistribution,
+    DashboardRecentEvent,
+    DashboardStats,
+    EventTrendPoint,
+} from '@/types';
 
 type Props = {
     stats: DashboardStats;
     upcomingEvents: AgendaItem[];
     recentEvents: DashboardRecentEvent[];
+    eventsTrend: EventTrendPoint[];
+    categoryDistribution: CategoryDistribution[];
 };
 
 const STATUS_KEYS = ['scheduled', 'ongoing', 'completed', 'cancelled'] as const;
@@ -40,6 +43,8 @@ export default function Dashboard({
     stats,
     upcomingEvents,
     recentEvents,
+    eventsTrend,
+    categoryDistribution,
 }: Props) {
     const { auth } = usePage().props;
 
@@ -125,6 +130,41 @@ export default function Dashboard({
                     ))}
                 </div>
 
+                <div className="grid gap-6 lg:grid-cols-2">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <CalendarClock className="size-4" />
+                                Tren Aktivitas Agenda
+                            </CardTitle>
+                            <CardDescription>
+                                Jumlah agenda masuk per bulan dalam 6 bulan
+                                terakhir.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <AgendaTrendChart data={eventsTrend} />
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Tags className="size-4" />
+                                Distribusi Kategori Kegiatan
+                            </CardTitle>
+                            <CardDescription>
+                                Proporsi agenda berdasarkan kategori kegiatan.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <CategoryDistributionChart
+                                data={categoryDistribution}
+                            />
+                        </CardContent>
+                    </Card>
+                </div>
+
                 <div className="grid gap-6 lg:grid-cols-3">
                     <Card className="lg:col-span-2">
                         <CardHeader>
@@ -156,122 +196,32 @@ export default function Dashboard({
                         </CardContent>
                     </Card>
 
-                    <div className="flex flex-col gap-6">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Database className="size-4" />
-                                    Ringkasan Status Agenda
-                                </CardTitle>
-                                <CardDescription>
-                                    Distribusi status seluruh agenda.
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="flex flex-col gap-2">
-                                {STATUS_KEYS.map((key) => (
-                                    <div
-                                        key={key}
-                                        className="hover:bg-muted/60 flex items-center justify-between rounded-lg border p-3 transition-colors duration-200"
-                                    >
-                                        <Badge
-                                            variant={agendaStatusVariant[key]}
-                                        >
-                                            {agendaStatusLabel[key]}
-                                        </Badge>
-                                        <span className="text-primary text-lg font-bold tabular-nums">
-                                            {stats.eventsByStatus[key]}
-                                        </span>
-                                    </div>
-                                ))}
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Akses Cepat</CardTitle>
-                                <CardDescription>
-                                    Tindakan yang sering dilakukan.
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="flex flex-col gap-2.5">
-                                <Button
-                                    asChild
-                                    className="group h-auto justify-start gap-3 rounded-lg p-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Database className="size-4" />
+                                Ringkasan Status Agenda
+                            </CardTitle>
+                            <CardDescription>
+                                Distribusi status seluruh agenda.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex flex-col gap-2">
+                            {STATUS_KEYS.map((key) => (
+                                <div
+                                    key={key}
+                                    className="hover:bg-muted/60 flex items-center justify-between rounded-lg border p-3 transition-colors duration-200"
                                 >
-                                    <Link href={eventsIndex().url} prefetch>
-                                        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white/20 transition-transform duration-200 group-hover:scale-105">
-                                            <CalendarPlus className="size-4" />
-                                        </span>
-                                        <span className="flex flex-col items-start gap-0.5">
-                                            <span className="font-semibold">
-                                                Kelola Agenda
-                                            </span>
-                                            <span className="text-primary-foreground/80 text-xs">
-                                                Tambah dan kelola agenda
-                                            </span>
-                                        </span>
-                                    </Link>
-                                </Button>
-                                <Button
-                                    asChild
-                                    variant="outline"
-                                    className="h-auto justify-start gap-3 rounded-lg p-3 shadow-none transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
-                                >
-                                    <Link href={usersIndex().url} prefetch>
-                                        <span className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">
-                                            <UserPlus className="size-4" />
-                                        </span>
-                                        <span className="flex flex-col items-start gap-0.5">
-                                            <span className="font-semibold">
-                                                Kelola Pengguna
-                                            </span>
-                                            <span className="text-muted-foreground text-xs">
-                                                Akun dan peran pengguna
-                                            </span>
-                                        </span>
-                                    </Link>
-                                </Button>
-                                <Button
-                                    asChild
-                                    variant="outline"
-                                    className="h-auto justify-start gap-3 rounded-lg p-3 shadow-none transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
-                                >
-                                    <Link href={leadersIndex().url} prefetch>
-                                        <span className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">
-                                            <UserCheck className="size-4" />
-                                        </span>
-                                        <span className="flex flex-col items-start gap-0.5">
-                                            <span className="font-semibold">
-                                                Data Pimpinan
-                                            </span>
-                                            <span className="text-muted-foreground text-xs">
-                                                Master pimpinan
-                                            </span>
-                                        </span>
-                                    </Link>
-                                </Button>
-                                <Button
-                                    asChild
-                                    variant="outline"
-                                    className="h-auto justify-start gap-3 rounded-lg p-3 shadow-none transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
-                                >
-                                    <Link href={calendarIndex().url} prefetch>
-                                        <span className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">
-                                            <CalendarCheck className="size-4" />
-                                        </span>
-                                        <span className="flex flex-col items-start gap-0.5">
-                                            <span className="font-semibold">
-                                                Buka Kalender
-                                            </span>
-                                            <span className="text-muted-foreground text-xs">
-                                                Pandangan kalender agenda
-                                            </span>
-                                        </span>
-                                    </Link>
-                                </Button>
-                            </CardContent>
-                        </Card>
-                    </div>
+                                    <Badge variant={agendaStatusVariant[key]}>
+                                        {agendaStatusLabel[key]}
+                                    </Badge>
+                                    <span className="text-primary text-lg font-bold tabular-nums">
+                                        {stats.eventsByStatus[key]}
+                                    </span>
+                                </div>
+                            ))}
+                        </CardContent>
+                    </Card>
                 </div>
 
                 <Card>

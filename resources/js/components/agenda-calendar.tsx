@@ -120,18 +120,26 @@ export function AgendaCalendar({ events }: { events: AgendaItem[] }) {
 
     return (
         <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold">{monthLabel}</h2>
-                <div className="flex items-center gap-1">
+            <div className="flex items-center justify-between gap-3">
+                <h2 className="text-lg font-bold tracking-tight">
+                    {monthLabel}
+                </h2>
+                <div className="flex items-center gap-1.5">
                     <Button
                         variant="outline"
                         size="icon"
                         onClick={() => changeMonth(-1)}
                         aria-label="Bulan sebelumnya"
+                        className="size-9"
                     >
-                        <ChevronLeft />
+                        <ChevronLeft aria-hidden />
                     </Button>
-                    <Button variant="outline" size="sm" onClick={goToToday}>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={goToToday}
+                        className="h-9 px-3"
+                    >
                         Hari Ini
                     </Button>
                     <Button
@@ -139,8 +147,9 @@ export function AgendaCalendar({ events }: { events: AgendaItem[] }) {
                         size="icon"
                         onClick={() => changeMonth(1)}
                         aria-label="Bulan berikutnya"
+                        className="size-9"
                     >
-                        <ChevronRight />
+                        <ChevronRight aria-hidden />
                     </Button>
                 </div>
             </div>
@@ -149,7 +158,7 @@ export function AgendaCalendar({ events }: { events: AgendaItem[] }) {
                 {DAY_NAMES.map((day) => (
                     <div
                         key={day}
-                        className="text-muted-foreground px-2 py-2 text-center text-xs font-medium"
+                        className="text-muted-foreground py-2 text-center text-xs font-medium tracking-wide uppercase"
                     >
                         {day}
                     </div>
@@ -166,7 +175,7 @@ export function AgendaCalendar({ events }: { events: AgendaItem[] }) {
                             type="button"
                             onClick={() => setSelectedDate(key)}
                             className={cn(
-                                'flex min-h-16 flex-col gap-1 rounded-lg border p-1.5 text-left transition-colors',
+                                'flex min-h-20 flex-col gap-1 rounded-lg border p-1.5 text-left transition-colors',
                                 isCurrentMonth
                                     ? 'bg-card'
                                     : 'bg-muted/40 text-muted-foreground',
@@ -208,7 +217,10 @@ export function AgendaCalendar({ events }: { events: AgendaItem[] }) {
                 })}
             </div>
 
-            <div className="text-muted-foreground flex items-center gap-4 text-xs">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t pt-4">
+                <span className="text-foreground text-xs font-semibold tracking-wide uppercase">
+                    Status:
+                </span>
                 {Object.entries(agendaStatusLabel).map(([status, label]) => (
                     <span
                         key={status}
@@ -218,7 +230,7 @@ export function AgendaCalendar({ events }: { events: AgendaItem[] }) {
                             variant={
                                 agendaStatusVariant[status as AgendaStatus]
                             }
-                            className="px-1.5 py-0"
+                            className="px-2 py-0.5"
                         >
                             {label}
                         </Badge>
@@ -227,15 +239,15 @@ export function AgendaCalendar({ events }: { events: AgendaItem[] }) {
             </div>
 
             <div className="flex flex-col gap-3">
-                <h3 className="font-medium">
+                <h3 className="font-semibold">
                     Rincian Kegiatan{' '}
-                    <span className="text-muted-foreground">
+                    <span className="text-muted-foreground font-normal">
                         {formatDateLong(selectedDate)}
                     </span>
                 </h3>
 
                 {selectedEvents.length === 0 ? (
-                    <p className="text-muted-foreground rounded-lg border border-dashed p-4 text-sm">
+                    <p className="text-muted-foreground rounded-lg border border-dashed py-6 text-center text-sm">
                         Tidak ada agenda pada tanggal ini.
                     </p>
                 ) : (
