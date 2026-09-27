@@ -45,9 +45,12 @@ Route::middleware(['auth', 'verified', 'role:operator'])->group(function () {
 // Tim Protokol
 Route::middleware(['auth', 'verified', 'role:protokol'])->prefix('protokol')->name('protokol.')->group(function () {
     Route::get('/', [ProtokolDashboardController::class, 'index'])->name('dashboard');
-    Route::get('/events', [ProtokolEventController::class, 'index'])->name('events.index');
+    Route::resource('/events', ProtokolEventController::class)
+        ->names('events')
+        ->only(['index', 'store', 'update', 'destroy']);
     Route::get('/calendar', [ProtokolCalendarController::class, 'index'])->name('calendar.index');
     Route::get('/exports', [ProtokolExportController::class, 'index'])->name('exports.index');
+    Route::get('/exports/print', [ProtokolExportController::class, 'print'])->name('exports.print');
 });
 
 // Ketua & Wakil Ketua (Leadership)

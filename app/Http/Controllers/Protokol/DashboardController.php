@@ -29,9 +29,6 @@ class DashboardController extends Controller
             ->values();
 
         $upcomingCount = $events->filter(fn (Event $event) => $event->start_time->greaterThan($today))->count();
-        $thisWeekReminders = $events
-            ->filter(fn (Event $event) => $event->status === 'scheduled' && $event->start_time->between($today, $today->addDays(7)))
-            ->count();
 
         return Inertia::render('protokol/dashboard', [
             'stats' => [
@@ -39,7 +36,6 @@ class DashboardController extends Controller
                 'upcoming' => $upcomingCount,
                 'month' => $events->filter(fn (Event $event) => $event->start_time->isSameMonth($today))->count(),
                 'cancelled' => $events->where('status', 'cancelled')->count(),
-                'reminders_active' => $thisWeekReminders,
             ],
             'todayEvents' => EventResource::list($todayEvents),
             'upcomingEvents' => EventResource::list($upcomingEvents),

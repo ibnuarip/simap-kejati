@@ -2,11 +2,12 @@ import { Form } from '@inertiajs/react';
 import { ShieldCheck } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import Heading from '@/components/heading';
+import TwoFactorDisableModal from '@/components/two-factor-disable-modal';
 import TwoFactorRecoveryCodes from '@/components/two-factor-recovery-codes';
 import TwoFactorSetupModal from '@/components/two-factor-setup-modal';
 import { Button } from '@/components/ui/button';
 import { useTwoFactorAuth } from '@/hooks/use-two-factor-auth';
-import { disable, enable } from '@/routes/two-factor';
+import { enable } from '@/routes/two-factor';
 
 export type Props = {
     canManageTwoFactor?: boolean;
@@ -30,6 +31,7 @@ export default function ManageTwoFactor(props: Props) {
         errors,
     } = useTwoFactorAuth();
     const [showSetupModal, setShowSetupModal] = useState<boolean>(false);
+    const [showDisableModal, setShowDisableModal] = useState<boolean>(false);
     const prevTwoFactorEnabled = useRef(twoFactorEnabled);
 
     useEffect(() => {
@@ -60,17 +62,13 @@ export default function ManageTwoFactor(props: Props) {
                     </p>
 
                     <div className="relative inline">
-                        <Form {...disable.form()}>
-                            {({ processing }) => (
-                                <Button
-                                    variant="destructive"
-                                    type="submit"
-                                    disabled={processing}
-                                >
-                                    Disable 2FA
-                                </Button>
-                            )}
-                        </Form>
+                        <Button
+                            variant="destructive"
+                            type="button"
+                            onClick={() => setShowDisableModal(true)}
+                        >
+                            Disable 2FA
+                        </Button>
                     </div>
 
                     <TwoFactorRecoveryCodes
@@ -120,6 +118,11 @@ export default function ManageTwoFactor(props: Props) {
                 clearSetupData={clearSetupData}
                 fetchSetupData={fetchSetupData}
                 errors={errors}
+            />
+
+            <TwoFactorDisableModal
+                isOpen={showDisableModal}
+                onClose={() => setShowDisableModal(false)}
             />
         </div>
     );

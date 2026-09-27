@@ -1,11 +1,9 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import {
-    BellRing,
     Calendar,
     CalendarCheck,
     CalendarClock,
     CalendarPlus,
-    Printer,
 } from 'lucide-react';
 import { AgendaItemRow } from '@/components/agenda-item-row';
 import {
@@ -15,11 +13,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { dashboard as protokolDashboard } from '@/routes/protokol';
-import { index as protokolEvents } from '@/routes/protokol/events';
-import { index as protokolCalendar } from '@/routes/protokol/calendar';
-import { index as protokolExports } from '@/routes/protokol/exports';
 import type { AgendaItem } from '@/types';
 
 type Props = {
@@ -28,7 +22,6 @@ type Props = {
         upcoming: number;
         month: number;
         cancelled: number;
-        reminders_active: number;
     };
     todayEvents: AgendaItem[];
     upcomingEvents: AgendaItem[];
@@ -116,8 +109,8 @@ export default function ProtokolDashboard({
                     ))}
                 </div>
 
-                <div className="grid gap-6 lg:grid-cols-3">
-                    <Card className="lg:col-span-2">
+                <div className="grid gap-6 lg:grid-cols-2">
+                    <Card>
                         <CardHeader>
                             <CardTitle>Agenda Hari Ini</CardTitle>
                             <CardDescription>
@@ -146,40 +139,6 @@ export default function ProtokolDashboard({
 
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <BellRing className="size-4" />
-                                Status Notifikasi
-                            </CardTitle>
-                            <CardDescription>
-                                Pengingat otomatis agenda pimpinan.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="flex flex-col gap-4">
-                            <div className="bg-accent/40 flex flex-col gap-2 rounded-lg border p-5 transition-all duration-200 hover:shadow-sm">
-                                <span className="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-lg">
-                                    <BellRing className="size-5" />
-                                </span>
-                                <p className="text-primary text-3xl font-bold tabular-nums">
-                                    {stats.reminders_active}
-                                </p>
-                                <p className="text-muted-foreground text-sm leading-relaxed">
-                                    pengingat email aktif untuk agenda terjadwal
-                                    7 hari ke depan.
-                                </p>
-                            </div>
-                            <p className="text-muted-foreground text-xs">
-                                Notifikasi dikirim otomatis ke email pimpinan
-                                terkait jelang agenda dimulai. Pengaturan
-                                penerima dapat dikelola nanti melalui menu yang
-                                relevan.
-                            </p>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                <div className="grid gap-6 lg:grid-cols-3">
-                    <Card className="lg:col-span-2">
-                        <CardHeader>
                             <CardTitle>Agenda Mendatang</CardTitle>
                             <CardDescription>
                                 5 agenda terjadwal berikutnya.
@@ -202,73 +161,6 @@ export default function ProtokolDashboard({
                                     ))}
                                 </div>
                             )}
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Akses Cepat</CardTitle>
-                            <CardDescription>
-                                Tindakan yang sering dilakukan.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="flex flex-col gap-2.5">
-                            <Button
-                                asChild
-                                className="group h-auto justify-start gap-3 rounded-lg p-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
-                            >
-                                <Link href={protokolEvents().url} prefetch>
-                                    <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white/20 transition-transform duration-200 group-hover:scale-105">
-                                        <CalendarPlus className="size-4" />
-                                    </span>
-                                    <span className="flex flex-col items-start gap-0.5">
-                                        <span className="font-semibold">
-                                            Kelola Agenda
-                                        </span>
-                                        <span className="text-primary-foreground/80 text-xs">
-                                            Tambah dan kelola agenda
-                                        </span>
-                                    </span>
-                                </Link>
-                            </Button>
-                            <Button
-                                asChild
-                                variant="outline"
-                                className="h-auto justify-start gap-3 rounded-lg p-3 shadow-none transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
-                            >
-                                <Link href={protokolCalendar().url} prefetch>
-                                    <span className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">
-                                        <Calendar className="size-4" />
-                                    </span>
-                                    <span className="flex flex-col items-start gap-0.5">
-                                        <span className="font-semibold">
-                                            Buka Kalender
-                                        </span>
-                                        <span className="text-muted-foreground text-xs">
-                                            Pandangan kalender agenda
-                                        </span>
-                                    </span>
-                                </Link>
-                            </Button>
-                            <Button
-                                asChild
-                                variant="outline"
-                                className="h-auto justify-start gap-3 rounded-lg p-3 shadow-none transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
-                            >
-                                <Link href={protokolExports().url} prefetch>
-                                    <span className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">
-                                        <Printer className="size-4" />
-                                    </span>
-                                    <span className="flex flex-col items-start gap-0.5">
-                                        <span className="font-semibold">
-                                            Cetak & Ekspor
-                                        </span>
-                                        <span className="text-muted-foreground text-xs">
-                                            Cetak dan ekspor agenda
-                                        </span>
-                                    </span>
-                                </Link>
-                            </Button>
                         </CardContent>
                     </Card>
                 </div>

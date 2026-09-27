@@ -1,9 +1,10 @@
 import { Form, Head } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
-import { CalendarClock, CalendarPlus, Pencil, Search, X } from 'lucide-react';
+import { CalendarPlus, Pencil, Search, X } from 'lucide-react';
 import EventController from '@/actions/App/Http/Controllers/Operator/EventController';
 import { AgendaItemRow } from '@/components/agenda-item-row';
 import ConfirmDelete from '@/components/confirm-delete';
+import { DatetimeLocalField } from '@/components/datetime-local-field';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -59,10 +60,6 @@ const FILTER_OPTIONS: { value: StatusFilter; label: string }[] = [
 ];
 
 const NONE = '__none__';
-
-function toDatetimeLocal(value: string | null | undefined): string {
-    return value ? value.replace(' ', 'T').slice(0, 16) : '';
-}
 
 export default function OperatorEvents({
     events,
@@ -601,71 +598,6 @@ function EventFields({
                 <InputError message={errors.description} />
             </div>
         </>
-    );
-}
-
-type DatetimeLocalFieldProps = {
-    id: string;
-    name: string;
-    label: string;
-    defaultValue?: string | null;
-    error?: string;
-};
-
-function DatetimeLocalField({
-    id,
-    name,
-    label,
-    defaultValue,
-    error,
-}: DatetimeLocalFieldProps) {
-    const [value, setValue] = useState(
-        defaultValue ? toDatetimeLocal(defaultValue) : '',
-    );
-
-    return (
-        <div className="grid gap-2">
-            <Label htmlFor={id}>{label}</Label>
-            <Input
-                id={id}
-                name={name}
-                type="datetime-local"
-                required
-                step={60}
-                value={value}
-                onChange={(event) => setValue(event.target.value)}
-            />
-            <DatetimePreview value={value} />
-            <InputError message={error} />
-        </div>
-    );
-}
-
-function DatetimePreview({ value }: { value: string }) {
-    const parsed = useMemo(() => {
-        if (!value) {
-            return null;
-        }
-
-        const date = new Date(value);
-
-        return Number.isNaN(date.getTime()) ? null : date;
-    }, [value]);
-
-    if (!parsed) {
-        return null;
-    }
-
-    const formatted = new Intl.DateTimeFormat('id-ID', {
-        dateStyle: 'long',
-        timeStyle: 'short',
-    }).format(parsed);
-
-    return (
-        <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
-            <CalendarClock className="size-3.5 shrink-0" />
-            {formatted}
-        </p>
     );
 }
 

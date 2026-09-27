@@ -1,5 +1,5 @@
-import { Head } from '@inertiajs/react';
-import { toast } from 'sonner';
+import { Head, router } from '@inertiajs/react';
+import { useState } from 'react';
 import { CalendarMinus, FileDown, Printer } from 'lucide-react';
 import { AgendaItemRow } from '@/components/agenda-item-row';
 import { Button } from '@/components/ui/button';
@@ -10,20 +10,46 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { dashboard as protokolDashboard } from '@/routes/protokol';
+import {
+    index as exportsIndex,
+    print as exportsPrint,
+} from '@/routes/protokol/exports';
 import type { AgendaItem } from '@/types';
 
 type Props = {
-    reportDate: string;
+    date: string;
     month: string;
+    dateLabel: string;
+    monthLabel: string;
     todayEvents: AgendaItem[];
 };
 
 export default function ProtokolExports({
-    reportDate,
+    date,
     month,
+    dateLabel,
+    monthLabel,
     todayEvents,
 }: Props) {
+    const [dailyDate, setDailyDate] = useState(date);
+    const [monthlyMonth, setMonthlyMonth] = useState(month);
+
+    const printDaily = () => {
+        router.get(exportsPrint().url, {
+            type: 'daily',
+            date: dailyDate,
+        });
+    };
+
+    const printMonthly = () => {
+        router.get(exportsPrint().url, {
+            type: 'monthly',
+            month: monthlyMonth,
+        });
+    };
+
     return (
         <>
             <Head title="Cetak & Ekspor" />
@@ -46,14 +72,28 @@ export default function ProtokolExports({
                                 Cetak Agenda Harian
                             </CardTitle>
                             <CardDescription>
-                                Dokumen {reportDate} siap cetak/simpan untuk
-                                arsip dan tanda tangan.
+                                Pilih tanggal lalu cetak dokumen siap arsip dan
+                                tanda tangan, atau simpan sebagai PDF.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="flex flex-col gap-4">
+                            <div className="grid gap-2">
+                                <label className="text-muted-foreground text-xs font-medium">
+                                    Tanggal
+                                </label>
+                                <Input
+                                    type="date"
+                                    value={dailyDate}
+                                    onChange={(event) =>
+                                        setDailyDate(event.target.value)
+                                    }
+                                />
+                            </div>
+
                             {todayEvents.length === 0 ? (
                                 <p className="text-muted-foreground rounded-lg border border-dashed p-4 text-center text-sm">
-                                    Tidak ada agenda untuk dicetak hari ini.
+                                    Tidak ada agenda untuk dicetak hari ini (
+                                    {dateLabel}).
                                 </p>
                             ) : (
                                 <div className="divide-border flex flex-col divide-y">
@@ -67,14 +107,11 @@ export default function ProtokolExports({
                             )}
                             <Button
                                 className="w-full sm:w-auto"
-                                onClick={() =>
-                                    toast.info(
-                                        'Fitur cetak agenda harian akan segera hadir.',
-                                    )
-                                }
+                                disabled={!dailyDate}
+                                onClick={printDaily}
                             >
                                 <Printer />
-                                Cetak Agenda Harian
+                                Cetak / Simpan PDF
                             </Button>
                         </CardContent>
                     </Card>
@@ -86,25 +123,38 @@ export default function ProtokolExports({
                                 Rekap Bulanan PDF
                             </CardTitle>
                             <CardDescription>
-                                Unduh rekap seluruh agenda {month} dalam format
-                                PDF siap tanda tangan.
+                                Pilih bulan untuk mengunduh rekap seluruh agenda
+                                dalam format PDF siap tanda tangan.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="flex flex-col gap-4">
-                            <CalendarMinus className="text-muted-foreground size-10" />
-                            <p className="text-muted-foreground text-sm">
-                                Rekap bulanan mencakup ringkasan kegiatan
-                                beserta pimpinan, ruangan, dan kategori setiap
-                                agenda pada bulan berjalan.
-                            </p>
+                            <div className="grid gap-2">
+                                <label className="text-muted-foreground text-xs font-medium">
+                                    Bulan
+                                </label>
+                                <Input
+                                    type="month"
+                                    value={monthlyMonth}
+                                    onChange={(event) =>
+                                        setMonthlyMonth(event.target.value)
+                                    }
+                                />
+                            </div>
+
+                            <div className="flex items-center gap-3 rounded-lg border p-4">
+                                <CalendarMinus className="text-primary size-10 shrink-0" />
+                                <p className="text-muted-foreground text-sm">
+                                    Rekap bulanan {monthLabel} mencakup
+                                    ringkasan kegiatan beserta pimpinan,
+                                    ruangan, dan kategori setiap agenda pada
+                                    bulan berjalan.
+                                </p>
+                            </div>
                             <Button
                                 variant="outline"
                                 className="w-full sm:w-auto"
-                                onClick={() =>
-                                    toast.info(
-                                        'Fitur unduh rekap bulanan PDF akan segera hadir.',
-                                    )
-                                }
+                                disabled={!monthlyMonth}
+                                onClick={printMonthly}
                             >
                                 <FileDown />
                                 Unduh Rekap Bulanan
@@ -120,6 +170,6 @@ export default function ProtokolExports({
 ProtokolExports.layout = {
     breadcrumbs: [
         { title: 'Beranda', href: protokolDashboard().url },
-        { title: 'Cetak & Ekspor', href: '/protokol/exports' },
+        { title: 'Cetak & Ekspor', href: exportsIndex().url },
     ],
 };
