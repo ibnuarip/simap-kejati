@@ -24,6 +24,15 @@ export default function ResetPassword({ token, email, passwordRules }: Props) {
             >
                 {({ processing, errors }) => (
                     <div className="grid gap-6">
+                        {(errors.email || errors.token) && (
+                            <div
+                                className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                                data-test="reset-password-errors"
+                            >
+                                {errors.email || errors.token}
+                            </div>
+                        )}
+
                         <div className="grid gap-2">
                             <Label htmlFor="password">Password</Label>
                             <PasswordInput
