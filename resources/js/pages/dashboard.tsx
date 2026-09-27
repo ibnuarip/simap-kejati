@@ -85,9 +85,9 @@ export default function Dashboard({
         <>
             <Head title="Dashboard" />
 
-            <div className="flex flex-1 flex-col gap-6 lg:gap-8">
-                <div className="flex flex-col gap-1.5">
-                    <p className="text-primary flex items-center gap-1.5 text-sm font-medium tabular-nums">
+            <div className="flex flex-1 flex-col gap-4 lg:gap-5">
+                <div className="flex flex-col gap-1">
+                    <p className="text-primary flex items-center gap-1.5 text-xs font-medium tabular-nums">
                         {new Date().toLocaleDateString('id-ID', {
                             weekday: 'long',
                             day: 'numeric',
@@ -95,7 +95,7 @@ export default function Dashboard({
                             year: 'numeric',
                         })}
                     </p>
-                    <h1 className="text-foreground text-2xl font-bold tracking-tight md:text-3xl">
+                    <h1 className="text-foreground text-xl font-bold tracking-tight md:text-2xl">
                         Selamat bekerja, {auth.user?.name}!
                     </h1>
                     <p className="text-muted-foreground max-w-2xl text-sm">
@@ -104,22 +104,22 @@ export default function Dashboard({
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                     {statCards.map((stat) => (
                         <Card
                             key={stat.title}
                             className="transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
                         >
-                            <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
+                            <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-1">
                                 <CardDescription className="font-medium">
                                     {stat.title}
                                 </CardDescription>
-                                <span className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">
-                                    <stat.icon className="size-5" />
+                                <span className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg">
+                                    <stat.icon className="size-4" />
                                 </span>
                             </CardHeader>
-                            <CardContent className="flex flex-col gap-1">
-                                <p className="text-primary text-3xl font-bold tabular-nums md:text-4xl">
+                            <CardContent className="flex flex-col gap-0.5">
+                                <p className="text-primary text-2xl font-bold tabular-nums md:text-3xl">
                                     {stat.value}
                                 </p>
                                 <p className="text-muted-foreground text-xs">
@@ -130,7 +130,7 @@ export default function Dashboard({
                     ))}
                 </div>
 
-                <div className="grid gap-6 lg:grid-cols-2">
+                <div className="grid gap-4 lg:grid-cols-2">
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
@@ -165,7 +165,7 @@ export default function Dashboard({
                     </Card>
                 </div>
 
-                <div className="grid gap-6 lg:grid-cols-3">
+                <div className="grid gap-4 lg:grid-cols-3">
                     <Card className="lg:col-span-2">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">

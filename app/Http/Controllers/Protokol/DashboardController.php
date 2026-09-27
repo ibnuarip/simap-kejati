@@ -35,7 +35,7 @@ class DashboardController extends Controller
                 'today' => $todayEvents->count(),
                 'upcoming' => $upcomingCount,
                 'month' => $events->filter(fn (Event $event) => $event->start_time->isSameMonth($today))->count(),
-                'cancelled' => $events->where('status', 'cancelled')->count(),
+                'cancelled' => $events->filter(fn (Event $event): bool => $event->currentStatus() === 'cancelled')->count(),
             ],
             'todayEvents' => EventResource::list($todayEvents),
             'upcomingEvents' => EventResource::list($upcomingEvents),

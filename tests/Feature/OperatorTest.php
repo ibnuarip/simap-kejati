@@ -282,7 +282,6 @@ test('operators can create an event linked to master data', function () {
         'end_time' => $end->toDateTimeString(),
         'dress_code' => 'PDH',
         'participants' => 'Para asisten',
-        'status' => 'scheduled',
     ])->assertRedirect();
 
     $this->assertDatabaseHas('events', [
@@ -301,7 +300,7 @@ test('creating an event requires a leader and a valid time window', function () 
 
     $this->post(route('events.store'), [
         'title' => 'Agenda Tanpa Pimpinan',
-    ])->assertSessionHasErrors(['leader_id', 'start_time', 'end_time', 'status']);
+    ])->assertSessionHasErrors(['leader_id', 'start_time', 'end_time']);
 
     $this->assertDatabaseCount('events', 0);
 });
@@ -317,7 +316,6 @@ test('an event must end after it starts', function () {
         'leader_id' => $leader->id,
         'start_time' => now()->addDay()->setTime(9, 0)->toDateTimeString(),
         'end_time' => now()->addDay()->setTime(8, 0)->toDateTimeString(),
-        'status' => 'scheduled',
     ])->assertSessionHasErrors('end_time');
 
     $this->assertDatabaseCount('events', 0);
@@ -340,10 +338,12 @@ test('operators can update and delete an event', function () {
         'end_time' => $event->end_time->toDateTimeString(),
         'dress_code' => $event->dress_code,
         'participants' => $event->participants,
-        'status' => 'completed',
     ])->assertRedirect();
 
-    $this->assertDatabaseHas('events', ['id' => $event->id, 'status' => 'completed']);
+    $this->assertDatabaseHas('events', [
+        'id' => $event->id,
+        'status' => $event->status,
+    ]);
 
     $this->delete(route('events.destroy', $event))->assertRedirect();
 

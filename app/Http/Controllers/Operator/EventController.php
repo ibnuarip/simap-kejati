@@ -26,6 +26,8 @@ class EventController extends Controller
         $rooms = Room::query()->where('is_active', true)->orderBy('name')->get();
         $categories = Category::query()->orderBy('name')->get();
 
+        $statusCounts = $events->countBy(fn (Event $event): string => $event->currentStatus());
+
         return Inertia::render('operator/events', [
             'events' => EventResource::list($events),
             'leaders' => $leaders->map(fn (Leader $leader): array => [
@@ -42,10 +44,10 @@ class EventController extends Controller
             ]),
             'statusCounts' => [
                 'total' => $events->count(),
-                'scheduled' => $events->where('status', 'scheduled')->count(),
-                'ongoing' => $events->where('status', 'ongoing')->count(),
-                'completed' => $events->where('status', 'completed')->count(),
-                'cancelled' => $events->where('status', 'cancelled')->count(),
+                'scheduled' => $statusCounts['scheduled'] ?? 0,
+                'ongoing' => $statusCounts['ongoing'] ?? 0,
+                'completed' => $statusCounts['completed'] ?? 0,
+                'cancelled' => $statusCounts['cancelled'] ?? 0,
             ],
         ]);
     }
@@ -70,6 +72,13 @@ class EventController extends Controller
     public function destroy(Event $event): RedirectResponse
     {
         $event->delete();
+
+        return back();
+    }
+
+    public function cancel(Event $event): RedirectResponse
+    {
+        $event->update(['status' => 'cancelled']);
 
         return back();
     }

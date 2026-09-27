@@ -85,4 +85,29 @@ class Event extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    /**
+     * Status efektif agenda berdasarkan waktu sistem.
+     *
+     * Status "cancelled" dipertahankan sebagai keputusan manual; selain itu
+     * status dihitung dari waktu mulai/selesai dibandingkan waktu sekarang.
+     */
+    public function currentStatus(): string
+    {
+        if ($this->status === 'cancelled') {
+            return 'cancelled';
+        }
+
+        $now = now();
+
+        if ($now->gt($this->end_time)) {
+            return 'completed';
+        }
+
+        if ($now->gte($this->start_time)) {
+            return 'ongoing';
+        }
+
+        return 'scheduled';
+    }
 }

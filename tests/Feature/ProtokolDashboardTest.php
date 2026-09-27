@@ -73,7 +73,6 @@ test('protokol can create an event linked to master data', function () {
         'end_time' => $end->toDateTimeString(),
         'dress_code' => 'PDH',
         'participants' => 'Para asisten',
-        'status' => 'scheduled',
     ])->assertRedirect();
 
     $this->assertDatabaseHas('events', [
@@ -103,10 +102,12 @@ test('protokol can update and delete an event', function () {
         'end_time' => $event->end_time->toDateTimeString(),
         'dress_code' => $event->dress_code,
         'participants' => $event->participants,
-        'status' => 'completed',
     ])->assertRedirect();
 
-    $this->assertDatabaseHas('events', ['id' => $event->id, 'status' => 'completed']);
+    $this->assertDatabaseHas('events', [
+        'id' => $event->id,
+        'status' => $event->status,
+    ]);
 
     $this->delete(route('protokol.events.destroy', $event))->assertRedirect();
 

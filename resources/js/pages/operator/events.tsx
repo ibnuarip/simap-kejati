@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { CalendarPlus, Pencil, Search, X } from 'lucide-react';
 import EventController from '@/actions/App/Http/Controllers/Operator/EventController';
 import { AgendaItemRow } from '@/components/agenda-item-row';
+import CancelAgenda from '@/components/cancel-agenda';
 import ConfirmDelete from '@/components/confirm-delete';
 import { DatetimeLocalField } from '@/components/datetime-local-field';
 import InputError from '@/components/input-error';
@@ -75,7 +76,6 @@ export default function OperatorEvents({
     const [leaderId, setLeaderId] = useState('');
     const [roomId, setRoomId] = useState(NONE);
     const [categoryId, setCategoryId] = useState(NONE);
-    const [status, setStatus] = useState<AgendaStatus>('scheduled');
 
     const filteredEvents = useMemo(() => {
         const lowerQuery = search.trim().toLowerCase();
@@ -101,7 +101,6 @@ export default function OperatorEvents({
         setLeaderId('');
         setRoomId(NONE);
         setCategoryId(NONE);
-        setStatus('scheduled');
         setEditing(null);
         setDialogOpen(true);
     };
@@ -110,7 +109,6 @@ export default function OperatorEvents({
         setLeaderId(event.leader?.id ? String(event.leader.id) : '');
         setRoomId(event.room?.id ? String(event.room.id) : NONE);
         setCategoryId(event.category?.id ? String(event.category.id) : NONE);
-        setStatus(event.status);
         setEditing(event);
         setDialogOpen(true);
     };
@@ -132,7 +130,8 @@ export default function OperatorEvents({
                             Kelola Agenda
                         </h1>
                         <p className="text-muted-foreground text-sm">
-                            Tambah, perbarui, dan atur status agenda pimpinan.
+                            Tambah, perbarui, dan batalkan agenda pimpinan.
+                            Status agenda dihitung otomatis sesuai waktu.
                         </p>
                     </div>
                     <Button onClick={openCreate}>
@@ -268,6 +267,14 @@ export default function OperatorEvents({
                                                 <Pencil />
                                                 Edit
                                             </Button>
+                                            {event.status !== 'cancelled' && (
+                                                <CancelAgenda
+                                                    url={EventController.cancel.url(
+                                                        event.id,
+                                                    )}
+                                                    itemName={event.title}
+                                                />
+                                            )}
                                             <ConfirmDelete
                                                 url={EventController.destroy.url(
                                                     event.id,
@@ -315,8 +322,6 @@ export default function OperatorEvents({
                                         onRoomChange={setRoomId}
                                         categoryId={categoryId}
                                         onCategoryChange={setCategoryId}
-                                        status={status}
-                                        onStatusChange={setStatus}
                                         errors={errors}
                                     />
                                     <DialogFooter>
@@ -356,8 +361,6 @@ export default function OperatorEvents({
                                         onRoomChange={setRoomId}
                                         categoryId={categoryId}
                                         onCategoryChange={setCategoryId}
-                                        status={status}
-                                        onStatusChange={setStatus}
                                         errors={errors}
                                     />
                                     <DialogFooter>
@@ -396,8 +399,6 @@ type FieldProps = {
     onRoomChange: (value: string) => void;
     categoryId: string;
     onCategoryChange: (value: string) => void;
-    status: AgendaStatus;
-    onStatusChange: (value: AgendaStatus) => void;
     errors: Record<string, string>;
 };
 
@@ -412,8 +413,6 @@ function EventFields({
     onRoomChange,
     categoryId,
     onCategoryChange,
-    status,
-    onStatusChange,
     errors,
 }: FieldProps) {
     return (
@@ -544,31 +543,6 @@ function EventFields({
                         placeholder="Contoh: PDH"
                     />
                     <InputError message={errors.dress_code} />
-                </div>
-
-                <div className="grid gap-2">
-                    <Label htmlFor="status">Status</Label>
-                    <Select
-                        value={status}
-                        onValueChange={(value) =>
-                            onStatusChange(value as AgendaStatus)
-                        }
-                    >
-                        <SelectTrigger id="status" className="w-full">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {(
-                                Object.keys(agendaStatusLabel) as AgendaStatus[]
-                            ).map((key) => (
-                                <SelectItem key={key} value={key}>
-                                    {agendaStatusLabel[key]}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    <input type="hidden" name="status" value={status} />
-                    <InputError message={errors.status} />
                 </div>
             </div>
 

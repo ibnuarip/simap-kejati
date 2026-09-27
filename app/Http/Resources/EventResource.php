@@ -39,7 +39,7 @@ class EventResource extends JsonResource
             'dress_code' => $this->dress_code,
             'participants' => $this->participants,
             'custom_location' => $this->custom_location,
-            'status' => $this->status,
+            'status' => $this->currentStatus(),
             'leader' => $this->whenLoaded('leader', fn () => $this->leader ? [
                 'id' => $this->leader->id,
                 'name' => $this->leader->name,

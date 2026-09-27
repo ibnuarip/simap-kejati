@@ -1,7 +1,7 @@
-import { Head } from '@inertiajs/react';
-import { useState } from 'react';
+import { Head, useForm } from '@inertiajs/react';
 import { toast } from 'sonner';
-import { BellRing, Clock } from 'lucide-react';
+import { BellRing, Clock, LoaderCircle } from 'lucide-react';
+import NotificationController from '@/actions/App/Http/Controllers/Leadership/NotificationController';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -20,15 +20,40 @@ const TIMING_OPTIONS = [
     { value: '48', label: '2 Hari Sebelum (H-2)' },
 ];
 
-export default function LeadershipNotifications() {
-    const [timing, setTiming] = useState<string[]>(['24']);
+type Props = {
+    reminderTimings: string[];
+};
+
+export default function LeadershipNotifications({ reminderTimings }: Props) {
+    const { data, setData, post, processing } = useForm({
+        timings: reminderTimings.length > 0 ? reminderTimings : ['24'],
+    });
 
     const toggleTiming = (value: string) => {
-        setTiming((current) =>
+        const current = data.timings;
+
+        setData(
+            'timings',
             current.includes(value)
                 ? current.filter((item) => item !== value)
                 : [...current, value],
         );
+    };
+
+    const handleSubmit = () => {
+        post(NotificationController.update.url(), {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast.success('Pengaturan notifikasi berhasil disimpan.');
+            },
+            onError: (errors) => {
+                const message = Object.values(errors)[0];
+
+                toast.error(
+                    message ? String(message) : 'Gagal menyimpan pengaturan.',
+                );
+            },
+        });
     };
 
     return (
@@ -60,7 +85,9 @@ export default function LeadershipNotifications() {
                     <CardContent>
                         <div className="divide-border flex flex-col divide-y">
                             {TIMING_OPTIONS.map((option) => {
-                                const checked = timing.includes(option.value);
+                                const checked = data.timings.includes(
+                                    option.value,
+                                );
 
                                 return (
                                     <label
@@ -95,14 +122,11 @@ export default function LeadershipNotifications() {
                         Pengaturan akan dikirim sebagai email pengingat sesuai
                         waktu yang dipilih.
                     </p>
-                    <Button
-                        onClick={() =>
-                            toast.info(
-                                'Simpan pengaturan notifikasi akan segera hadir.',
-                            )
-                        }
-                    >
-                        Simpan Pengaturan
+                    <Button onClick={handleSubmit} disabled={processing}>
+                        {processing ? (
+                            <LoaderCircle className="animate-spin" />
+                        ) : null}
+                        {processing ? 'Menyimpan…' : 'Simpan Pengaturan'}
                     </Button>
                 </div>
             </div>

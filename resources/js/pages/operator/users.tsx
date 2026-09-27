@@ -192,6 +192,7 @@ export default function OperatorUsers({ users }: Props) {
                                                             url={UserController.destroy.url(
                                                                 user.id,
                                                             )}
+                                                            only={['users']}
                                                             itemName={
                                                                 user.email
                                                             }

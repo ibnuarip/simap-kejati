@@ -1,6 +1,12 @@
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
-import { CalendarMinus, FileDown, Printer } from 'lucide-react';
+import {
+    CalendarMinus,
+    FileDown,
+    FileSpreadsheet,
+    FileText,
+    Printer,
+} from 'lucide-react';
 import { AgendaItemRow } from '@/components/agenda-item-row';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,6 +19,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { dashboard as protokolDashboard } from '@/routes/protokol';
 import {
+    download as exportsDownload,
     index as exportsIndex,
     print as exportsPrint,
 } from '@/routes/protokol/exports';
@@ -50,6 +57,16 @@ export default function ProtokolExports({
         });
     };
 
+    const dailyUrl = (format: 'xlsx' | 'csv') =>
+        exportsDownload.url({
+            query: { type: 'daily', date: dailyDate, format },
+        });
+
+    const monthlyUrl = (format: 'xlsx' | 'csv') =>
+        exportsDownload.url({
+            query: { type: 'monthly', month: monthlyMonth, format },
+        });
+
     return (
         <>
             <Head title="Cetak & Ekspor" />
@@ -60,7 +77,8 @@ export default function ProtokolExports({
                         Cetak & Ekspor
                     </h1>
                     <p className="text-muted-foreground text-sm">
-                        Cetak agenda harian dan unduh rekap bulanan format PDF.
+                        Cetak agenda harian dan unduh rekap bulanan format PDF,
+                        Excel, atau CSV.
                     </p>
                 </div>
 
@@ -105,14 +123,52 @@ export default function ProtokolExports({
                                     ))}
                                 </div>
                             )}
-                            <Button
-                                className="w-full sm:w-auto"
-                                disabled={!dailyDate}
-                                onClick={printDaily}
-                            >
-                                <Printer />
-                                Cetak / Simpan PDF
-                            </Button>
+                            <div className="flex flex-col gap-2 sm:flex-row">
+                                <Button
+                                    className="w-full sm:w-auto"
+                                    disabled={!dailyDate}
+                                    onClick={printDaily}
+                                >
+                                    <Printer />
+                                    Cetak / Simpan PDF
+                                </Button>
+                                <div className="flex gap-2">
+                                    <Button
+                                        asChild
+                                        variant="outline"
+                                        className="flex-1 sm:flex-none"
+                                    >
+                                        <a
+                                            href={dailyUrl('xlsx')}
+                                            onClick={(event) => {
+                                                if (!dailyDate) {
+                                                    event.preventDefault();
+                                                }
+                                            }}
+                                        >
+                                            <FileSpreadsheet />
+                                            Excel
+                                        </a>
+                                    </Button>
+                                    <Button
+                                        asChild
+                                        variant="outline"
+                                        className="flex-1 sm:flex-none"
+                                    >
+                                        <a
+                                            href={dailyUrl('csv')}
+                                            onClick={(event) => {
+                                                if (!dailyDate) {
+                                                    event.preventDefault();
+                                                }
+                                            }}
+                                        >
+                                            <FileText />
+                                            CSV
+                                        </a>
+                                    </Button>
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
 
@@ -120,11 +176,12 @@ export default function ProtokolExports({
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <FileDown className="size-4" />
-                                Rekap Bulanan PDF
+                                Rekap Bulanan
                             </CardTitle>
                             <CardDescription>
-                                Pilih bulan untuk mengunduh rekap seluruh agenda
-                                dalam format PDF siap tanda tangan.
+                                Pilih bulan untuk mencetak atau mengunduh rekap
+                                seluruh agenda dalam format PDF, Excel, atau
+                                CSV.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="flex flex-col gap-4">
@@ -150,15 +207,53 @@ export default function ProtokolExports({
                                     bulan berjalan.
                                 </p>
                             </div>
-                            <Button
-                                variant="outline"
-                                className="w-full sm:w-auto"
-                                disabled={!monthlyMonth}
-                                onClick={printMonthly}
-                            >
-                                <FileDown />
-                                Unduh Rekap Bulanan
-                            </Button>
+                            <div className="flex flex-col gap-2 sm:flex-row">
+                                <Button
+                                    variant="outline"
+                                    className="w-full sm:w-auto"
+                                    disabled={!monthlyMonth}
+                                    onClick={printMonthly}
+                                >
+                                    <FileDown />
+                                    Cetak / Simpan PDF
+                                </Button>
+                                <div className="flex gap-2">
+                                    <Button
+                                        asChild
+                                        variant="outline"
+                                        className="flex-1 sm:flex-none"
+                                    >
+                                        <a
+                                            href={monthlyUrl('xlsx')}
+                                            onClick={(event) => {
+                                                if (!monthlyMonth) {
+                                                    event.preventDefault();
+                                                }
+                                            }}
+                                        >
+                                            <FileSpreadsheet />
+                                            Excel
+                                        </a>
+                                    </Button>
+                                    <Button
+                                        asChild
+                                        variant="outline"
+                                        className="flex-1 sm:flex-none"
+                                    >
+                                        <a
+                                            href={monthlyUrl('csv')}
+                                            onClick={(event) => {
+                                                if (!monthlyMonth) {
+                                                    event.preventDefault();
+                                                }
+                                            }}
+                                        >
+                                            <FileText />
+                                            CSV
+                                        </a>
+                                    </Button>
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
                 </div>

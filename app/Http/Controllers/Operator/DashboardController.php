@@ -17,11 +17,11 @@ class DashboardController extends Controller
 
     public function index(): Response
     {
-        $eventsByStatus = Event::query()
-            ->selectRaw('status, COUNT(*) as total')
-            ->groupBy('status')
-            ->pluck('total', 'status')
-            ->map(fn (mixed $total): int => (int) $total);
+        $allEvents = Event::query()->get(['id', 'status', 'start_time', 'end_time']);
+
+        $eventsByStatus = $allEvents
+            ->countBy(fn (Event $event): string => $event->currentStatus())
+            ->map(fn (int $total): int => $total);
 
         $agendaCountsByMonth = Event::query()
             ->whereNotNull('created_at')
@@ -73,7 +73,7 @@ class DashboardController extends Controller
                 'dress_code' => $event->dress_code,
                 'participants' => $event->participants,
                 'custom_location' => $event->custom_location,
-                'status' => $event->status,
+                'status' => $event->currentStatus(),
                 'leader' => $event->leader ? [
                     'id' => $event->leader->id,
                     'name' => $event->leader->name,
@@ -97,7 +97,7 @@ class DashboardController extends Controller
             ->map(fn (Event $event): array => [
                 'id' => $event->id,
                 'title' => $event->title,
-                'status' => $event->status,
+                'status' => $event->currentStatus(),
                 'created_at' => $event->created_at?->toDateTimeString(),
                 'creator' => $event->creator ? ['id' => $event->creator->id, 'name' => $event->creator->name] : null,
             ]);

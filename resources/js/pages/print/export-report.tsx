@@ -58,14 +58,33 @@ export default function ExportReport({
             </div>
 
             <div className="mx-auto max-w-[210mm] bg-white px-8 py-10 text-gray-900 print:max-w-none print:px-0 print:py-0">
-                <div className="border-b-2 border-gray-800 pb-4 text-center">
-                    <h1 className="text-lg font-bold tracking-wide uppercase">
-                        Kejaksaan Tinggi — SIMAP
-                    </h1>
-                    <p className="mt-1 text-sm font-medium uppercase">
+                <div className="border-b-4 border-gray-800 pb-4">
+                    <div className="flex items-center justify-between gap-4">
+                        <img
+                            src="/images/logo-kejati.png"
+                            alt="Logo Kejaksaan Tinggi"
+                            className="h-16 w-auto shrink-0"
+                        />
+                        <div className="flex-1 text-center">
+                            <p className="text-[11px] font-semibold tracking-wide uppercase">
+                                Kejaksaan Agung Republik Indonesia
+                            </p>
+                            <h1 className="mt-0.5 text-lg font-bold tracking-wide uppercase">
+                                Kejaksaan Tinggi — SIMAP
+                            </h1>
+                            <p className="mt-0.5 text-xs">
+                                Sistem Informasi Manajemen Agenda Pimpinan
+                            </p>
+                        </div>
+                        <div
+                            className="h-16 w-16 shrink-0"
+                            aria-hidden="true"
+                        />
+                    </div>
+                    <p className="mt-3 text-center text-sm font-semibold uppercase">
                         Laporan {subtitle}
                     </p>
-                    <p className="text-muted-foreground mt-1 text-sm">
+                    <p className="text-muted-foreground mt-1 text-center text-sm">
                         {periodLabel}
                     </p>
                 </div>
