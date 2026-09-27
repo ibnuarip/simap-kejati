@@ -110,4 +110,12 @@ class Event extends Model
 
         return 'scheduled';
     }
+
+    /**
+     * Agenda hanya dapat dibatalkan selama belum berlangsung.
+     */
+    public function canBeCancelled(): bool
+    {
+        return $this->currentStatus() === 'scheduled';
+    }
 }

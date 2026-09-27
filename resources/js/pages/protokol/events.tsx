@@ -268,7 +268,7 @@ export default function ProtokolEvents({
                                                 <Pencil />
                                                 Edit
                                             </Button>
-                                            {event.status !== 'cancelled' && (
+                                            {event.can_cancel && (
                                                 <CancelAgenda
                                                     url={EventController.cancel.url(
                                                         event.id,

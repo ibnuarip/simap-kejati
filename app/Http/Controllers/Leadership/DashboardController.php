@@ -34,6 +34,7 @@ class DashboardController extends Controller
         return Inertia::render('leadership/dashboard', [
             'stats' => [
                 'today' => $todayEvents->count(),
+                'ongoing' => $events->filter(fn (Event $event) => $event->currentStatus() === 'ongoing')->count(),
                 'upcoming' => $events->filter(fn (Event $event) => $event->start_time->greaterThan($today))->count(),
                 'month' => $events->filter(fn (Event $event) => $event->start_time->isSameMonth($today))->count(),
             ],

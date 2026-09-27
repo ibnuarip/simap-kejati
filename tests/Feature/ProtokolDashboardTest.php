@@ -114,6 +114,35 @@ test('protokol can update and delete an event', function () {
     $this->assertDatabaseMissing('events', ['id' => $event->id]);
 });
 
+test('protokol sees the newly created event in the manage list', function () {
+    $protokol = User::factory()->protokol()->create();
+    $leader = Leader::factory()->create();
+
+    $this->actingAs($protokol);
+
+    $this->post(route('protokol.events.store'), [
+        'title' => 'Agenda Baru Tampil',
+        'description' => null,
+        'leader_id' => $leader->id,
+        'room_id' => null,
+        'category_id' => null,
+        'custom_location' => null,
+        'start_time' => now()->addDay()->setTime(9, 0)->toDateTimeString(),
+        'end_time' => now()->addDay()->setTime(11, 0)->toDateTimeString(),
+        'dress_code' => null,
+        'participants' => null,
+    ])->assertRedirect();
+
+    $this->get(route('protokol.events.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('protokol/events')
+            ->has('events', 1)
+            ->where('events.0.title', 'Agenda Baru Tampil')
+            ->where('events.0.status', 'scheduled')
+            ->where('events.0.can_cancel', true));
+});
+
 test('non protokol roles cannot write protokol events', function () {
     $leader = Leader::factory()->create();
     $operator = User::factory()->operator()->create();

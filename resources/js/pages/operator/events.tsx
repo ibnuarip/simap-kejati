@@ -267,7 +267,7 @@ export default function OperatorEvents({
                                                 <Pencil />
                                                 Edit
                                             </Button>
-                                            {event.status !== 'cancelled' && (
+                                            {event.can_cancel && (
                                                 <CancelAgenda
                                                     url={EventController.cancel.url(
                                                         event.id,

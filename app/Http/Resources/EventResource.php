@@ -40,6 +40,7 @@ class EventResource extends JsonResource
             'participants' => $this->participants,
             'custom_location' => $this->custom_location,
             'status' => $this->currentStatus(),
+            'can_cancel' => $this->canBeCancelled(),
             'leader' => $this->whenLoaded('leader', fn () => $this->leader ? [
                 'id' => $this->leader->id,
                 'name' => $this->leader->name,

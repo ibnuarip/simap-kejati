@@ -10,6 +10,7 @@ export type AgendaItem = {
     participants: string | null;
     custom_location: string | null;
     status: AgendaStatus;
+    can_cancel: boolean;
     leader: {
         id: number;
         name: string;

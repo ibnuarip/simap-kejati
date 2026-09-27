@@ -78,6 +78,12 @@ class EventController extends Controller
 
     public function cancel(Event $event): RedirectResponse
     {
+        if (! $event->canBeCancelled()) {
+            return back()->withErrors([
+                'event' => 'Agenda sudah berlangsung atau selesai dan tidak dapat dibatalkan.',
+            ]);
+        }
+
         $event->update(['status' => 'cancelled']);
 
         return back();

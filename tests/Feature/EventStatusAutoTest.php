@@ -70,3 +70,54 @@ test('protokol can cancel an event and it is stored as cancelled', function () {
         'status' => 'cancelled',
     ]);
 });
+
+test('operator cannot cancel an event that has already started', function () {
+    $operator = User::factory()->operator()->create();
+    $event = Event::factory()->create([
+        'start_time' => now()->subMinutes(30),
+        'end_time' => now()->addMinutes(30),
+    ]);
+
+    $this->actingAs($operator)
+        ->post(route('events.cancel', $event))
+        ->assertSessionHasErrors('event');
+
+    $this->assertDatabaseHas('events', [
+        'id' => $event->id,
+        'status' => 'scheduled',
+    ]);
+});
+
+test('operator cannot cancel an event that has already finished', function () {
+    $operator = User::factory()->operator()->create();
+    $event = Event::factory()->create([
+        'start_time' => now()->subHours(2),
+        'end_time' => now()->subHour(),
+    ]);
+
+    $this->actingAs($operator)
+        ->post(route('events.cancel', $event))
+        ->assertSessionHasErrors('event');
+
+    $this->assertDatabaseHas('events', [
+        'id' => $event->id,
+        'status' => 'scheduled',
+    ]);
+});
+
+test('protokol cannot cancel an event that has already finished', function () {
+    $protokol = User::factory()->protokol()->create();
+    $event = Event::factory()->create([
+        'start_time' => now()->subHours(2),
+        'end_time' => now()->subHour(),
+    ]);
+
+    $this->actingAs($protokol)
+        ->post(route('protokol.events.cancel', $event))
+        ->assertSessionHasErrors('event');
+
+    $this->assertDatabaseHas('events', [
+        'id' => $event->id,
+        'status' => 'scheduled',
+    ]);
+});

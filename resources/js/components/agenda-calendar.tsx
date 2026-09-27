@@ -1,17 +1,14 @@
 import { useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
-    agendaStatusLabel,
-    agendaStatusVariant,
     eventsOnDate,
     formatDateLong,
     formatTime,
     toDateKey,
 } from '@/lib/agenda';
-import type { AgendaItem, AgendaStatus } from '@/types';
+import type { AgendaItem } from '@/types';
 
 const MONTH_NAMES = [
     'Januari',
@@ -217,27 +214,6 @@ export function AgendaCalendar({ events }: { events: AgendaItem[] }) {
                 })}
             </div>
 
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t pt-4">
-                <span className="text-foreground text-xs font-semibold tracking-wide uppercase">
-                    Status:
-                </span>
-                {Object.entries(agendaStatusLabel).map(([status, label]) => (
-                    <span
-                        key={status}
-                        className="inline-flex items-center gap-1.5"
-                    >
-                        <Badge
-                            variant={
-                                agendaStatusVariant[status as AgendaStatus]
-                            }
-                            className="px-2 py-0.5"
-                        >
-                            {label}
-                        </Badge>
-                    </span>
-                ))}
-            </div>
-
             <div className="flex flex-col gap-3">
                 <h3 className="font-semibold">
                     Rincian Kegiatan{' '}
@@ -257,19 +233,10 @@ export function AgendaCalendar({ events }: { events: AgendaItem[] }) {
                                 key={event.id}
                                 className="flex flex-col gap-1 p-4"
                             >
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <Badge
-                                        variant={
-                                            agendaStatusVariant[event.status]
-                                        }
-                                    >
-                                        {agendaStatusLabel[event.status]}
-                                    </Badge>
-                                    <span className="text-muted-foreground text-xs font-medium">
-                                        {formatTime(event.start_time)} –{' '}
-                                        {formatTime(event.end_time)}
-                                    </span>
-                                </div>
+                                <p className="text-muted-foreground text-xs font-medium">
+                                    {formatTime(event.start_time)} –{' '}
+                                    {formatTime(event.end_time)}
+                                </p>
                                 <p className="font-medium">{event.title}</p>
                                 <p className="text-muted-foreground text-sm">
                                     {event.leader?.name ?? '-'} •{' '}

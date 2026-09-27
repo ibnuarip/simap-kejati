@@ -1,5 +1,5 @@
 import { Head, usePage } from '@inertiajs/react';
-import { Calendar, CalendarCheck, CalendarClock } from 'lucide-react';
+import { Activity, Calendar, CalendarCheck, CalendarClock } from 'lucide-react';
 import { AgendaItemRow } from '@/components/agenda-item-row';
 import {
     Card,
@@ -14,6 +14,7 @@ import type { AgendaItem, UserRole } from '@/types';
 type Props = {
     stats: {
         today: number;
+        ongoing: number;
         upcoming: number;
         month: number;
     };
@@ -53,13 +54,13 @@ export default function LeadershipDashboard({
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     <Card className="transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                        <CardContent className="flex flex-col gap-1 px-4 py-4">
-                            <span className="bg-primary/10 text-primary mb-2 flex size-9 items-center justify-center rounded-lg">
-                                <CalendarClock className="size-5" />
+                        <CardContent className="flex flex-col gap-0.5 px-4 py-3.5">
+                            <span className="bg-primary/10 text-primary mb-1.5 flex size-8 items-center justify-center rounded-lg">
+                                <CalendarClock className="size-4" />
                             </span>
-                            <p className="text-primary text-3xl font-bold tabular-nums">
+                            <p className="text-primary text-2xl font-bold tabular-nums">
                                 {stats.today}
                             </p>
                             <p className="text-muted-foreground text-xs">
@@ -68,11 +69,24 @@ export default function LeadershipDashboard({
                         </CardContent>
                     </Card>
                     <Card className="transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                        <CardContent className="flex flex-col gap-1 px-4 py-4">
-                            <span className="bg-primary/10 text-primary mb-2 flex size-9 items-center justify-center rounded-lg">
-                                <Calendar className="size-5" />
+                        <CardContent className="flex flex-col gap-0.5 px-4 py-3.5">
+                            <span className="bg-primary/10 text-primary mb-1.5 flex size-8 items-center justify-center rounded-lg">
+                                <Activity className="size-4" />
                             </span>
-                            <p className="text-primary text-3xl font-bold tabular-nums">
+                            <p className="text-primary text-2xl font-bold tabular-nums">
+                                {stats.ongoing}
+                            </p>
+                            <p className="text-muted-foreground text-xs">
+                                Sedang Berlangsung
+                            </p>
+                        </CardContent>
+                    </Card>
+                    <Card className="transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                        <CardContent className="flex flex-col gap-0.5 px-4 py-3.5">
+                            <span className="bg-primary/10 text-primary mb-1.5 flex size-8 items-center justify-center rounded-lg">
+                                <Calendar className="size-4" />
+                            </span>
+                            <p className="text-primary text-2xl font-bold tabular-nums">
                                 {stats.upcoming}
                             </p>
                             <p className="text-muted-foreground text-xs">
@@ -81,11 +95,11 @@ export default function LeadershipDashboard({
                         </CardContent>
                     </Card>
                     <Card className="transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                        <CardContent className="flex flex-col gap-1 px-4 py-4">
-                            <span className="bg-primary/10 text-primary mb-2 flex size-9 items-center justify-center rounded-lg">
-                                <CalendarCheck className="size-5" />
+                        <CardContent className="flex flex-col gap-0.5 px-4 py-3.5">
+                            <span className="bg-primary/10 text-primary mb-1.5 flex size-8 items-center justify-center rounded-lg">
+                                <CalendarCheck className="size-4" />
                             </span>
-                            <p className="text-primary text-3xl font-bold tabular-nums">
+                            <p className="text-primary text-2xl font-bold tabular-nums">
                                 {stats.month}
                             </p>
                             <p className="text-muted-foreground text-xs">
