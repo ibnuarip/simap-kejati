@@ -4,11 +4,16 @@ namespace App\Http\Controllers\Operator;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserRequest;
+use App\Mail\Auth\AccountCredentialsMail;
+use App\Mail\Auth\WelcomeMail;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 use Inertia\Response;
+use Throwable;
 
 class UserController extends Controller
 {
@@ -34,9 +39,30 @@ class UserController extends Controller
 
     public function store(UserRequest $request): RedirectResponse
     {
-        User::create([...$request->validated(), 'email_verified_at' => now()]);
+        $validated = $request->validated();
+
+        $user = User::create($validated);
+
+        $this->notifyAccountCreated($user, $validated['password']);
 
         return back();
+    }
+
+    /**
+     * Send the welcome and account credentials emails to a newly created user.
+     */
+    protected function notifyAccountCreated(User $user, string $password): void
+    {
+        try {
+            Mail::to($user)->send(new WelcomeMail($user));
+            Mail::to($user)->send(new AccountCredentialsMail($user, $password));
+        } catch (Throwable $e) {
+            Log::error('Gagal mengirim email kredensial akun baru.', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     public function update(UserRequest $request, User $user): RedirectResponse

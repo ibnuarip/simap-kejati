@@ -1,11 +1,14 @@
 <?php
 
+use App\Mail\Auth\AccountCredentialsMail;
+use App\Mail\Auth\WelcomeMail;
 use App\Models\Category;
 use App\Models\Event;
 use App\Models\Leader;
 use App\Models\Room;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Testing\AssertableInertia as Assert;
 
 function makeOperator(): User
@@ -168,6 +171,8 @@ test('operators can create, update, and delete a category', function () {
 });
 
 test('operators can create a user with a given role and password', function () {
+    Mail::fake();
+
     $operator = makeOperator();
     $this->actingAs($operator);
 
@@ -186,7 +191,24 @@ test('operators can create a user with a given role and password', function () {
     $user = User::where('email', 'budi@kejati.go.id')->firstOrFail();
 
     expect(Hash::check('rahasia1234', $user->password))->toBeTrue();
-    expect($user->email_verified_at)->not->toBeNull();
+    expect($user->email_verified_at)->toBeNull();
+
+    Mail::assertSent(WelcomeMail::class, fn (WelcomeMail $mail) => $mail->hasTo('budi@kejati.go.id'));
+    Mail::assertSent(AccountCredentialsMail::class, function (AccountCredentialsMail $mail) {
+        return $mail->hasTo('budi@kejati.go.id') && $mail->password === 'rahasia1234';
+    });
+});
+
+test('a newly created account becomes verified after its first successful login', function () {
+    $user = User::factory()->unverified()->create(['password' => 'rahasia1234']);
+
+    $response = $this->post('/login', [
+        'email' => $user->email,
+        'password' => 'rahasia1234',
+    ]);
+
+    $this->assertAuthenticated();
+    expect($user->refresh()->email_verified_at)->not->toBeNull();
 });
 
 test('creating a user requires a password', function () {

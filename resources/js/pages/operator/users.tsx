@@ -375,6 +375,12 @@ function UserFields({
                     }
                 />
                 <InputError message={errors.password} />
+                {passwordRequired && (
+                    <p className="text-muted-foreground text-xs">
+                        Kredensial akun (email & password) dikirim otomatis ke
+                        email pengguna setelah disimpan.
+                    </p>
+                )}
             </div>
         </>
     );
