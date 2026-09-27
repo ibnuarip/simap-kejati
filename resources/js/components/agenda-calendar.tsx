@@ -119,9 +119,9 @@ export function AgendaCalendar({ events }: { events: AgendaItem[] }) {
     };
 
     return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between gap-3">
-                <h2 className="text-lg font-bold tracking-tight">
+                <h2 className="text-base font-bold tracking-tight">
                     {monthLabel}
                 </h2>
                 <div className="flex items-center gap-1.5">
@@ -130,7 +130,7 @@ export function AgendaCalendar({ events }: { events: AgendaItem[] }) {
                         size="icon"
                         onClick={() => changeMonth(-1)}
                         aria-label="Bulan sebelumnya"
-                        className="size-9"
+                        className="size-8"
                     >
                         <ChevronLeft aria-hidden />
                     </Button>
@@ -138,7 +138,7 @@ export function AgendaCalendar({ events }: { events: AgendaItem[] }) {
                         variant="outline"
                         size="sm"
                         onClick={goToToday}
-                        className="h-9 px-3"
+                        className="h-8 px-3 text-xs"
                     >
                         Hari Ini
                     </Button>
@@ -147,18 +147,18 @@ export function AgendaCalendar({ events }: { events: AgendaItem[] }) {
                         size="icon"
                         onClick={() => changeMonth(1)}
                         aria-label="Bulan berikutnya"
-                        className="size-9"
+                        className="size-8"
                     >
                         <ChevronRight aria-hidden />
                     </Button>
                 </div>
             </div>
 
-            <div className="grid grid-cols-7 gap-1">
+            <div className="grid grid-cols-7 gap-0.5">
                 {DAY_NAMES.map((day) => (
                     <div
                         key={day}
-                        className="text-muted-foreground py-2 text-center text-xs font-medium tracking-wide uppercase"
+                        className="text-muted-foreground py-1.5 text-center text-[11px] font-medium tracking-wide uppercase"
                     >
                         {day}
                     </div>
@@ -175,7 +175,7 @@ export function AgendaCalendar({ events }: { events: AgendaItem[] }) {
                             type="button"
                             onClick={() => setSelectedDate(key)}
                             className={cn(
-                                'flex min-h-20 flex-col gap-1 rounded-lg border p-1.5 text-left transition-colors',
+                                'flex min-h-14 flex-col gap-0.5 rounded-md border p-1 text-left transition-colors',
                                 isCurrentMonth
                                     ? 'bg-card'
                                     : 'bg-muted/40 text-muted-foreground',
@@ -188,7 +188,7 @@ export function AgendaCalendar({ events }: { events: AgendaItem[] }) {
                         >
                             <span
                                 className={cn(
-                                    'flex size-6 items-center justify-center rounded-full text-xs font-medium',
+                                    'flex size-5 items-center justify-center rounded-full text-xs font-medium',
                                     isToday &&
                                         'bg-primary text-primary-foreground',
                                 )}
@@ -201,7 +201,7 @@ export function AgendaCalendar({ events }: { events: AgendaItem[] }) {
                                     {dayEvents.slice(0, 2).map((event) => (
                                         <span
                                             key={event.id}
-                                            className="bg-primary block h-1.5 w-4 rounded-full"
+                                            className="bg-primary block h-1 w-3 rounded-full"
                                             aria-label={event.title}
                                         />
                                     ))}

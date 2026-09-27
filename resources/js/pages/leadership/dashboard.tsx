@@ -1,13 +1,6 @@
-import { Head, Link, usePage } from '@inertiajs/react';
-import {
-    BellRing,
-    Calendar,
-    CalendarCheck,
-    CalendarClock,
-    ChevronRight,
-} from 'lucide-react';
+import { Head, usePage } from '@inertiajs/react';
+import { Calendar, CalendarCheck, CalendarClock } from 'lucide-react';
 import { AgendaItemRow } from '@/components/agenda-item-row';
-import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
@@ -16,8 +9,6 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { dashboard as leadershipDashboard } from '@/routes/leadership';
-import { index as leadershipCalendar } from '@/routes/leadership/calendar';
-import { index as leadershipNotifications } from '@/routes/leadership/notifications';
 import type { AgendaItem, UserRole } from '@/types';
 
 type Props = {
@@ -104,9 +95,9 @@ export default function LeadershipDashboard({
                     </Card>
                 </div>
 
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
-                        <div>
+                <div className="grid gap-6 lg:grid-cols-2">
+                    <Card>
+                        <CardHeader>
                             <CardTitle>Agenda Hari Ini</CardTitle>
                             <CardDescription>
                                 {new Date().toLocaleDateString('id-ID', {
@@ -116,41 +107,33 @@ export default function LeadershipDashboard({
                                     year: 'numeric',
                                 })}
                             </CardDescription>
-                        </div>
-                        <Button asChild variant="outline" size="sm">
-                            <Link href={leadershipCalendar().url} prefetch>
-                                Buka Kalender
-                                <ChevronRight />
-                            </Link>
-                        </Button>
-                    </CardHeader>
-                    <CardContent>
-                        {todayEvents.length === 0 ? (
-                            <div className="rounded-lg border border-dashed p-8 text-center">
-                                <p className="text-sm font-medium">
-                                    Tidak ada agenda hari ini
-                                </p>
-                                <p className="text-muted-foreground mt-1 text-sm">
-                                    Nikmati waktu Anda. Agenda berikutnya dapat
-                                    dilihat di bawah.
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="divide-border flex flex-col divide-y">
-                                {todayEvents.map((event) => (
-                                    <div
-                                        key={event.id}
-                                        className="hover:bg-muted/70 -mx-3 rounded-lg px-3 py-4 transition-colors duration-200 first:mt-0 first:pt-0 last:pb-0"
-                                    >
-                                        <AgendaItemRow event={event} />
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+                        </CardHeader>
+                        <CardContent>
+                            {todayEvents.length === 0 ? (
+                                <div className="rounded-lg border border-dashed p-8 text-center">
+                                    <p className="text-sm font-medium">
+                                        Tidak ada agenda hari ini
+                                    </p>
+                                    <p className="text-muted-foreground mt-1 text-sm">
+                                        Nikmati waktu Anda. Agenda berikutnya
+                                        dapat dilihat di samping.
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="divide-border flex flex-col divide-y">
+                                    {todayEvents.map((event) => (
+                                        <div
+                                            key={event.id}
+                                            className="hover:bg-muted/70 -mx-3 rounded-lg px-3 py-4 transition-colors duration-200 first:mt-0 first:pt-0 last:pb-0"
+                                        >
+                                            <AgendaItemRow event={event} />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
 
-                <div className="grid gap-6 lg:grid-cols-2">
                     <Card>
                         <CardHeader>
                             <CardTitle>Agenda Mendatang</CardTitle>
@@ -177,38 +160,6 @@ export default function LeadershipDashboard({
                             )}
                         </CardContent>
                     </Card>
-
-                    <div className="flex flex-col gap-6">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <BellRing className="size-4" />
-                                    Pengaturan Notifikasi
-                                </CardTitle>
-                                <CardDescription>
-                                    Atur email penerima pengingat agenda.
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <Button asChild variant="outline">
-                                    <Link
-                                        href={leadershipNotifications().url}
-                                        prefetch
-                                    >
-                                        Kelola Pengaturan
-                                        <ChevronRight />
-                                    </Link>
-                                </Button>
-                            </CardContent>
-                        </Card>
-
-                        <div className="bg-accent/40 flex items-start gap-3 rounded-xl border p-4 text-sm transition-all duration-200 hover:shadow-sm">
-                            <BellRing className="text-primary size-4 shrink-0" />
-                            Pengingat otomatis akan dikirim ke email Anda
-                            sebelum agenda dimulai sesuai pengaturan yang
-                            dipilih.
-                        </div>
-                    </div>
                 </div>
             </div>
         </>

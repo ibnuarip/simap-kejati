@@ -39,15 +39,21 @@ Route::middleware(['auth', 'verified', 'role:operator'])->group(function () {
     Route::resource('events', OperatorEventController::class)
         ->names('events')
         ->only(['index', 'store', 'update', 'destroy']);
+    Route::post('events/{event}/cancel', [OperatorEventController::class, 'cancel'])->name('events.cancel');
     Route::get('calendar', [OperatorCalendarController::class, 'index'])->name('calendar.index');
 });
 
 // Tim Protokol
 Route::middleware(['auth', 'verified', 'role:protokol'])->prefix('protokol')->name('protokol.')->group(function () {
     Route::get('/', [ProtokolDashboardController::class, 'index'])->name('dashboard');
-    Route::get('/events', [ProtokolEventController::class, 'index'])->name('events.index');
+    Route::resource('/events', ProtokolEventController::class)
+        ->names('events')
+        ->only(['index', 'store', 'update', 'destroy']);
     Route::get('/calendar', [ProtokolCalendarController::class, 'index'])->name('calendar.index');
     Route::get('/exports', [ProtokolExportController::class, 'index'])->name('exports.index');
+    Route::get('/exports/print', [ProtokolExportController::class, 'print'])->name('exports.print');
+    Route::get('/exports/download', [ProtokolExportController::class, 'download'])->name('exports.download');
+    Route::post('/events/{event}/cancel', [ProtokolEventController::class, 'cancel'])->name('events.cancel');
 });
 
 // Ketua & Wakil Ketua (Leadership)
@@ -55,6 +61,7 @@ Route::middleware(['auth', 'verified', 'role:kajati,wakajati'])->prefix('leaders
     Route::get('/', [LeadershipDashboardController::class, 'index'])->name('dashboard');
     Route::get('/calendar', [LeadershipCalendarController::class, 'index'])->name('calendar.index');
     Route::get('/notifications', [LeadershipNotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications', [LeadershipNotificationController::class, 'update'])->name('notifications.update');
 });
 
 require __DIR__.'/settings.php';

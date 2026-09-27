@@ -28,7 +28,6 @@ class EventRequest extends FormRequest
             'end_time' => ['required', 'date', 'after:start_time'],
             'dress_code' => ['nullable', 'string', 'max:255'],
             'participants' => ['nullable', 'string'],
-            'status' => ['required', 'in:scheduled,ongoing,completed,cancelled'],
         ];
     }
 }

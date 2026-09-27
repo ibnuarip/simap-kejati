@@ -1,7 +1,7 @@
-import { Head } from '@inertiajs/react';
-import { useState } from 'react';
+import { Head, useForm } from '@inertiajs/react';
 import { toast } from 'sonner';
-import { BellRing, Mail } from 'lucide-react';
+import { BellRing, Clock, LoaderCircle } from 'lucide-react';
+import NotificationController from '@/actions/App/Http/Controllers/Leadership/NotificationController';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -11,17 +11,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { cn } from '@/lib/utils';
 import { dashboard as leadershipDashboard } from '@/routes/leadership';
-
-type Props = {
-    recipients: {
-        id: number;
-        name: string;
-        position: string;
-        email: string | null;
-    }[];
-};
 
 const TIMING_OPTIONS = [
     { value: '1', label: '1 Jam Sebelum' },
@@ -30,24 +20,40 @@ const TIMING_OPTIONS = [
     { value: '48', label: '2 Hari Sebelum (H-2)' },
 ];
 
-const positionLabel: Record<string, string> = {
-    Kajati: 'Kepala Kejaksaan Tinggi',
-    Wakajati: 'Wakil Kepala Kejaksaan Tinggi',
-    Other: 'Pejabat Lain',
+type Props = {
+    reminderTimings: string[];
 };
 
-export default function LeadershipNotifications({ recipients }: Props) {
-    const [selected, setSelected] = useState<number[]>(() =>
-        recipients.map((item) => item.id),
-    );
-    const [timing, setTiming] = useState('24');
+export default function LeadershipNotifications({ reminderTimings }: Props) {
+    const { data, setData, post, processing } = useForm({
+        timings: reminderTimings.length > 0 ? reminderTimings : ['24'],
+    });
 
-    const toggleRecipient = (id: number) => {
-        setSelected((current) =>
-            current.includes(id)
-                ? current.filter((item) => item !== id)
-                : [...current, id],
+    const toggleTiming = (value: string) => {
+        const current = data.timings;
+
+        setData(
+            'timings',
+            current.includes(value)
+                ? current.filter((item) => item !== value)
+                : [...current, value],
         );
+    };
+
+    const handleSubmit = () => {
+        post(NotificationController.update.url(), {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast.success('Pengaturan notifikasi berhasil disimpan.');
+            },
+            onError: (errors) => {
+                const message = Object.values(errors)[0];
+
+                toast.error(
+                    message ? String(message) : 'Gagal menyimpan pengaturan.',
+                );
+            },
+        });
     };
 
     return (
@@ -60,109 +66,67 @@ export default function LeadershipNotifications({ recipients }: Props) {
                         Pengaturan Notifikasi
                     </h1>
                     <p className="text-muted-foreground text-sm">
-                        Atur email penerima pengingat agenda.
+                        Atur jadwal pengingat otomatis agenda Anda.
                     </p>
                 </div>
 
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Mail className="size-4" />
-                            Penerima Pengingat
-                        </CardTitle>
-                        <CardDescription>
-                            Pilih pimpinan yang akan menerima email pengingat
-                            agenda.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        {recipients.length === 0 ? (
-                            <p className="text-muted-foreground rounded-lg border border-dashed p-6 text-center text-sm">
-                                Belum ada data pimpinan yang dapat menjadi
-                                penerima.
-                            </p>
-                        ) : (
-                            <div className="divide-border flex flex-col divide-y">
-                                {recipients.map((recipient) => (
-                                    <label
-                                        key={recipient.id}
-                                        className="flex cursor-pointer items-start gap-3 py-3"
-                                    >
-                                        <Checkbox
-                                            checked={selected.includes(
-                                                recipient.id,
-                                            )}
-                                            onCheckedChange={() =>
-                                                toggleRecipient(recipient.id)
-                                            }
-                                            className="mt-0.5"
-                                        />
-                                        <span className="flex flex-col gap-0.5">
-                                            <span className="text-sm font-medium">
-                                                {recipient.name}
-                                            </span>
-                                            <span className="text-muted-foreground text-xs">
-                                                {positionLabel[
-                                                    recipient.position
-                                                ] ?? recipient.position}
-                                                {recipient.email
-                                                    ? ` • ${recipient.email}`
-                                                    : ''}
-                                            </span>
-                                        </span>
-                                    </label>
-                                ))}
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <BellRing className="size-4" />
+                            <Clock className="size-4" />
                             Waktu Pengingat
                         </CardTitle>
                         <CardDescription>
-                            Kapan pengingat dikirim sebelum agenda dimulai.
+                            Pilih satu atau lebih waktu pengingat sebelum agenda
+                            dimulai. Pengingat akan dikirim ke email Anda sesuai
+                            pilihan ini.
                         </CardDescription>
                     </CardHeader>
-                    <CardContent className="flex flex-wrap gap-2">
-                        {TIMING_OPTIONS.map((option) => (
-                            <Button
-                                key={option.value}
-                                type="button"
-                                variant={
-                                    timing === option.value
-                                        ? 'default'
-                                        : 'outline'
-                                }
-                                size="sm"
-                                onClick={() => setTiming(option.value)}
-                                className={cn(
-                                    timing === option.value &&
-                                        'text-primary-foreground',
-                                )}
-                            >
-                                {option.label}
-                            </Button>
-                        ))}
+                    <CardContent>
+                        <div className="divide-border flex flex-col divide-y">
+                            {TIMING_OPTIONS.map((option) => {
+                                const checked = data.timings.includes(
+                                    option.value,
+                                );
+
+                                return (
+                                    <label
+                                        key={option.value}
+                                        className="flex cursor-pointer items-center gap-3 py-3"
+                                    >
+                                        <Checkbox
+                                            checked={checked}
+                                            onCheckedChange={() =>
+                                                toggleTiming(option.value)
+                                            }
+                                        />
+                                        <span
+                                            className={`text-sm ${
+                                                checked
+                                                    ? 'font-medium'
+                                                    : 'text-muted-foreground'
+                                            }`}
+                                        >
+                                            {option.label}
+                                        </span>
+                                    </label>
+                                );
+                            })}
+                        </div>
                     </CardContent>
                 </Card>
 
                 <div className="flex items-center justify-between gap-4">
-                    <p className="text-muted-foreground text-xs">
-                        Pengaturan akan tersimpan ke sistem pada tahap
-                        implementasi berikutnya.
+                    <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
+                        <BellRing className="size-3.5 shrink-0" />
+                        Pengaturan akan dikirim sebagai email pengingat sesuai
+                        waktu yang dipilih.
                     </p>
-                    <Button
-                        onClick={() =>
-                            toast.info(
-                                'Simpan pengaturan notifikasi akan segera hadir.',
-                            )
-                        }
-                    >
-                        Simpan Pengaturan
+                    <Button onClick={handleSubmit} disabled={processing}>
+                        {processing ? (
+                            <LoaderCircle className="animate-spin" />
+                        ) : null}
+                        {processing ? 'Menyimpan…' : 'Simpan Pengaturan'}
                     </Button>
                 </div>
             </div>

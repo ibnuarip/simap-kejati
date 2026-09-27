@@ -1,7 +1,7 @@
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { AlertTriangle, Trash2 } from 'lucide-react';
+import { AlertTriangle, LoaderCircle, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
@@ -17,6 +17,7 @@ import {
 type Props = {
     url: string;
     itemName?: string;
+    only?: string[];
     onDeleted?: () => void;
     className?: string;
 };
@@ -24,21 +25,32 @@ type Props = {
 export default function ConfirmDelete({
     url,
     itemName,
+    only,
     onDeleted,
     className,
 }: Props) {
     const [open, setOpen] = useState(false);
+    const [processing, setProcessing] = useState(false);
 
     const handleDelete = () => {
+        setProcessing(true);
+
         router.delete(url, {
+            only,
             preserveScroll: true,
             onSuccess: () => {
+                setProcessing(false);
                 setOpen(false);
                 toast.success('Data berhasil dihapus.');
                 onDeleted?.();
             },
-            onError: () => {
-                toast.error('Gagal menghapus data.');
+            onError: (errors) => {
+                setProcessing(false);
+                const message = Object.values(errors)[0];
+
+                toast.error(
+                    message ? String(message) : 'Gagal menghapus data.',
+                );
             },
         });
     };
@@ -69,8 +81,12 @@ export default function ConfirmDelete({
                 <DialogFooter>
                     <Button
                         variant="outline"
-                        onClick={() => setOpen(false)}
-                        disabled={false}
+                        onClick={() => {
+                            if (!processing) {
+                                setOpen(false);
+                            }
+                        }}
+                        disabled={processing}
                     >
                         Batal
                     </Button>
@@ -78,9 +94,14 @@ export default function ConfirmDelete({
                         variant="destructive"
                         className="text-white"
                         onClick={handleDelete}
+                        disabled={processing}
                     >
-                        <Trash2 />
-                        Hapus
+                        {processing ? (
+                            <LoaderCircle className="animate-spin" />
+                        ) : (
+                            <Trash2 />
+                        )}
+                        {processing ? 'Menghapus…' : 'Hapus'}
                     </Button>
                 </DialogFooter>
             </DialogContent>

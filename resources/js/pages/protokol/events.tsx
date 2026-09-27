@@ -1,22 +1,46 @@
-import { Head, usePage } from '@inertiajs/react';
+import { Form, Head } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
-import { toast } from 'sonner';
-import { CalendarPlus, Search, X } from 'lucide-react';
+import { CalendarPlus, Pencil, Search, X } from 'lucide-react';
+import EventController from '@/actions/App/Http/Controllers/Protokol/EventController';
 import { AgendaItemRow } from '@/components/agenda-item-row';
+import CancelAgenda from '@/components/cancel-agenda';
+import ConfirmDelete from '@/components/confirm-delete';
+import { DatetimeLocalField } from '@/components/datetime-local-field';
+import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import {
     agendaStatusLabel,
     agendaStatusVariant,
     formatTime,
 } from '@/lib/agenda';
 import { dashboard as protokolDashboard } from '@/routes/protokol';
-import type { AgendaItem, AgendaStatus } from '@/types';
+import { index as eventsIndex } from '@/routes/protokol/events';
+import type { AgendaItem, AgendaStatus, ResourceOption } from '@/types';
 
 type Props = {
     events: AgendaItem[];
+    leaders: ResourceOption[];
+    rooms: ResourceOption[];
+    categories: ResourceOption[];
     statusCounts: {
         total: number;
         scheduled: number;
@@ -35,10 +59,22 @@ const FILTER_OPTIONS: { value: StatusFilter; label: string }[] = [
     { value: 'cancelled', label: 'Dibatalkan' },
 ];
 
-export default function ProtokolEvents({ events, statusCounts }: Props) {
-    const { auth } = usePage().props;
+const NONE = '__none__';
+
+export default function ProtokolEvents({
+    events,
+    leaders,
+    rooms,
+    categories,
+    statusCounts,
+}: Props) {
     const [filter, setFilter] = useState<StatusFilter>('semua');
     const [search, setSearch] = useState('');
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [editing, setEditing] = useState<AgendaItem | null>(null);
+    const [leaderId, setLeaderId] = useState('');
+    const [roomId, setRoomId] = useState(NONE);
+    const [categoryId, setCategoryId] = useState(NONE);
 
     const filteredEvents = useMemo(() => {
         const lowerQuery = search.trim().toLowerCase();
@@ -47,12 +83,7 @@ export default function ProtokolEvents({ events, statusCounts }: Props) {
             const matchesStatus = filter === 'semua' || event.status === filter;
             const matchesSearch =
                 lowerQuery === '' ||
-                [
-                    event.title,
-                    event.description,
-                    event.leader?.name,
-                    event.room?.name,
-                ]
+                [event.title, event.leader?.name, event.room?.name]
                     .filter(Boolean)
                     .some((value) => value!.toLowerCase().includes(lowerQuery));
 
@@ -60,18 +91,52 @@ export default function ProtokolEvents({ events, statusCounts }: Props) {
         });
     }, [events, filter, search]);
 
+    const closeDialog = () => {
+        setDialogOpen(false);
+        setEditing(null);
+    };
+
+    const openCreate = () => {
+        setLeaderId('');
+        setRoomId(NONE);
+        setCategoryId(NONE);
+        setEditing(null);
+        setDialogOpen(true);
+    };
+
+    const openEdit = (event: AgendaItem) => {
+        setLeaderId(event.leader?.id ? String(event.leader.id) : '');
+        setRoomId(event.room?.id ? String(event.room.id) : NONE);
+        setCategoryId(event.category?.id ? String(event.category.id) : NONE);
+        setEditing(event);
+        setDialogOpen(true);
+    };
+
+    const formProps = {
+        className: 'grid gap-4',
+        onSuccess: closeDialog,
+        options: { preserveScroll: true },
+    };
+
     return (
         <>
             <Head title="Kelola Agenda" />
 
             <div className="flex flex-1 flex-col gap-6">
-                <div className="flex flex-col gap-1">
-                    <h1 className="text-2xl font-semibold tracking-tight">
-                        Kelola Agenda
-                    </h1>
-                    <p className="text-muted-foreground text-sm">
-                        Tambah, perbarui, dan batalkan agenda pimpinan.
-                    </p>
+                <div className="flex flex-wrap items-end justify-between gap-3">
+                    <div className="flex flex-col gap-1">
+                        <h1 className="text-2xl font-semibold tracking-tight">
+                            Kelola Agenda
+                        </h1>
+                        <p className="text-muted-foreground text-sm">
+                            Tambah, perbarui, dan batalkan agenda pimpinan.
+                            Status agenda dihitung otomatis sesuai waktu.
+                        </p>
+                    </div>
+                    <Button onClick={openCreate}>
+                        <CalendarPlus />
+                        Tambah Agenda
+                    </Button>
                 </div>
 
                 <div className="flex flex-wrap items-center justify-between gap-3">
@@ -91,20 +156,9 @@ export default function ProtokolEvents({ events, statusCounts }: Props) {
                             </Button>
                         ))}
                     </div>
-
-                    <Button
-                        onClick={() =>
-                            toast.info(
-                                'Form tambah agenda baru akan segera hadir.',
-                            )
-                        }
-                    >
-                        <CalendarPlus />
-                        Tambah Agenda Baru
-                    </Button>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-3">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     <Card>
                         <CardHeader className="pb-2">
                             <CardTitle className="text-muted-foreground text-sm font-medium">
@@ -126,6 +180,18 @@ export default function ProtokolEvents({ events, statusCounts }: Props) {
                         <CardContent className="pt-0">
                             <p className="text-2xl font-semibold">
                                 {statusCounts.scheduled}
+                            </p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-muted-foreground text-sm font-medium">
+                                Selesai
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                            <p className="text-2xl font-semibold">
+                                {statusCounts.completed}
                             </p>
                         </CardContent>
                     </Card>
@@ -197,26 +263,25 @@ export default function ProtokolEvents({ events, statusCounts }: Props) {
                                             <Button
                                                 size="sm"
                                                 variant="outline"
-                                                onClick={() =>
-                                                    toast.info(
-                                                        `Form edit untuk "${event.title}" akan segera hadir.`,
-                                                    )
-                                                }
+                                                onClick={() => openEdit(event)}
                                             >
+                                                <Pencil />
                                                 Edit
                                             </Button>
-                                            <Button
-                                                size="sm"
-                                                variant="destructive"
-                                                className="text-white"
-                                                onClick={() =>
-                                                    toast.info(
-                                                        `Pembatalan agenda "${event.title}" akan segera hadir.`,
-                                                    )
-                                                }
-                                            >
-                                                Batalkan
-                                            </Button>
+                                            {event.status !== 'cancelled' && (
+                                                <CancelAgenda
+                                                    url={EventController.cancel.url(
+                                                        event.id,
+                                                    )}
+                                                    itemName={event.title}
+                                                />
+                                            )}
+                                            <ConfirmDelete
+                                                url={EventController.destroy.url(
+                                                    event.id,
+                                                )}
+                                                itemName={event.title}
+                                            />
                                         </div>
                                     </div>
                                 ))}
@@ -224,11 +289,288 @@ export default function ProtokolEvents({ events, statusCounts }: Props) {
                         )}
                     </CardContent>
                 </Card>
+            </div>
 
-                <p className="text-muted-foreground text-xs">
-                    Masuk sebagai {auth.user?.name} — formulir tambah, edit, dan
-                    pembatalan agenda akan diaktifkan pada tahap berikutnya.
-                </p>
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogContent className="max-h-[90dvh] overflow-y-auto overscroll-contain sm:max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>
+                            {editing ? 'Edit Agenda' : 'Tambah Agenda'}
+                        </DialogTitle>
+                        <DialogDescription>
+                            {editing
+                                ? `Perbarui agenda "${editing.title}".`
+                                : 'Isi detail agenda baru.'}
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {editing ? (
+                        <Form
+                            key={`edit-${editing.id}`}
+                            {...EventController.update.form(editing.id)}
+                            {...formProps}
+                        >
+                            {({ processing, errors }) => (
+                                <>
+                                    <EventFields
+                                        defaultValue={editing}
+                                        leaders={leaders}
+                                        rooms={rooms}
+                                        categories={categories}
+                                        leaderId={leaderId}
+                                        onLeaderChange={setLeaderId}
+                                        roomId={roomId}
+                                        onRoomChange={setRoomId}
+                                        categoryId={categoryId}
+                                        onCategoryChange={setCategoryId}
+                                        errors={errors}
+                                    />
+                                    <DialogFooter>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={closeDialog}
+                                        >
+                                            Batal
+                                        </Button>
+                                        <Button
+                                            type="submit"
+                                            disabled={processing}
+                                        >
+                                            Simpan
+                                        </Button>
+                                    </DialogFooter>
+                                </>
+                            )}
+                        </Form>
+                    ) : (
+                        <Form
+                            key="create"
+                            {...EventController.store.form()}
+                            {...formProps}
+                        >
+                            {({ processing, errors }) => (
+                                <>
+                                    <EventFields
+                                        defaultValue={null}
+                                        leaders={leaders}
+                                        rooms={rooms}
+                                        categories={categories}
+                                        leaderId={leaderId}
+                                        onLeaderChange={setLeaderId}
+                                        roomId={roomId}
+                                        onRoomChange={setRoomId}
+                                        categoryId={categoryId}
+                                        onCategoryChange={setCategoryId}
+                                        errors={errors}
+                                    />
+                                    <DialogFooter>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={closeDialog}
+                                        >
+                                            Batal
+                                        </Button>
+                                        <Button
+                                            type="submit"
+                                            disabled={processing}
+                                        >
+                                            Simpan
+                                        </Button>
+                                    </DialogFooter>
+                                </>
+                            )}
+                        </Form>
+                    )}
+                </DialogContent>
+            </Dialog>
+        </>
+    );
+}
+
+type FieldProps = {
+    defaultValue: AgendaItem | null;
+    leaders: ResourceOption[];
+    rooms: ResourceOption[];
+    categories: ResourceOption[];
+    leaderId: string;
+    onLeaderChange: (value: string) => void;
+    roomId: string;
+    onRoomChange: (value: string) => void;
+    categoryId: string;
+    onCategoryChange: (value: string) => void;
+    errors: Record<string, string>;
+};
+
+function EventFields({
+    defaultValue,
+    leaders,
+    rooms,
+    categories,
+    leaderId,
+    onLeaderChange,
+    roomId,
+    onRoomChange,
+    categoryId,
+    onCategoryChange,
+    errors,
+}: FieldProps) {
+    return (
+        <>
+            <div className="grid gap-2">
+                <Label htmlFor="title">Judul Agenda</Label>
+                <Input
+                    id="title"
+                    name="title"
+                    required
+                    defaultValue={defaultValue?.title}
+                    placeholder="Judul kegiatan"
+                />
+                <InputError message={errors.title} />
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="grid gap-2">
+                    <Label htmlFor="leader_id">Pimpinan</Label>
+                    <Select value={leaderId} onValueChange={onLeaderChange}>
+                        <SelectTrigger id="leader_id" className="w-full">
+                            <SelectValue placeholder="Pilih pimpinan" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {leaders.map((leader) => (
+                                <SelectItem
+                                    key={leader.id}
+                                    value={String(leader.id)}
+                                >
+                                    {leader.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <input type="hidden" name="leader_id" value={leaderId} />
+                    <InputError message={errors.leader_id} />
+                </div>
+
+                <div className="grid gap-2">
+                    <Label htmlFor="category_id">Kategori</Label>
+                    <Select value={categoryId} onValueChange={onCategoryChange}>
+                        <SelectTrigger id="category_id" className="w-full">
+                            <SelectValue placeholder="Pilih kategori" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value={NONE}>Tanpa kategori</SelectItem>
+                            {categories.map((category) => (
+                                <SelectItem
+                                    key={category.id}
+                                    value={String(category.id)}
+                                >
+                                    {category.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <input
+                        type="hidden"
+                        name="category_id"
+                        value={categoryId === NONE ? '' : categoryId}
+                    />
+                    <InputError message={errors.category_id} />
+                </div>
+
+                <div className="grid gap-2">
+                    <Label htmlFor="room_id">Ruangan</Label>
+                    <Select value={roomId} onValueChange={onRoomChange}>
+                        <SelectTrigger id="room_id" className="w-full">
+                            <SelectValue placeholder="Pilih ruangan" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value={NONE}>Tanpa ruangan</SelectItem>
+                            {rooms.map((room) => (
+                                <SelectItem
+                                    key={room.id}
+                                    value={String(room.id)}
+                                >
+                                    {room.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <input
+                        type="hidden"
+                        name="room_id"
+                        value={roomId === NONE ? '' : roomId}
+                    />
+                    <InputError message={errors.room_id} />
+                </div>
+
+                <div className="grid gap-2">
+                    <Label htmlFor="custom_location">Lokasi Lain</Label>
+                    <Input
+                        id="custom_location"
+                        name="custom_location"
+                        defaultValue={defaultValue?.custom_location ?? ''}
+                        placeholder="Lokasi jika di luar kantor"
+                    />
+                    <InputError message={errors.custom_location} />
+                </div>
+
+                <div className="grid gap-2">
+                    <DatetimeLocalField
+                        id="start_time"
+                        name="start_time"
+                        label="Mulai"
+                        defaultValue={defaultValue?.start_time}
+                        error={errors.start_time}
+                    />
+                </div>
+
+                <div className="grid gap-2">
+                    <DatetimeLocalField
+                        id="end_time"
+                        name="end_time"
+                        label="Selesai"
+                        defaultValue={defaultValue?.end_time}
+                        error={errors.end_time}
+                    />
+                </div>
+
+                <div className="grid gap-2">
+                    <Label htmlFor="dress_code">Dress Code</Label>
+                    <Input
+                        id="dress_code"
+                        name="dress_code"
+                        defaultValue={defaultValue?.dress_code ?? ''}
+                        placeholder="Contoh: PDH"
+                    />
+                    <InputError message={errors.dress_code} />
+                </div>
+            </div>
+
+            <div className="grid gap-2">
+                <Label htmlFor="participants">Peserta</Label>
+                <textarea
+                    id="participants"
+                    name="participants"
+                    defaultValue={defaultValue?.participants ?? ''}
+                    rows={3}
+                    placeholder="Daftar peserta / pihak terkait"
+                    className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 flex w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
+                />
+                <InputError message={errors.participants} />
+            </div>
+
+            <div className="grid gap-2">
+                <Label htmlFor="description">Deskripsi</Label>
+                <textarea
+                    id="description"
+                    name="description"
+                    defaultValue={defaultValue?.description ?? ''}
+                    rows={3}
+                    placeholder="Rincian kegiatan"
+                    className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 flex w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
+                />
+                <InputError message={errors.description} />
             </div>
         </>
     );
@@ -237,6 +579,6 @@ export default function ProtokolEvents({ events, statusCounts }: Props) {
 ProtokolEvents.layout = {
     breadcrumbs: [
         { title: 'Beranda', href: protokolDashboard().url },
-        { title: 'Kelola Agenda', href: '/protokol/events' },
+        { title: 'Kelola Agenda', href: eventsIndex().url },
     ],
 };
