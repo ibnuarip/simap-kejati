@@ -6,12 +6,16 @@ use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
 use App\Http\Responses\LoginResponse;
 use App\Http\Responses\VerifyEmailResponse;
+use App\Models\Leader;
+use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
 use Laravel\Fortify\Contracts\VerifyEmailResponse as VerifyEmailResponseContract;
@@ -46,6 +50,29 @@ class FortifyServiceProvider extends ServiceProvider
     {
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::createUsersUsing(CreateNewUser::class);
+        Fortify::authenticateUsing($this->authenticate(...));
+    }
+
+    /**
+     * Authenticate a user against the database, blocking leadership accounts
+     * whose linked leader has been deactivated.
+     */
+    private function authenticate(Request $request): ?User
+    {
+        $username = Fortify::username();
+        $user = User::query()->where($username, Str::lower($request->input($username)))->first();
+
+        if (! $user || ! Hash::check((string) $request->input('password'), $user->password)) {
+            return null;
+        }
+
+        if (in_array($user->role, ['kajati', 'wakajati'], true) && ! $user->isLeaderActive()) {
+            throw ValidationException::withMessages([
+                $username => Leader::DEACTIVATED_MESSAGE,
+            ]);
+        }
+
+        return $user;
     }
 
     /**

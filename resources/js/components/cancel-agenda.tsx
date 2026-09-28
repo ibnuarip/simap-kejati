@@ -17,11 +17,18 @@ type Props = {
     url: string;
     itemName: string;
     className?: string;
+    iconOnly?: boolean;
 };
 
-export default function CancelAgenda({ url, itemName, className }: Props) {
+export default function CancelAgenda({
+    url,
+    itemName,
+    className,
+    iconOnly = false,
+}: Props) {
     const [open, setOpen] = useState(false);
     const [processing, setProcessing] = useState(false);
+    const label = `Batalkan agenda ${itemName}`;
 
     const handleCancel = () => {
         setProcessing(true);
@@ -51,13 +58,15 @@ export default function CancelAgenda({ url, itemName, className }: Props) {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <Button
-                size="sm"
+                size={iconOnly ? 'icon' : 'sm'}
                 variant="outline"
                 className={cn('gap-1.5', className)}
                 onClick={() => setOpen(true)}
+                title={iconOnly ? label : undefined}
+                aria-label={iconOnly ? label : undefined}
             >
                 <X />
-                Batalkan
+                {!iconOnly && 'Batalkan'}
             </Button>
             <DialogContent>
                 <DialogHeader>

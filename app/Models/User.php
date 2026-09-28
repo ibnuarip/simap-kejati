@@ -55,6 +55,17 @@ class User extends Authenticatable implements PasskeyUser
     }
 
     /**
+     * A leadership account is considered active unless a leader record with
+     * a matching email exists and has been deactivated.
+     */
+    public function isLeaderActive(): bool
+    {
+        $leader = Leader::query()->where('email', $this->email)->first();
+
+        return $leader ? (bool) $leader->is_active : true;
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>

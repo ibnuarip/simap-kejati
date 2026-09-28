@@ -93,6 +93,25 @@ test('creating a leader requires a name and a valid position', function () {
     $this->assertDatabaseCount('leaders', 0);
 });
 
+test('a leader nip must be exactly 18 digits', function (string $nip) {
+    $operator = makeOperator();
+    $this->actingAs($operator);
+
+    $this->post(route('master.leaders.store'), [
+        'name' => 'Drs. H. Bambang',
+        'position' => 'Kajati',
+        'nip' => $nip,
+        'is_active' => '1',
+    ])->assertSessionHasErrors('nip');
+
+    $this->assertDatabaseCount('leaders', 0);
+})->with([
+    'too short' => ['19800101201001100'],
+    'too long' => ['1980010120100110012'],
+    'contains letters' => ['19800101201001A001'],
+    'formatted with spaces' => ['19800101 199503 1 001'],
+]);
+
 test('operators can update and delete a leader', function () {
     $operator = makeOperator();
     $leader = Leader::factory()->create();
@@ -371,6 +390,31 @@ test('operators can update and delete an event', function () {
 
     $this->assertDatabaseMissing('events', ['id' => $event->id]);
 });
+
+test('agenda lists are ordered newest first', function (string $route, string $role) {
+    $user = User::factory()->create(['role' => $role]);
+
+    $older = Event::factory()->create([
+        'start_time' => now()->subDays(3)->setTime(9, 0),
+        'end_time' => now()->subDays(3)->setTime(11, 0),
+    ]);
+
+    $newer = Event::factory()->create([
+        'start_time' => now()->subDay()->setTime(9, 0),
+        'end_time' => now()->subDay()->setTime(11, 0),
+    ]);
+
+    $this->actingAs($user);
+
+    $this->get(route($route))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('events.0.id', $newer->id)
+            ->where('events.1.id', $older->id));
+})->with([
+    'operator' => ['events.index', 'operator'],
+    'protokol' => ['protokol.events.index', 'protokol'],
+]);
 
 test('operator write routes are forbidden to other roles', function (string $route, array $payload) {
     $protokol = User::factory()->protokol()->create();

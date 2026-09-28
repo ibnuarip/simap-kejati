@@ -20,6 +20,7 @@ type Props = {
     only?: string[];
     onDeleted?: () => void;
     className?: string;
+    iconOnly?: boolean;
 };
 
 export default function ConfirmDelete({
@@ -28,9 +29,11 @@ export default function ConfirmDelete({
     only,
     onDeleted,
     className,
+    iconOnly = false,
 }: Props) {
     const [open, setOpen] = useState(false);
     const [processing, setProcessing] = useState(false);
+    const label = `Hapus ${itemName ?? 'data'}`;
 
     const handleDelete = () => {
         setProcessing(true);
@@ -59,12 +62,14 @@ export default function ConfirmDelete({
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button
-                    size="sm"
+                    size={iconOnly ? 'icon' : 'sm'}
                     variant="destructive"
                     className={cn('text-white', className)}
+                    title={iconOnly ? label : undefined}
+                    aria-label={iconOnly ? label : undefined}
                 >
                     <Trash2 />
-                    Hapus
+                    {!iconOnly && 'Hapus'}
                 </Button>
             </DialogTrigger>
             <DialogContent>

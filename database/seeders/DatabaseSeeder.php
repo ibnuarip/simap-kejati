@@ -67,7 +67,7 @@ class DatabaseSeeder extends Seeder
             ['position' => 'Kajati'],
             [
                 'name' => 'Dr. H. Ahmad Fauzi, S.H., M.H.',
-                'nip' => '19700101 199503 1 001',
+                'nip' => '197001011995031001',
                 'email' => 'kajati@kejati.go.id',
                 'phone' => '081234567890',
                 'is_active' => true,
@@ -78,7 +78,7 @@ class DatabaseSeeder extends Seeder
             ['position' => 'Wakajati'],
             [
                 'name' => 'Bambang Supriyadi, S.H., M.H.',
-                'nip' => '19720512 199703 1 002',
+                'nip' => '197205121997031002',
                 'email' => 'wakajati@kejati.go.id',
                 'phone' => '081234567891',
                 'is_active' => true,

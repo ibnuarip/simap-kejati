@@ -22,6 +22,8 @@ use Illuminate\Support\Carbon;
  */
 class Leader extends Model
 {
+    public const DEACTIVATED_MESSAGE = 'Akun Anda telah dinonaktifkan';
+
     /** @use HasFactory<LeaderFactory> */
     use HasFactory;
 

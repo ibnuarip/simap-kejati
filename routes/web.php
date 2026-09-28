@@ -14,9 +14,21 @@ use App\Http\Controllers\Protokol\CalendarController as ProtokolCalendarControll
 use App\Http\Controllers\Protokol\DashboardController as ProtokolDashboardController;
 use App\Http\Controllers\Protokol\EventController as ProtokolEventController;
 use App\Http\Controllers\Protokol\ExportController as ProtokolExportController;
+use App\Http\Responses\LoginResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
-Route::inertia('/', 'welcome')->name('home');
+Route::get('/', function (Request $request) {
+    $user = $request->user();
+
+    if ($user) {
+        return Redirect::to(LoginResponse::homeForRole($user));
+    }
+
+    return Inertia::render('welcome');
+})->name('home');
 
 Route::middleware(['auth', 'verified', 'role:operator'])->group(function () {
     Route::get('dashboard', [OperatorDashboardController::class, 'index'])->name('dashboard');

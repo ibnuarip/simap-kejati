@@ -45,6 +45,10 @@ export type ResourceOption = {
     name: string;
 };
 
+export type LeaderOption = ResourceOption & {
+    inactive?: boolean;
+};
+
 export type DashboardStats = {
     users: number;
     leaders: number;

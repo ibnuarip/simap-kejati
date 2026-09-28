@@ -19,11 +19,21 @@ class LeaderRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'position' => ['required', 'in:Kajati,Wakajati,Other'],
-            'nip' => ['nullable', 'string', 'max:255'],
+            'nip' => ['nullable', 'string', 'digits:18'],
             'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:255'],
             'photo' => ['nullable', 'string', 'max:255'],
             'is_active' => ['boolean'],
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'nip.digits' => 'NIP harus terdiri dari 18 digit angka.',
         ];
     }
 }

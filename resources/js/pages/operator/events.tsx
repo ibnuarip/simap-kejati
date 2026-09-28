@@ -1,12 +1,20 @@
 import { Form, Head } from '@inertiajs/react';
-import { useMemo, useState } from 'react';
-import { CalendarPlus, Pencil, Search, X } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import {
+    CalendarPlus,
+    MapPin,
+    Pencil,
+    Search,
+    Tag,
+    User,
+    X,
+} from 'lucide-react';
 import EventController from '@/actions/App/Http/Controllers/Operator/EventController';
-import { AgendaItemRow } from '@/components/agenda-item-row';
 import CancelAgenda from '@/components/cancel-agenda';
 import ConfirmDelete from '@/components/confirm-delete';
 import { DatetimeLocalField } from '@/components/datetime-local-field';
 import InputError from '@/components/input-error';
+import TablePagination from '@/components/table-pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,11 +38,19 @@ import {
 import {
     agendaStatusLabel,
     agendaStatusVariant,
+    eventDateKey,
+    formatDateLong,
     formatTime,
 } from '@/lib/agenda';
+import { cn } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import { index as eventsIndex } from '@/routes/events';
-import type { AgendaItem, AgendaStatus, ResourceOption } from '@/types';
+import type {
+    AgendaItem,
+    AgendaStatus,
+    LeaderOption,
+    ResourceOption,
+} from '@/types';
 
 type Props = {
     events: AgendaItem[];
@@ -60,7 +76,12 @@ const FILTER_OPTIONS: { value: StatusFilter; label: string }[] = [
     { value: 'cancelled', label: 'Dibatalkan' },
 ];
 
+const PER_PAGE = 10;
 const NONE = '__none__';
+
+function eventLocation(event: AgendaItem): string {
+    return event.room?.name ?? event.custom_location ?? '-';
+}
 
 export default function OperatorEvents({
     events,
@@ -71,11 +92,16 @@ export default function OperatorEvents({
 }: Props) {
     const [filter, setFilter] = useState<StatusFilter>('semua');
     const [search, setSearch] = useState('');
+    const [page, setPage] = useState(1);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editing, setEditing] = useState<AgendaItem | null>(null);
     const [leaderId, setLeaderId] = useState('');
     const [roomId, setRoomId] = useState(NONE);
     const [categoryId, setCategoryId] = useState(NONE);
+
+    useEffect(() => {
+        setPage(1);
+    }, [filter, search]);
 
     const filteredEvents = useMemo(() => {
         const lowerQuery = search.trim().toLowerCase();
@@ -91,6 +117,56 @@ export default function OperatorEvents({
             return matchesStatus && matchesSearch;
         });
     }, [events, filter, search]);
+
+    const pageCount = Math.max(1, Math.ceil(filteredEvents.length / PER_PAGE));
+    const currentPage = Math.min(page, pageCount);
+
+    const paginatedEvents = useMemo(
+        () =>
+            filteredEvents.slice(
+                (currentPage - 1) * PER_PAGE,
+                currentPage * PER_PAGE,
+            ),
+        [filteredEvents, currentPage],
+    );
+
+    const agendaGroups = useMemo(() => {
+        const groups = new Map<string, AgendaItem[]>();
+
+        for (const event of paginatedEvents) {
+            const dateKey = eventDateKey(event);
+            const group = groups.get(dateKey);
+
+            if (group) {
+                group.push(event);
+            } else {
+                groups.set(dateKey, [event]);
+            }
+        }
+
+        return [...groups.entries()].map(([dateKey, events]) => ({
+            dateKey,
+            events,
+        }));
+    }, [paginatedEvents]);
+
+    const leaderOptions = useMemo<LeaderOption[]>(() => {
+        const base: LeaderOption[] = leaders.map((leader) => ({ ...leader }));
+        const currentLeader = editing?.leader;
+
+        if (
+            currentLeader &&
+            !base.some((leader) => leader.id === currentLeader.id)
+        ) {
+            base.unshift({
+                id: currentLeader.id,
+                name: `${currentLeader.name} (Nonaktif)`,
+                inactive: true,
+            });
+        }
+
+        return base;
+    }, [leaders, editing]);
 
     const closeDialog = () => {
         setDialogOpen(false);
@@ -140,26 +216,7 @@ export default function OperatorEvents({
                     </Button>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex flex-wrap gap-2">
-                        {FILTER_OPTIONS.map((option) => (
-                            <Button
-                                key={option.value}
-                                variant={
-                                    filter === option.value
-                                        ? 'default'
-                                        : 'outline'
-                                }
-                                size="sm"
-                                onClick={() => setFilter(option.value)}
-                            >
-                                {option.label}
-                            </Button>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-4">
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                     <Card>
                         <CardHeader className="pb-2">
                             <CardTitle className="text-muted-foreground text-sm font-medium">
@@ -167,7 +224,7 @@ export default function OperatorEvents({
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="pt-0">
-                            <p className="text-2xl font-semibold">
+                            <p className="text-2xl font-semibold tabular-nums">
                                 {statusCounts.total}
                             </p>
                         </CardContent>
@@ -179,7 +236,7 @@ export default function OperatorEvents({
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="pt-0">
-                            <p className="text-2xl font-semibold">
+                            <p className="text-2xl font-semibold tabular-nums">
                                 {statusCounts.scheduled}
                             </p>
                         </CardContent>
@@ -191,7 +248,7 @@ export default function OperatorEvents({
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="pt-0">
-                            <p className="text-2xl font-semibold">
+                            <p className="text-2xl font-semibold tabular-nums">
                                 {statusCounts.completed}
                             </p>
                         </CardContent>
@@ -203,7 +260,7 @@ export default function OperatorEvents({
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="pt-0">
-                            <p className="text-2xl font-semibold">
+                            <p className="text-2xl font-semibold tabular-nums">
                                 {statusCounts.cancelled}
                             </p>
                         </CardContent>
@@ -211,81 +268,81 @@ export default function OperatorEvents({
                 </div>
 
                 <Card>
-                    <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0">
+                    <CardHeader className="flex flex-col gap-3 space-y-0 sm:flex-row sm:items-center sm:justify-between">
                         <CardTitle>Daftar Agenda</CardTitle>
-                        <div className="relative w-full max-w-xs">
-                            <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-                            <Input
-                                value={search}
-                                onChange={(event) =>
-                                    setSearch(event.target.value)
-                                }
-                                placeholder="Cari agenda atau pimpinan..."
-                                className="pl-9"
-                            />
+                        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+                            <div className="flex flex-wrap gap-2">
+                                {FILTER_OPTIONS.map((option) => (
+                                    <Button
+                                        key={option.value}
+                                        variant={
+                                            filter === option.value
+                                                ? 'default'
+                                                : 'outline'
+                                        }
+                                        size="sm"
+                                        onClick={() => setFilter(option.value)}
+                                    >
+                                        {option.label}
+                                    </Button>
+                                ))}
+                            </div>
+                            <div className="relative w-full sm:w-64">
+                                <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+                                <Input
+                                    value={search}
+                                    onChange={(event) =>
+                                        setSearch(event.target.value)
+                                    }
+                                    placeholder="Cari agenda..."
+                                    className="pl-9"
+                                />
+                            </div>
                         </div>
                     </CardHeader>
-                    <CardContent>
+
+                    <CardContent className="p-0">
                         {filteredEvents.length === 0 ? (
-                            <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed p-10 text-center">
+                            <div className="flex flex-col items-center gap-2 p-10 text-center">
                                 <X className="text-muted-foreground size-6" />
                                 <p className="text-muted-foreground text-sm">
                                     Tidak ada agenda yang cocok.
                                 </p>
                             </div>
                         ) : (
-                            <div className="divide-border flex flex-col divide-y">
-                                {filteredEvents.map((event) => (
-                                    <div
-                                        key={event.id}
-                                        className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between"
-                                    >
-                                        <AgendaItemRow event={event} />
-
-                                        <div className="flex shrink-0 items-center gap-2">
-                                            <Badge
-                                                variant={
-                                                    agendaStatusVariant[
-                                                        event.status
-                                                    ]
-                                                }
-                                            >
-                                                {
-                                                    agendaStatusLabel[
-                                                        event.status
-                                                    ]
-                                                }
-                                            </Badge>
+                            <div className="divide-border divide-y">
+                                {agendaGroups.map((group) => (
+                                    <section key={group.dateKey}>
+                                        <div className="bg-muted/50 flex items-center justify-between gap-2 px-4 py-2">
+                                            <h3 className="text-sm font-semibold capitalize">
+                                                {formatDateLong(group.dateKey)}
+                                            </h3>
                                             <span className="text-muted-foreground text-xs tabular-nums">
-                                                {formatTime(event.start_time)}
+                                                {group.events.length} agenda
                                             </span>
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                onClick={() => openEdit(event)}
-                                            >
-                                                <Pencil />
-                                                Edit
-                                            </Button>
-                                            {event.can_cancel && (
-                                                <CancelAgenda
-                                                    url={EventController.cancel.url(
-                                                        event.id,
-                                                    )}
-                                                    itemName={event.title}
-                                                />
-                                            )}
-                                            <ConfirmDelete
-                                                url={EventController.destroy.url(
-                                                    event.id,
-                                                )}
-                                                itemName={event.title}
-                                            />
                                         </div>
-                                    </div>
+
+                                        <ul className="divide-border divide-y">
+                                            {group.events.map((event) => (
+                                                <AgendaRow
+                                                    key={event.id}
+                                                    event={event}
+                                                    onEdit={openEdit}
+                                                />
+                                            ))}
+                                        </ul>
+                                    </section>
                                 ))}
                             </div>
                         )}
+
+                        <TablePagination
+                            page={currentPage}
+                            pageCount={pageCount}
+                            total={filteredEvents.length}
+                            perPage={PER_PAGE}
+                            onPageChange={setPage}
+                        />
                     </CardContent>
                 </Card>
             </div>
@@ -313,7 +370,7 @@ export default function OperatorEvents({
                                 <>
                                     <EventFields
                                         defaultValue={editing}
-                                        leaders={leaders}
+                                        leaders={leaderOptions}
                                         rooms={rooms}
                                         categories={categories}
                                         leaderId={leaderId}
@@ -352,7 +409,7 @@ export default function OperatorEvents({
                                 <>
                                     <EventFields
                                         defaultValue={null}
-                                        leaders={leaders}
+                                        leaders={leaderOptions}
                                         rooms={rooms}
                                         categories={categories}
                                         leaderId={leaderId}
@@ -388,9 +445,110 @@ export default function OperatorEvents({
     );
 }
 
+type AgendaRowProps = {
+    event: AgendaItem;
+    onEdit: (event: AgendaItem) => void;
+};
+
+function AgendaRow({ event, onEdit }: AgendaRowProps) {
+    const isCancelled = event.status === 'cancelled';
+
+    return (
+        <li
+            className={cn(
+                'flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:gap-4',
+                isCancelled && 'bg-muted/20 opacity-70',
+            )}
+        >
+            <div className="flex shrink-0 items-baseline gap-1.5 sm:w-24 sm:flex-col sm:items-start sm:gap-0">
+                <span className="text-sm font-semibold tabular-nums">
+                    {formatTime(event.start_time)}
+                </span>
+                <span className="text-muted-foreground text-xs tabular-nums">
+                    s/d {formatTime(event.end_time)}
+                </span>
+            </div>
+
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
+                <span
+                    className={cn(
+                        'leading-snug font-medium',
+                        isCancelled && 'line-through',
+                    )}
+                >
+                    {event.title}
+                </span>
+
+                <div className="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+                    <span className="flex items-center gap-1.5">
+                        <User className="size-3.5 shrink-0" />
+                        {event.leader?.name ?? '-'}
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                        <MapPin className="size-3.5 shrink-0" />
+                        {eventLocation(event)}
+                    </span>
+                    {event.category && (
+                        <span className="flex items-center gap-1.5">
+                            <Tag className="size-3.5 shrink-0" />
+                            {event.category.name}
+                        </span>
+                    )}
+                </div>
+            </div>
+
+            <div className="flex shrink-0 items-center justify-between gap-3 sm:justify-end">
+                <Badge variant={agendaStatusVariant[event.status]}>
+                    {agendaStatusLabel[event.status]}
+                </Badge>
+                <EventActions event={event} onEdit={onEdit} />
+            </div>
+        </li>
+    );
+}
+
+type EventActionsProps = {
+    event: AgendaItem;
+    onEdit: (event: AgendaItem) => void;
+    align?: 'start' | 'end';
+};
+
+function EventActions({ event, onEdit, align = 'end' }: EventActionsProps) {
+    return (
+        <div
+            className={cn(
+                'flex flex-wrap items-center gap-2',
+                align === 'end' ? 'justify-end' : 'justify-start',
+            )}
+        >
+            <Button
+                size="icon"
+                variant="outline"
+                onClick={() => onEdit(event)}
+                title="Edit agenda"
+                aria-label={`Edit agenda ${event.title}`}
+            >
+                <Pencil />
+            </Button>
+            {event.can_cancel && (
+                <CancelAgenda
+                    iconOnly
+                    url={EventController.cancel.url(event.id)}
+                    itemName={event.title}
+                />
+            )}
+            <ConfirmDelete
+                iconOnly
+                url={EventController.destroy.url(event.id)}
+                itemName={event.title}
+            />
+        </div>
+    );
+}
+
 type FieldProps = {
     defaultValue: AgendaItem | null;
-    leaders: ResourceOption[];
+    leaders: LeaderOption[];
     rooms: ResourceOption[];
     categories: ResourceOption[];
     leaderId: string;

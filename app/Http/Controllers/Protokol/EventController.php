@@ -20,7 +20,7 @@ class EventController extends Controller
     {
         $events = Event::query()
             ->with(['leader', 'room', 'category'])
-            ->orderBy('start_time')
+            ->orderByDesc('start_time')
             ->get();
 
         $leaders = Leader::query()->where('is_active', true)->orderBy('name')->get();

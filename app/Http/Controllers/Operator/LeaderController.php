@@ -49,6 +49,12 @@ class LeaderController extends Controller
 
     public function destroy(Leader $leader): RedirectResponse
     {
+        if ($leader->events()->exists()) {
+            return back()->withErrors([
+                'leader' => 'Pimpinan masih memiliki agenda sehingga tidak dapat dihapus. Nonaktifkan pimpinan untuk tetap mempertahankan data agenda.',
+            ]);
+        }
+
         $leader->delete();
 
         return back();

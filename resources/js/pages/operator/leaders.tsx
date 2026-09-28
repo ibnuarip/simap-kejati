@@ -1,6 +1,15 @@
 import { Form, Head } from '@inertiajs/react';
-import { useState } from 'react';
-import { Activity, IdCard, Mail, Pencil, Phone, Plus, X } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import {
+    Activity,
+    IdCard,
+    Mail,
+    Pencil,
+    Phone,
+    Plus,
+    Search,
+    X,
+} from 'lucide-react';
 import LeaderController from '@/actions/App/Http/Controllers/Operator/LeaderController';
 import { ActiveToggle } from '@/components/active-toggle';
 import ConfirmDelete from '@/components/confirm-delete';
@@ -50,7 +59,28 @@ export default function OperatorLeaders({ leaders }: Props) {
     const [editing, setEditing] = useState<Leader | null>(null);
     const [position, setPosition] = useState<LeaderPosition>('Kajati');
     const [isActive, setIsActive] = useState(true);
+    const [search, setSearch] = useState('');
     const getInitials = useInitials();
+
+    const filteredLeaders = useMemo(() => {
+        const lowerQuery = search.trim().toLowerCase();
+
+        if (lowerQuery === '') {
+            return leaders;
+        }
+
+        return leaders.filter((leader) =>
+            [
+                leader.name,
+                leaderPositionLabel[leader.position],
+                leader.nip,
+                leader.email,
+                leader.phone,
+            ]
+                .filter(Boolean)
+                .some((value) => value!.toLowerCase().includes(lowerQuery)),
+        );
+    }, [leaders, search]);
 
     const closeDialog = () => {
         setDialogOpen(false);
@@ -99,21 +129,33 @@ export default function OperatorLeaders({ leaders }: Props) {
                 </div>
 
                 <Card>
-                    <CardHeader>
+                    <CardHeader className="flex flex-col gap-3 space-y-0 sm:flex-row sm:items-center sm:justify-between">
                         <CardTitle>Daftar Pimpinan</CardTitle>
+                        <div className="relative w-full sm:w-64">
+                            <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+                            <Input
+                                value={search}
+                                onChange={(event) =>
+                                    setSearch(event.target.value)
+                                }
+                                placeholder="Cari nama, NIP, email..."
+                                className="pl-9"
+                            />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        {leaders.length === 0 ? (
+                        {filteredLeaders.length === 0 ? (
                             <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed p-10 text-center">
                                 <X className="text-muted-foreground size-6" />
                                 <p className="text-muted-foreground text-sm">
-                                    Belum ada data pimpinan. Tambahkan melalui
-                                    tombol di atas.
+                                    {leaders.length === 0
+                                        ? 'Belum ada data pimpinan. Tambahkan melalui tombol di atas.'
+                                        : 'Tidak ada pimpinan yang cocok.'}
                                 </p>
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                                {leaders.map((leader) => (
+                                {filteredLeaders.map((leader) => (
                                     <div
                                         key={leader.id}
                                         className="flex flex-col gap-4 rounded-xl border p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
@@ -142,14 +184,17 @@ export default function OperatorLeaders({ leaders }: Props) {
                                                             ]
                                                         }
                                                     </Badge>
-                                                    {!leader.is_active && (
-                                                        <Badge
-                                                            variant="secondary"
-                                                            className="text-xs"
-                                                        >
-                                                            Nonaktif
-                                                        </Badge>
-                                                    )}
+                                                    <Badge
+                                                        variant={
+                                                            leader.is_active
+                                                                ? 'ketua'
+                                                                : 'secondary'
+                                                        }
+                                                    >
+                                                        {leader.is_active
+                                                            ? 'Aktif'
+                                                            : 'Nonaktif'}
+                                                    </Badge>
                                                 </div>
                                             </div>
                                         </div>
@@ -179,7 +224,7 @@ export default function OperatorLeaders({ leaders }: Props) {
                                                 </span>
                                                 <span className="text-muted-foreground flex items-center gap-2">
                                                     <Activity className="size-4 shrink-0" />
-                                                    <span className="min-w-0 truncate">
+                                                    <span className="min-w-0 truncate tabular-nums">
                                                         {leader.events_count}{' '}
                                                         agenda terkait
                                                     </span>
@@ -214,7 +259,7 @@ export default function OperatorLeaders({ leaders }: Props) {
             </div>
 
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <DialogContent className="sm:max-w-md">
+                <DialogContent className="max-h-[90dvh] overflow-y-auto overscroll-contain sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle>
                             {editing ? 'Edit Pimpinan' : 'Tambah Pimpinan'}
@@ -362,8 +407,15 @@ function LeaderFields({
                 <Input
                     id="nip"
                     name="nip"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={18}
                     defaultValue={defaultValue?.nip ?? ''}
-                    placeholder="Nomor induk pegawai"
+                    placeholder="18 digit angka"
+                    onChange={(inputEvent) => {
+                        inputEvent.target.value =
+                            inputEvent.target.value.replace(/\D/g, '');
+                    }}
                 />
                 <InputError message={errors.nip} />
             </div>
