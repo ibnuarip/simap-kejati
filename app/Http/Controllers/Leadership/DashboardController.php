@@ -22,12 +22,12 @@ class DashboardController extends Controller
             ->orderBy('start_time')
             ->get();
 
-        $today = CarbonImmutable::today();
+        $today = CarbonImmutable::today(config('app.timezone'));
 
         $todayEvents = $events->filter(fn (Event $event) => $event->start_time->isSameDay($today))->values();
 
         $upcomingEvents = $events
-            ->filter(fn (Event $event) => $event->start_time->greaterThan($today))
+            ->filter(fn (Event $event) => $event->start_time->greaterThan($today) && $event->status !== 'completed' && $event->status !== 'cancelled')
             ->take(5)
             ->values();
 
@@ -35,7 +35,7 @@ class DashboardController extends Controller
             'stats' => [
                 'today' => $todayEvents->count(),
                 'ongoing' => $events->filter(fn (Event $event) => $event->currentStatus() === 'ongoing')->count(),
-                'upcoming' => $events->filter(fn (Event $event) => $event->start_time->greaterThan($today))->count(),
+                'upcoming' => $events->filter(fn (Event $event) => $event->start_time->greaterThan($today) && $event->status !== 'completed' && $event->status !== 'cancelled')->count(),
                 'month' => $events->filter(fn (Event $event) => $event->start_time->isSameMonth($today))->count(),
             ],
             'todayEvents' => EventResource::list($todayEvents),

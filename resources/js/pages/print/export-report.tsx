@@ -45,25 +45,28 @@ export default function ExportReport({
         <>
             <Head title={`Cetak ${subtitle}`} />
 
-            <div className="fixed inset-x-0 top-0 z-50 flex items-center justify-between gap-3 border-b bg-white px-4 py-3 shadow-sm print:hidden">
-                <p className="text-sm font-medium">
+            <div className="fixed inset-x-0 top-0 z-50 flex flex-wrap items-center justify-between gap-2 border-b bg-white px-4 py-2.5 shadow-sm print:hidden">
+                <p className="text-sm font-medium whitespace-nowrap">
                     Laporan {subtitle} — {periodLabel}
                 </p>
                 <div className="flex items-center gap-2">
-                    <Button onClick={() => window.print()}>
+                    <Button
+                        onClick={() => window.print()}
+                        className="w-full sm:w-auto"
+                    >
                         <Printer />
                         Cetak / Simpan PDF
                     </Button>
                 </div>
             </div>
 
-            <div className="mx-auto max-w-[210mm] bg-white px-8 py-10 text-gray-900 print:max-w-none print:px-0 print:py-0">
+            <div className="mx-auto w-full max-w-[210mm] bg-white px-4 py-6 text-gray-900 sm:px-8 sm:py-10 print:max-w-none print:px-0 print:py-0">
                 <div className="border-b-4 border-gray-800 pb-4">
-                    <div className="flex items-center justify-between gap-4">
+                    <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <img
                             src="/images/logo-kejati.png"
                             alt="Logo Kejaksaan Tinggi"
-                            className="h-16 w-auto shrink-0"
+                            className="h-12 w-auto shrink-0 sm:h-16"
                         />
                         <div className="flex-1 text-center">
                             <p className="text-[11px] font-semibold tracking-wide uppercase">
@@ -77,7 +80,7 @@ export default function ExportReport({
                             </p>
                         </div>
                         <div
-                            className="h-16 w-16 shrink-0"
+                            className="h-12 w-12 shrink-0 sm:h-16 sm:w-16"
                             aria-hidden="true"
                         />
                     </div>
@@ -89,9 +92,9 @@ export default function ExportReport({
                     </p>
                 </div>
 
-                <div className="mt-6">
+                <div className="mt-6 overflow-x-auto">
                     {events.length === 0 ? (
-                        <div className="rounded-lg border border-dashed p-10 text-center text-sm">
+                        <div className="rounded-lg border border-dashed p-4 py-8 text-center text-sm">
                             Tidak ada agenda pada periode ini.
                         </div>
                     ) : (
@@ -107,13 +110,13 @@ export default function ExportReport({
                                     <th className="py-2 pr-2 text-left font-semibold">
                                         Kegiatan
                                     </th>
-                                    <th className="py-2 pr-2 text-left font-semibold">
+                                    <th className="hidden py-2 pr-2 text-left font-semibold sm:table-cell">
                                         Pimpinan
                                     </th>
-                                    <th className="py-2 pr-2 text-left font-semibold">
+                                    <th className="hidden py-2 pr-2 text-left font-semibold sm:table-cell">
                                         Tempat
                                     </th>
-                                    <th className="py-2 pr-2 text-left font-semibold">
+                                    <th className="hidden py-2 pr-2 text-left font-semibold md:table-cell">
                                         Kategori
                                     </th>
                                     <th className="py-2 text-left font-semibold">
@@ -148,15 +151,15 @@ export default function ExportReport({
                                                 </div>
                                             ) : null}
                                         </td>
-                                        <td className="py-2 pr-2">
+                                        <td className="hidden py-2 pr-2 sm:table-cell">
                                             {event.leader?.name ?? '—'}
                                         </td>
-                                        <td className="py-2 pr-2">
+                                        <td className="hidden py-2 pr-2 sm:table-cell">
                                             {event.room?.name ??
                                                 event.custom_location ??
                                                 '—'}
                                         </td>
-                                        <td className="py-2 pr-2">
+                                        <td className="hidden py-2 pr-2 md:table-cell">
                                             {event.category?.name ?? '—'}
                                         </td>
                                         <td className="py-2">
@@ -169,13 +172,27 @@ export default function ExportReport({
                     )}
                 </div>
 
-                <div className="mt-10 flex items-end justify-between text-sm">
+                <div className="mt-8 flex items-end justify-between text-sm print:mt-10">
                     <p className="text-xs text-gray-500">
                         Dicetak melalui SIMAP oleh {auth.user?.name} ·{' '}
                         {generatedAt}
                     </p>
                 </div>
             </div>
+
+            <style>{`
+                @media print {
+                    body * {
+                        visibility: hidden;
+                    }
+                    .print\\:visible {
+                        visibility: visible;
+                    }
+                    .no-print {
+                        display: none !important;
+                    }
+                }
+            `}</style>
         </>
     );
 }

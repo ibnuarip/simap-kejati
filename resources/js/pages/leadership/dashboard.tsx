@@ -54,7 +54,7 @@ export default function LeadershipDashboard({
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     <Card className="transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
                         <CardContent className="flex flex-col gap-0.5 px-4 py-3.5">
                             <span className="bg-primary/10 text-primary mb-1.5 flex size-8 items-center justify-center rounded-lg">

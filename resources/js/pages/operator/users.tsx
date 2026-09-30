@@ -91,7 +91,7 @@ export default function OperatorUsers({ users }: Props) {
                     <CardHeader>
                         <CardTitle>Daftar Pengguna</CardTitle>
                     </CardHeader>
-                    <CardContent className="overflow-x-auto">
+                    <CardContent>
                         {users.length === 0 ? (
                             <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed p-10 text-center">
                                 <X className="text-muted-foreground size-6" />
@@ -100,110 +100,127 @@ export default function OperatorUsers({ users }: Props) {
                                 </p>
                             </div>
                         ) : (
-                            <table className="w-full min-w-[640px] text-left text-sm">
-                                <thead>
-                                    <tr className="border-border text-muted-foreground border-b text-xs tracking-wide uppercase">
-                                        <th className="py-3 pr-4 font-medium">
-                                            Nama & Email
-                                        </th>
-                                        <th className="py-3 pr-4 font-medium">
-                                            Peran
-                                        </th>
-                                        <th className="py-3 pr-4 font-medium">
-                                            Status Email
-                                        </th>
-                                        <th className="py-3 pr-4 font-medium">
-                                            Terdaftar
-                                        </th>
-                                        <th className="py-3 text-right font-medium">
-                                            Aksi
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-border divide-y">
+                            <>
+                                {/* Mobile (<640px): card list */}
+                                <div className="flex flex-col gap-3 sm:hidden">
                                     {users.map((user) => (
-                                        <tr
+                                        <UserCard
                                             key={user.id}
-                                            className="hover:bg-muted/60 transition-colors"
-                                        >
-                                            <td className="max-w-xs py-4 pr-4">
-                                                <div className="flex min-w-0 flex-col gap-0.5">
-                                                    <div className="flex flex-wrap items-center gap-2">
-                                                        <p className="truncate font-medium">
-                                                            {user.name}
-                                                        </p>
-                                                        {user.id ===
-                                                            currentUserId && (
-                                                            <Badge
-                                                                variant="secondary"
-                                                                className="text-xs"
-                                                            >
-                                                                Akun ini
-                                                            </Badge>
-                                                        )}
-                                                    </div>
-                                                    <p className="text-muted-foreground truncate text-xs">
-                                                        {user.email}
-                                                    </p>
-                                                </div>
-                                            </td>
-                                            <td className="py-4 pr-4">
-                                                <Badge>
-                                                    {userRoleLabel[user.role]}
-                                                </Badge>
-                                            </td>
-                                            <td className="text-muted-foreground py-4 pr-4">
-                                                {user.email_verified_at
-                                                    ? 'Terverifikasi'
-                                                    : 'Belum terverifikasi'}
-                                            </td>
-                                            <td className="text-muted-foreground py-4 pr-4 whitespace-nowrap">
-                                                {user.created_at
-                                                    ? new Date(
-                                                          user.created_at.replace(
-                                                              ' ',
-                                                              'T',
-                                                          ),
-                                                      ).toLocaleDateString(
-                                                          'id-ID',
-                                                          {
-                                                              day: 'numeric',
-                                                              month: 'long',
-                                                              year: 'numeric',
-                                                          },
-                                                      )
-                                                    : '—'}
-                                            </td>
-                                            <td className="py-4 text-right">
-                                                <div className="flex items-center justify-end gap-2">
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        onClick={() =>
-                                                            openEdit(user)
-                                                        }
-                                                    >
-                                                        <Pencil />
-                                                        Edit
-                                                    </Button>
-                                                    {user.id !==
-                                                        currentUserId && (
-                                                        <ConfirmDelete
-                                                            url={UserController.destroy.url(
-                                                                user.id,
-                                                            )}
-                                                            only={['users']}
-                                                            itemName={
-                                                                user.email
-                                                            }
-                                                        />
-                                                    )}
-                                                </div>
-                                            </td>
-                                        </tr>
+                                            user={user}
+                                            currentUserId={currentUserId}
+                                            onEdit={openEdit}
+                                        />
                                     ))}
-                                </tbody>
-                            </table>
+                                </div>
+
+                                {/* Tablet & desktop (≥640px): tabel scrollable */}
+                                <div className="hidden sm:block overflow-x-auto">
+                                    <table className="w-full text-left text-sm">
+                                        <thead className="border-border text-muted-foreground border-b text-xs tracking-wide uppercase">
+                                            <tr>
+                                                <th className="py-3 pr-4 font-medium">
+                                                    Nama & Email
+                                                </th>
+                                                <th className="py-3 pr-4 font-medium">
+                                                    Peran
+                                                </th>
+                                                <th className="py-3 pr-4 font-medium">
+                                                    Status Email
+                                                </th>
+                                                <th className="py-3 pr-4 font-medium">
+                                                    Terdaftar
+                                                </th>
+                                                <th className="py-3 text-right font-medium">
+                                                    Aksi
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-border divide-y">
+                                            {users.map((user) => (
+                                                <tr
+                                                    key={user.id}
+                                                    className="hover:bg-muted/60 transition-colors"
+                                                >
+                                                    <td className="max-w-xs py-4 pr-4">
+                                                        <div className="flex min-w-0 flex-col gap-0.5">
+                                                            <div className="flex flex-wrap items-center gap-2">
+                                                                <p className="truncate font-medium">
+                                                                    {user.name}
+                                                                </p>
+                                                                {user.id ===
+                                                                    currentUserId && (
+                                                                    <Badge
+                                                                        variant="secondary"
+                                                                        className="text-xs"
+                                                                    >
+                                                                        Akun ini
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
+                                                            <p className="text-muted-foreground truncate text-xs">
+                                                                {user.email}
+                                                            </p>
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-4 pr-4">
+                                                        <Badge>
+                                                            {userRoleLabel[user.role]}
+                                                        </Badge>
+                                                    </td>
+                                                    <td className="text-muted-foreground py-4 pr-4">
+                                                        {user.email_verified_at
+                                                            ? 'Terverifikasi'
+                                                            : 'Belum terverifikasi'}
+                                                    </td>
+                                                    <td className="text-muted-foreground py-4 pr-4 whitespace-nowrap">
+                                                        {user.created_at
+                                                            ? new Date(
+                                                                  user.created_at.replace(
+                                                                      ' ',
+                                                                      'T',
+                                                                  ),
+                                                              ).toLocaleDateString(
+                                                                  'id-ID',
+                                                                  {
+                                                                      day: 'numeric',
+                                                                      month: 'long',
+                                                                      year: 'numeric',
+                                                                  },
+                                                              )
+                                                            : '—'}
+                                                    </td>
+                                                    <td className="py-4 text-right">
+                                                        <div className="flex items-center justify-end gap-2">
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                onClick={() =>
+                                                                    openEdit(user)
+                                                                }
+                                                            >
+                                                                <Pencil />
+                                                                Edit
+                                                            </Button>
+                                                            {user.id !==
+                                                                currentUserId && (
+                                                                <ConfirmDelete
+                                                                    url={UserController.destroy.url(
+                                                                        user.id,
+                                                                    )}
+                                                                    only={['users']}
+                                                                    itemName={
+                                                                        user.email
+                                                                    }
+                                                                />
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </>
                         )}
                     </CardContent>
                 </Card>
@@ -292,6 +309,79 @@ export default function OperatorUsers({ users }: Props) {
                 </DialogContent>
             </Dialog>
         </>
+    );
+}
+
+type UserCardProps = {
+    user: ManagedUser;
+    currentUserId: number;
+    onEdit: (user: ManagedUser) => void;
+};
+
+function UserCard({ user, currentUserId, onEdit }: UserCardProps) {
+    return (
+        <div className="flex flex-col gap-3 rounded-lg border p-4">
+            <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <p className="truncate font-medium">{user.name}</p>
+                        {user.id === currentUserId && (
+                            <Badge variant="secondary" className="text-xs">
+                                Akun ini
+                            </Badge>
+                        )}
+                    </div>
+                    <p className="text-muted-foreground truncate text-xs">
+                        {user.email}
+                    </p>
+                </div>
+                <ConfirmDelete
+                    url={UserController.destroy.url(user.id)}
+                    only={['users']}
+                    itemName={user.email}
+                />
+            </div>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                    <p className="text-muted-foreground text-xs">Peran</p>
+                    <Badge className="mt-0.5">{userRoleLabel[user.role]}</Badge>
+                </div>
+                <div>
+                    <p className="text-muted-foreground text-xs">Status Email</p>
+                    <p className="mt-0.5 text-xs">
+                        {user.email_verified_at
+                            ? 'Terverifikasi'
+                            : 'Belum terverifikasi'}
+                    </p>
+                </div>
+                <div>
+                    <p className="text-muted-foreground text-xs">Terdaftar</p>
+                    <p className="mt-0.5 text-xs">
+                        {user.created_at
+                            ? new Date(
+                                  user.created_at.replace(' ', 'T'),
+                              ).toLocaleDateString('id-ID', {
+                                  day: 'numeric',
+                                  month: 'long',
+                                  year: 'numeric',
+                              })
+                            : '—'}
+                    </p>
+                </div>
+                <div>
+                    <p className="text-muted-foreground text-xs">Aksi</p>
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => onEdit(user)}
+                        className="mt-0.5"
+                    >
+                        <Pencil />
+                        Edit
+                    </Button>
+                </div>
+            </div>
+        </div>
     );
 }
 

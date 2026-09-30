@@ -19,16 +19,16 @@ class DashboardController extends Controller
             ->orderBy('start_time')
             ->get();
 
-        $today = CarbonImmutable::today();
+        $today = CarbonImmutable::today(config('app.timezone'));
 
         $todayEvents = $events->filter(fn (Event $event) => $event->start_time->isSameDay($today))->values();
 
         $upcomingEvents = $events
-            ->filter(fn (Event $event) => $event->start_time->greaterThanOrEqualTo($today))
+            ->filter(fn (Event $event) => $event->start_time->greaterThanOrEqualTo($today) && $event->status !== 'completed' && $event->status !== 'cancelled')
             ->take(5)
             ->values();
 
-        $upcomingCount = $events->filter(fn (Event $event) => $event->start_time->greaterThan($today))->count();
+        $upcomingCount = $events->filter(fn (Event $event) => $event->start_time->greaterThan($today) && $event->status !== 'completed' && $event->status !== 'cancelled')->count();
 
         return Inertia::render('protokol/dashboard', [
             'stats' => [

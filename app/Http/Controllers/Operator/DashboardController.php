@@ -60,7 +60,9 @@ class DashboardController extends Controller
 
         $upcomingEvents = Event::query()
             ->with(['leader', 'room', 'category'])
-            ->where('start_time', '>=', now())
+            ->where('start_time', '>=', now()->setTimezone(config('app.timezone')))
+            ->where('status', '!=', 'completed')
+            ->where('status', '!=', 'cancelled')
             ->orderBy('start_time')
             ->limit(5)
             ->get()

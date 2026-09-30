@@ -33,7 +33,6 @@ export default function ConfirmDelete({
 }: Props) {
     const [open, setOpen] = useState(false);
     const [processing, setProcessing] = useState(false);
-    const label = `Hapus ${itemName ?? 'data'}`;
 
     const handleDelete = () => {
         setProcessing(true);
@@ -65,8 +64,8 @@ export default function ConfirmDelete({
                     size={iconOnly ? 'icon' : 'sm'}
                     variant="destructive"
                     className={cn('text-white', className)}
-                    title={iconOnly ? label : undefined}
-                    aria-label={iconOnly ? label : undefined}
+                    title={iconOnly ? 'Hapus Agenda' : undefined}
+                    aria-label={iconOnly ? 'Hapus Agenda' : undefined}
                 >
                     <Trash2 />
                     {!iconOnly && 'Hapus'}

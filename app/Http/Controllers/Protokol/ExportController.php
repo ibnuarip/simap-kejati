@@ -19,7 +19,7 @@ class ExportController extends Controller
 {
     public function index(Request $request): Response
     {
-        $today = CarbonImmutable::today();
+        $today = CarbonImmutable::today(config('app.timezone'));
 
         $todayEvents = Event::query()
             ->with(['leader', 'room', 'category'])
