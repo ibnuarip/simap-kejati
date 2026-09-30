@@ -45,3 +45,7 @@ yarn-error.log
 /.kiro
 /.agents
 Design.md
+
+# Docker
+.env.docker
+docker-compose.override.yml

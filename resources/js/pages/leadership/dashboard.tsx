@@ -128,10 +128,6 @@ export default function LeadershipDashboard({
                                     <p className="text-sm font-medium">
                                         Tidak ada agenda hari ini
                                     </p>
-                                    <p className="text-muted-foreground mt-1 text-sm">
-                                        Nikmati waktu Anda. Agenda berikutnya
-                                        dapat dilihat di samping.
-                                    </p>
                                 </div>
                             ) : (
                                 <div className="divide-border flex flex-col divide-y">

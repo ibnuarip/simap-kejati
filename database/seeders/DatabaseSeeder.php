@@ -66,7 +66,7 @@ class DatabaseSeeder extends Seeder
         $leaderKajati = Leader::firstOrCreate(
             ['position' => 'Kajati'],
             [
-                'name' => 'Dr. H. Ahmad Fauzi, S.H., M.H.',
+                'name' => 'Dr. RD Mohammad Teguh Darmawan, S.H., M.H',
                 'nip' => '197001011995031001',
                 'email' => 'kajati@kejati.go.id',
                 'phone' => '081234567890',
@@ -77,7 +77,7 @@ class DatabaseSeeder extends Seeder
         $leaderWakajati = Leader::firstOrCreate(
             ['position' => 'Wakajati'],
             [
-                'name' => 'Bambang Supriyadi, S.H., M.H.',
+                'name' => 'Dr. Desy Meutia Firdaus, S.H., M.Hum',
                 'nip' => '197205121997031002',
                 'email' => 'wakajati@kejati.go.id',
                 'phone' => '081234567891',
