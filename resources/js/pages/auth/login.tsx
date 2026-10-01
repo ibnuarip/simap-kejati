@@ -19,7 +19,11 @@ type Props = {
     canUsePasskey?: boolean;
 };
 
-export default function Login({ status, canResetPassword, canUsePasskey }: Props) {
+export default function Login({
+    status,
+    canResetPassword,
+    canUsePasskey,
+}: Props) {
     const { verify, isLoading, error, isSupported } = usePasskeyVerify({
         onSuccess: (response) => {
             if (response.redirect) {
@@ -118,7 +122,7 @@ export default function Login({ status, canResetPassword, canUsePasskey }: Props
                 <div className="mt-6">
                     <div className="relative">
                         <div className="absolute inset-0 flex items-center">
-                            <span className="w-full border-t border-border" />
+                            <span className="border-border w-full border-t" />
                         </div>
                         <div className="relative flex justify-center">
                             <span className="bg-background px-2 text-sm">

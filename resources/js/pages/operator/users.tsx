@@ -164,7 +164,11 @@ export default function OperatorUsers({ users }: Props) {
                                                     </td>
                                                     <td className="py-4 pr-4">
                                                         <Badge>
-                                                            {userRoleLabel[user.role]}
+                                                            {
+                                                                userRoleLabel[
+                                                                    user.role
+                                                                ]
+                                                            }
                                                         </Badge>
                                                     </td>
                                                     <td className="text-muted-foreground py-4 pr-4">
@@ -195,7 +199,9 @@ export default function OperatorUsers({ users }: Props) {
                                                                 size="sm"
                                                                 variant="outline"
                                                                 onClick={() =>
-                                                                    openEdit(user)
+                                                                    openEdit(
+                                                                        user,
+                                                                    )
                                                                 }
                                                             >
                                                                 <Pencil />
@@ -207,7 +213,9 @@ export default function OperatorUsers({ users }: Props) {
                                                                     url={UserController.destroy.url(
                                                                         user.id,
                                                                     )}
-                                                                    only={['users']}
+                                                                    only={[
+                                                                        'users',
+                                                                    ]}
                                                                     itemName={
                                                                         user.email
                                                                     }
@@ -347,7 +355,9 @@ function UserCard({ user, currentUserId, onEdit }: UserCardProps) {
                     <Badge className="mt-0.5">{userRoleLabel[user.role]}</Badge>
                 </div>
                 <div>
-                    <p className="text-muted-foreground text-xs">Status Email</p>
+                    <p className="text-muted-foreground text-xs">
+                        Status Email
+                    </p>
                     <p className="mt-0.5 text-xs">
                         {user.email_verified_at
                             ? 'Terverifikasi'

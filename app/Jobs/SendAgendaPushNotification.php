@@ -12,7 +12,7 @@ class SendAgendaPushNotification implements ShouldQueue
     use Queueable;
 
     /**
-     * @param  array{title: string, body: string}  $agenda
+     * @param  array{title: string, start_time: string}  $agenda
      */
     public function __construct(
         public int $userId,

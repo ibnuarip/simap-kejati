@@ -1,7 +1,7 @@
 <?php
 
 test('the application timezone follows the APP_TIMEZONE environment variable', function () {
-    expect(config('app.timezone'))->toBe(env('APP_TIMEZONE', 'UTC'));
+    expect(config('app.timezone'))->toBe(env('APP_TIMEZONE', 'Asia/Jakarta'));
 });
 
 test('the default PHP timezone is kept in sync with the configured application timezone', function () {

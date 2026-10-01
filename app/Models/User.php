@@ -55,6 +55,9 @@ class User extends Authenticatable implements PasskeyUser
         return $this->role === 'wakajati';
     }
 
+    /**
+     * @return HasMany<PushSubscription, $this>
+     */
     public function pushSubscriptions(): HasMany
     {
         return $this->hasMany(PushSubscription::class);

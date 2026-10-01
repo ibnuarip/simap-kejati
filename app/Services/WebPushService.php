@@ -41,6 +41,9 @@ class WebPushService
         return filled($key) ? (string) $key : null;
     }
 
+    /**
+     * @param  array{endpoint: string, public_key: string, auth_secret: string, user_agent?: string|null}  $subscription
+     */
     public function subscribe(array $subscription, ?string $name, User $user): PushSubscription
     {
         return PushSubscription::create([
@@ -61,6 +64,7 @@ class WebPushService
     /**
      * Kirim payload ke semua subscription milik user.
      *
+     * @param  array<string, mixed>  $payload
      * @return int jumlah subscription yang berhasil dikirim
      */
     public function sendToUser(User $user, array $payload): int
@@ -76,6 +80,7 @@ class WebPushService
 
     /**
      * @param  array<int, PushSubscription|array{endpoint: string, public_key?: string, auth_secret?: string}>  $subscriptions
+     * @param  array<string, mixed>  $payload
      */
     public function sendToSubscriptions(array $subscriptions, array $payload): int
     {

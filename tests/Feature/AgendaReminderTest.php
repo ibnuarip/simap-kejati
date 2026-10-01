@@ -6,19 +6,27 @@ use App\Models\Event;
 use App\Models\Leader;
 use App\Models\PushSubscription;
 use App\Models\User;
+use App\Services\WebPushService;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Queue;
+
+beforeEach(function () {
+    // Command hanya butuh isConfigured(); pengiriman asli tidak pernah
+    // terjadi karena Queue::fake. Mock ini membuat test independen dari
+    // VAPID keys di environment (mis. CI yang memakai .env.example).
+    // makePartial: method lain (subscribe/unsubscribe) tetap berjalan asli.
+    $this->mock(WebPushService::class, function ($mock) {
+        $mock->makePartial();
+        $mock->shouldReceive('isConfigured')->andReturn(true);
+    });
+});
 
 function createSubscribedKajati(array $reminderHours = ['1']): User
 {
     $user = User::factory()->kajati()->create(['reminder_hours' => $reminderHours]);
 
-    PushSubscription::create([
+    PushSubscription::factory()->create([
         'user_id' => $user->id,
-        'endpoint' => 'https://push.example.com/sub/'.$user->id,
-        'public_key' => 'test-public-key',
-        'auth_secret' => 'test-auth-secret',
-        'name' => 'Test Device',
     ]);
 
     return $user;
@@ -121,4 +129,21 @@ test('leadership can subscribe and unsubscribe a push endpoint', function () {
         ->assertJson(['success' => true]);
 
     expect(PushSubscription::where('endpoint', $endpoint)->exists())->toBeFalse();
+});
+
+test('reminder command skips everything when web push is not configured', function () {
+    Queue::fake();
+
+    $this->mock(WebPushService::class, function ($mock) {
+        $mock->shouldReceive('isConfigured')->andReturn(false);
+    });
+
+    createSubscribedKajati(['1']);
+    $start = now(config('app.timezone'))->startOfMinute()->addHour();
+    createKajatiEvent($start);
+
+    $this->artisan('agenda:process-reminders')->assertOk();
+
+    Queue::assertNotPushed(SendAgendaPushNotification::class);
+    expect(AgendaReminderLog::count())->toBe(0);
 });

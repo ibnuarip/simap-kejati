@@ -96,8 +96,8 @@ export default function LeadershipNotifications({ reminderTimings }: Props) {
                         {!push.isSupported ? (
                             <p className="text-muted-foreground text-sm">
                                 Browser ini tidak mendukung push notification.
-                                Gunakan Chrome, Edge, Firefox, atau Safari
-                                versi terbaru.
+                                Gunakan Chrome, Edge, Firefox, atau Safari versi
+                                terbaru.
                             </p>
                         ) : (
                             <div className="flex flex-wrap items-center justify-between gap-4">
@@ -123,9 +123,7 @@ export default function LeadershipNotifications({ reminderTimings }: Props) {
                                 </p>
                                 <Button
                                     variant={
-                                        push.subscribed
-                                            ? 'outline'
-                                            : 'default'
+                                        push.subscribed ? 'outline' : 'default'
                                     }
                                     onClick={() =>
                                         push.subscribed
