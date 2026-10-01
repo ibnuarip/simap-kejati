@@ -18,6 +18,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Percayai header X-Forwarded-* dari reverse proxy / TLS terminator
+        // (cloudflared tunnel, load balancer production). Tanpa ini, URL asset
+        // dan deteksi HTTPS selalu memakai skema http origin.
+        $middleware->trustProxies(at: '*');
+
         $middleware->alias([
             'role' => EnsureRole::class,
         ]);

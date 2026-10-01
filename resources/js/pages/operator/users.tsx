@@ -81,7 +81,7 @@ export default function OperatorUsers({ users }: Props) {
                             pengguna sistem.
                         </p>
                     </div>
-                    <Button onClick={openCreate}>
+                    <Button onClick={openCreate} className="w-full sm:w-auto">
                         <Plus />
                         Tambah Pengguna
                     </Button>
@@ -91,7 +91,7 @@ export default function OperatorUsers({ users }: Props) {
                     <CardHeader>
                         <CardTitle>Daftar Pengguna</CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="px-4 sm:px-6">
                         {users.length === 0 ? (
                             <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed p-10 text-center">
                                 <X className="text-muted-foreground size-6" />
@@ -101,8 +101,8 @@ export default function OperatorUsers({ users }: Props) {
                             </div>
                         ) : (
                             <>
-                                {/* Mobile (<640px): card list */}
-                                <div className="flex flex-col gap-3 sm:hidden">
+                                {/* HP & tablet (<1024px): card list */}
+                                <div className="flex flex-col gap-3 lg:hidden">
                                     {users.map((user) => (
                                         <UserCard
                                             key={user.id}
@@ -113,9 +113,9 @@ export default function OperatorUsers({ users }: Props) {
                                     ))}
                                 </div>
 
-                                {/* Tablet & desktop (≥640px): tabel scrollable */}
-                                <div className="hidden sm:block overflow-x-auto">
-                                    <table className="w-full text-left text-sm">
+                                {/* Desktop (≥1024px): tabel scrollable */}
+                                <div className="hidden overflow-x-auto lg:block">
+                                    <table className="w-full min-w-[720px] text-left text-sm">
                                         <thead className="border-border text-muted-foreground border-b text-xs tracking-wide uppercase">
                                             <tr>
                                                 <th className="py-3 pr-4 font-medium">

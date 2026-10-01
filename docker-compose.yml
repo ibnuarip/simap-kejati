@@ -52,6 +52,10 @@ services:
             NODE_ENV: development
             VITE_APP_NAME: ${VITE_APP_NAME:-SIMAP}
             VITE_HMR_HOST: ${VITE_HMR_HOST:-localhost}
+            # WAJIB: dibaca laravel-vite-plugin untuk CORS dev-server + halaman
+            # info :5173. Tanpa ini APP_URL tampil "undefined" dan origin
+            # aplikasi tidak masuk daftar CORS yang diizinkan.
+            APP_URL: 'http://localhost:${SIMAP_HTTP_PORT:-8080}'
             WAYFINDER_COMMAND: 'true'
         ports:
             - '${SIMAP_VITE_PORT:-5173}:5173'
