@@ -7,6 +7,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { KeyRound } from 'lucide-react';
+import { usePasskeyVerify } from '@laravel/passkeys/react';
 import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
@@ -14,9 +16,22 @@ import { request } from '@/routes/password';
 type Props = {
     status?: string;
     canResetPassword: boolean;
+    canUsePasskey?: boolean;
 };
 
-export default function Login({ status, canResetPassword }: Props) {
+export default function Login({ status, canResetPassword, canUsePasskey }: Props) {
+    const { verify, isLoading, error, isSupported } = usePasskeyVerify({
+        onSuccess: (response) => {
+            if (response.redirect) {
+                window.location.href = response.redirect;
+            }
+        },
+        onError: () => {
+            // User cancelled the passkey dialog — no action needed.
+            // User can retry or use the password form.
+        },
+    });
+
     return (
         <>
             <Head title="Log in" />
@@ -98,6 +113,52 @@ export default function Login({ status, canResetPassword }: Props) {
                     </>
                 )}
             </Form>
+
+            {canUsePasskey === true && isSupported && (
+                <div className="mt-6">
+                    <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t border-border" />
+                        </div>
+                        <div className="relative flex justify-center">
+                            <span className="bg-background px-2 text-sm">
+                                Or continue with
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="mt-6">
+                        <Button
+                            type="button"
+                            data-test="passkey-login-button"
+                            variant="outline"
+                            onClick={() => verify()}
+                            disabled={isLoading}
+                            className="w-full"
+                        >
+                            {isLoading ? (
+                                <span className="flex items-center gap-2">
+                                    <Spinner className="h-4 w-4" />
+                                    Verifying...
+                                </span>
+                            ) : (
+                                <span className="flex items-center gap-2">
+                                    <KeyRound className="h-4 w-4" />
+                                    Sign in with a passkey
+                                </span>
+                            )}
+                        </Button>
+                        {error && !/cancel/i.test(error) ? (
+                            <p
+                                data-test="passkey-login-error"
+                                className="text-destructive mt-2 text-center text-sm"
+                            >
+                                {error}
+                            </p>
+                        ) : null}
+                    </div>
+                </div>
+            )}
 
             {status && (
                 <div className="mb-4 text-center text-sm font-medium text-green-600">

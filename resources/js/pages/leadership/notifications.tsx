@@ -1,6 +1,7 @@
 import { Head, useForm } from '@inertiajs/react';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
-import { BellRing, Clock, LoaderCircle } from 'lucide-react';
+import { Bell, BellOff, BellRing, Clock, LoaderCircle } from 'lucide-react';
 import NotificationController from '@/actions/App/Http/Controllers/Leadership/NotificationController';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,6 +12,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { usePushNotifications } from '@/hooks/use-push-notifications';
 import { dashboard as leadershipDashboard } from '@/routes/leadership';
 
 const TIMING_OPTIONS = [
@@ -28,6 +30,14 @@ export default function LeadershipNotifications({ reminderTimings }: Props) {
     const { data, setData, post, processing } = useForm({
         timings: reminderTimings.length > 0 ? reminderTimings : ['24'],
     });
+
+    const push = usePushNotifications();
+
+    useEffect(() => {
+        if (push.errorMessage) {
+            toast.error(push.errorMessage);
+        }
+    }, [push.errorMessage]);
 
     const toggleTiming = (value: string) => {
         const current = data.timings;
@@ -73,13 +83,79 @@ export default function LeadershipNotifications({ reminderTimings }: Props) {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
+                            <BellRing className="size-4" />
+                            Notifikasi Push Perangkat Ini
+                        </CardTitle>
+                        <CardDescription>
+                            Aktifkan agar pengingat agenda muncul langsung di
+                            layar perangkat ini, sesuai waktu pengingat yang
+                            Anda pilih di bawah.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {!push.isSupported ? (
+                            <p className="text-muted-foreground text-sm">
+                                Browser ini tidak mendukung push notification.
+                                Gunakan Chrome, Edge, Firefox, atau Safari
+                                versi terbaru.
+                            </p>
+                        ) : (
+                            <div className="flex flex-wrap items-center justify-between gap-4">
+                                <p className="flex items-center gap-2 text-sm">
+                                    {push.subscribed ? (
+                                        <>
+                                            <Bell className="size-4 text-green-600" />
+                                            <span className="font-medium">
+                                                Notifikasi aktif di perangkat
+                                                ini.
+                                            </span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <BellOff className="text-muted-foreground size-4" />
+                                            <span className="text-muted-foreground">
+                                                {push.permission === 'denied'
+                                                    ? 'Izin notifikasi diblokir browser. Aktifkan lewat pengaturan situs browser.'
+                                                    : 'Notifikasi belum aktif di perangkat ini.'}
+                                            </span>
+                                        </>
+                                    )}
+                                </p>
+                                <Button
+                                    variant={
+                                        push.subscribed
+                                            ? 'outline'
+                                            : 'default'
+                                    }
+                                    onClick={() =>
+                                        push.subscribed
+                                            ? push.disable()
+                                            : push.enable()
+                                    }
+                                    disabled={push.isLoading}
+                                >
+                                    {push.isLoading ? (
+                                        <LoaderCircle className="animate-spin" />
+                                    ) : null}
+                                    {push.subscribed
+                                        ? 'Nonaktifkan'
+                                        : 'Aktifkan Notifikasi'}
+                                </Button>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
                             <Clock className="size-4" />
                             Waktu Pengingat
                         </CardTitle>
                         <CardDescription>
                             Pilih satu atau lebih waktu pengingat sebelum agenda
-                            dimulai. Pengingat akan dikirim ke email Anda sesuai
-                            pilihan ini.
+                            dimulai. Pengingat akan muncul langsung di perangkat
+                            Anda sesuai pilihan ini.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -119,8 +195,8 @@ export default function LeadershipNotifications({ reminderTimings }: Props) {
                 <div className="flex items-center justify-between gap-4">
                     <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
                         <BellRing className="size-3.5 shrink-0" />
-                        Pengaturan akan dikirim sebagai email pengingat sesuai
-                        waktu yang dipilih.
+                        Pengaturan akan dikirim sebagai notifikasi push ke
+                        perangkat Anda sesuai waktu yang dipilih.
                     </p>
                     <Button onClick={handleSubmit} disabled={processing}>
                         {processing ? (

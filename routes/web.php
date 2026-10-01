@@ -14,6 +14,7 @@ use App\Http\Controllers\Protokol\CalendarController as ProtokolCalendarControll
 use App\Http\Controllers\Protokol\DashboardController as ProtokolDashboardController;
 use App\Http\Controllers\Protokol\EventController as ProtokolEventController;
 use App\Http\Controllers\Protokol\ExportController as ProtokolExportController;
+use App\Http\Controllers\PushNotificationController;
 use App\Http\Responses\LoginResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -74,6 +75,12 @@ Route::middleware(['auth', 'verified', 'role:kajati,wakajati'])->prefix('leaders
     Route::get('/calendar', [LeadershipCalendarController::class, 'index'])->name('calendar.index');
     Route::get('/notifications', [LeadershipNotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications', [LeadershipNotificationController::class, 'update'])->name('notifications.update');
+
+    // Push Notification API
+    Route::post('/push/subscribe', [PushNotificationController::class, 'subscribe'])->name('push.subscribe');
+    Route::post('/push/unsubscribe', [PushNotificationController::class, 'unsubscribe'])->name('push.unsubscribe');
+    Route::get('/push/status', [PushNotificationController::class, 'status'])->name('push.status');
+    Route::get('/push/vapid-key', [PushNotificationController::class, 'vapidKey'])->name('push.vapid-key');
 });
 
 require __DIR__.'/settings.php';
