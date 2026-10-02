@@ -29,11 +29,15 @@ function TrendTooltip({ active, payload, label }: TrendTooltipProps) {
     const value = payload[0]?.value;
 
     return (
-        <div className="bg-card rounded-lg border px-3 py-2 text-xs shadow-md">
-            <p className="font-medium">{label}</p>
-            <p className="text-muted-foreground">
-                Agenda masuk:{' '}
-                <span className="text-foreground font-semibold">{value}</span>
+        <div className="bg-card min-w-36 rounded-xl border px-3.5 py-2.5 text-xs shadow-lg">
+            <p className="text-muted-foreground mb-1 font-medium tracking-wide uppercase">
+                {label}
+            </p>
+            <p className="flex items-center justify-between gap-4">
+                <span className="text-muted-foreground">Agenda masuk</span>
+                <span className="text-foreground text-sm font-bold tabular-nums">
+                    {value}
+                </span>
             </p>
         </div>
     );
@@ -52,11 +56,11 @@ export function AgendaTrendChart({ data }: Props) {
     }
 
     return (
-        <div className="h-64 w-full">
+        <div className="h-60 w-full sm:h-72">
             <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
                     data={data}
-                    margin={{ top: 8, right: 8, left: -16, bottom: 0 }}
+                    margin={{ top: 12, right: 12, left: -12, bottom: 0 }}
                 >
                     <defs>
                         <linearGradient
@@ -69,7 +73,12 @@ export function AgendaTrendChart({ data }: Props) {
                             <stop
                                 offset="0%"
                                 stopColor={colors.primary}
-                                stopOpacity={0.22}
+                                stopOpacity={0.32}
+                            />
+                            <stop
+                                offset="60%"
+                                stopColor={colors.primary}
+                                stopOpacity={0.08}
                             />
                             <stop
                                 offset="100%"
@@ -82,33 +91,53 @@ export function AgendaTrendChart({ data }: Props) {
                     <CartesianGrid
                         vertical={false}
                         stroke={colors.border}
-                        strokeDasharray="3 3"
+                        strokeDasharray="4 4"
+                        strokeOpacity={0.7}
                     />
                     <XAxis
                         dataKey="label"
                         axisLine={false}
                         tick={{ fontSize: 12, fill: colors.mutedForeground }}
                         tickLine={false}
+                        tickMargin={10}
+                        minTickGap={8}
                     />
                     <YAxis
                         allowDecimals={false}
                         axisLine={false}
                         tick={{ fontSize: 12, fill: colors.mutedForeground }}
                         tickLine={false}
-                        width={32}
+                        tickMargin={4}
+                        width={30}
                     />
                     <Tooltip
                         content={<TrendTooltip />}
-                        cursor={{ stroke: colors.border }}
+                        cursor={{
+                            stroke: colors.primary,
+                            strokeOpacity: 0.3,
+                            strokeWidth: 1.5,
+                        }}
                     />
                     <Area
                         type="monotone"
                         dataKey="total"
                         name="Agenda"
                         stroke={colors.primary}
-                        strokeWidth={2}
+                        strokeWidth={2.5}
+                        strokeLinecap="round"
                         fill={`url(#${gradientId})`}
-                        activeDot={{ r: 4, fill: colors.primary }}
+                        dot={{
+                            r: 3.5,
+                            fill: colors.primary,
+                            strokeWidth: 0,
+                            fillOpacity: 0.9,
+                        }}
+                        activeDot={{
+                            r: 5.5,
+                            fill: colors.primary,
+                            stroke: 'var(--card)',
+                            strokeWidth: 2.5,
+                        }}
                     />
                 </AreaChart>
             </ResponsiveContainer>

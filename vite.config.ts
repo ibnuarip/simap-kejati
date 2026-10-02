@@ -45,6 +45,11 @@ export default defineConfig({
             host: process.env.VITE_HMR_HOST || 'localhost',
         },
         watch: {
+            // polling agar perubahan file dari bind-mount Windows tetap
+            // terdeteksi (inotify tidak andal di Docker Desktop). Aktifkan
+            // via VITE_WATCH_POLLING=true (sudah diset di service node).
+            usePolling: process.env.VITE_WATCH_POLLING === 'true',
+            interval: Number(process.env.VITE_WATCH_INTERVAL ?? 500),
             ignored: [
                 '**/.agents/**',
                 '**/.claude/**',

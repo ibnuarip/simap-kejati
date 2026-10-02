@@ -94,7 +94,7 @@ class DashboardController extends Controller
         $recentEvents = Event::query()
             ->with('creator:id,name')
             ->orderByDesc('created_at')
-            ->limit(8)
+            ->limit(5)
             ->get()
             ->map(fn (Event $event): array => [
                 'id' => $event->id,

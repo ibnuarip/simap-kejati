@@ -50,6 +50,9 @@ services:
         working_dir: /app
         environment:
             NODE_ENV: development
+            # Polling agar Vite HMR selalu mendeteksi perubahan file dari
+            # bind-mount Windows tanpa perlu restart container.
+            VITE_WATCH_POLLING: 'true'
             VITE_APP_NAME: ${VITE_APP_NAME:-SIMAP}
             VITE_HMR_HOST: ${VITE_HMR_HOST:-localhost}
             # WAJIB: dibaca laravel-vite-plugin untuk CORS dev-server + halaman

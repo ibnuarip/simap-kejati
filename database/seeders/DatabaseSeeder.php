@@ -171,5 +171,11 @@ class DatabaseSeeder extends Seeder
                 'created_by' => $protokol->id,
             ]
         );
+
+        // 6. Data dummy agenda (100 baris, awalan judul "[DUMMY]").
+        // Khusus non-production agar seeding production tetap bersih.
+        if (app()->isLocal()) {
+            $this->call(AgendaDummySeeder::class);
+        }
     }
 }

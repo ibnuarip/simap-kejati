@@ -141,7 +141,7 @@ export default function ProtokolDashboard({
                         <CardHeader>
                             <CardTitle>Agenda Mendatang</CardTitle>
                             <CardDescription>
-                                5 agenda terjadwal berikutnya.
+                                3 agenda terjadwal berikutnya.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="flex flex-col gap-2">

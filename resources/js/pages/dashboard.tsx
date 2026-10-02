@@ -4,7 +4,10 @@ import {
     CalendarCheck,
     CalendarClock,
     Database,
+    Minus,
     Tags,
+    TrendingDown,
+    TrendingUp,
     UserCheck,
     Users,
 } from 'lucide-react';
@@ -39,6 +42,23 @@ type Props = {
 
 const STATUS_KEYS = ['scheduled', 'ongoing', 'completed', 'cancelled'] as const;
 
+const STATUS_DOT: Record<(typeof STATUS_KEYS)[number], string> = {
+    scheduled: '#2563eb',
+    ongoing: '#d97706',
+    completed: '#008752',
+    cancelled: '#dc2626',
+};
+
+function shortMonthLabel(date: Date): string {
+    return date
+        .toLocaleDateString('id-ID', { month: 'short' })
+        .replace('.', '');
+}
+
+function toLocalDate(dateTime: string): Date {
+    return new Date(dateTime.replace(' ', 'T'));
+}
+
 export default function Dashboard({
     stats,
     upcomingEvents,
@@ -47,6 +67,20 @@ export default function Dashboard({
     categoryDistribution,
 }: Props) {
     const { auth } = usePage().props;
+
+    const trendTotal = eventsTrend.reduce((sum, point) => sum + point.total, 0);
+    const trendLast = eventsTrend[eventsTrend.length - 1]?.total ?? 0;
+    const trendPrevious = eventsTrend[eventsTrend.length - 2]?.total ?? 0;
+    const trendDiff = trendLast - trendPrevious;
+    const trendPercent =
+        trendPrevious > 0
+            ? Math.round((trendDiff / trendPrevious) * 100)
+            : null;
+
+    const statusTotal = STATUS_KEYS.reduce(
+        (sum, key) => sum + (stats.eventsByStatus[key] ?? 0),
+        0,
+    );
 
     const statCards = [
         {
@@ -104,11 +138,11 @@ export default function Dashboard({
                     </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                    {statCards.map((stat) => (
+                <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-5">
+                    {statCards.map((stat, index) => (
                         <Card
                             key={stat.title}
-                            className="transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                            className={`transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${index === statCards.length - 1 ? 'max-sm:col-span-2' : ''}`}
                         >
                             <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-1">
                                 <CardDescription className="font-medium">
@@ -131,26 +165,60 @@ export default function Dashboard({
                 </div>
 
                 <div className="grid gap-4 lg:grid-cols-2">
-                    <Card>
+                    <Card className="min-w-0">
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <CalendarClock className="size-4" />
-                                Tren Aktivitas Agenda
-                            </CardTitle>
-                            <CardDescription>
-                                Jumlah agenda masuk per bulan dalam 6 bulan
-                                terakhir.
-                            </CardDescription>
+                            <div className="flex flex-wrap items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                    <CardTitle className="flex items-center gap-2">
+                                        <CalendarClock className="size-4 shrink-0" />
+                                        Tren Aktivitas Agenda
+                                    </CardTitle>
+                                    <CardDescription>
+                                        Jumlah agenda masuk per bulan dalam 6
+                                        bulan terakhir.
+                                    </CardDescription>
+                                </div>
+                                <div className="flex shrink-0 items-center gap-2.5">
+                                    <div className="text-right">
+                                        <p className="text-foreground text-2xl leading-none font-bold tabular-nums">
+                                            {trendTotal}
+                                        </p>
+                                        <p className="text-muted-foreground mt-1 text-[11px] font-medium tracking-wide uppercase">
+                                            Total 6 bulan
+                                        </p>
+                                    </div>
+                                    <span
+                                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold tabular-nums ${
+                                            trendDiff > 0
+                                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                                                : trendDiff < 0
+                                                  ? 'bg-red-500/10 text-red-600 dark:text-red-400'
+                                                  : 'bg-muted text-muted-foreground'
+                                        }`}
+                                    >
+                                        {trendDiff > 0 ? (
+                                            <TrendingUp className="size-3.5" />
+                                        ) : trendDiff < 0 ? (
+                                            <TrendingDown className="size-3.5" />
+                                        ) : (
+                                            <Minus className="size-3.5" />
+                                        )}
+                                        {trendPercent === null
+                                            ? `${trendDiff >= 0 ? '+' : ''}${trendDiff}`
+                                            : `${trendDiff >= 0 ? '+' : ''}${trendPercent}%`}
+                                    </span>
+                                </div>
+                            </div>
                         </CardHeader>
                         <CardContent>
                             <AgendaTrendChart data={eventsTrend} />
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="min-w-0">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
-                                <Tags className="size-4" />
+                                <Tags className="size-4 shrink-0" />
                                 Distribusi Kategori Kegiatan
                             </CardTitle>
                             <CardDescription>
@@ -166,10 +234,10 @@ export default function Dashboard({
                 </div>
 
                 <div className="grid gap-4 lg:grid-cols-3">
-                    <Card className="lg:col-span-2">
+                    <Card className="min-w-0 lg:col-span-2">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
-                                <CalendarClock className="size-4" />
+                                <CalendarClock className="size-4 shrink-0" />
                                 Agenda Mendatang
                             </CardTitle>
                             <CardDescription>
@@ -182,44 +250,115 @@ export default function Dashboard({
                                     Belum ada agenda mendatang.
                                 </p>
                             ) : (
-                                <div className="divide-border flex flex-col divide-y">
-                                    {upcomingEvents.map((event) => (
-                                        <div
-                                            key={event.id}
-                                            className="hover:bg-muted/70 -mx-3 flex flex-col gap-3 rounded-lg px-3 py-4 transition-colors duration-200 first:mt-0 first:pt-0 last:pb-0"
-                                        >
-                                            <AgendaItemRow event={event} />
-                                        </div>
-                                    ))}
-                                </div>
+                                <ul className="divide-border flex flex-col divide-y">
+                                    {upcomingEvents.map((event) => {
+                                        const date = event.start_time
+                                            ? toLocalDate(event.start_time)
+                                            : null;
+
+                                        return (
+                                            <li
+                                                key={event.id}
+                                                className="hover:bg-muted/60 -mx-2 flex items-start gap-3 rounded-xl px-2 py-3.5 transition-colors duration-200 first:-mt-2 last:-mb-2"
+                                            >
+                                                <div className="bg-primary/10 text-primary flex size-12 shrink-0 flex-col items-center justify-center rounded-xl">
+                                                    <span className="text-base leading-none font-bold tabular-nums">
+                                                        {date?.getDate() ?? '—'}
+                                                    </span>
+                                                    <span className="mt-1 text-[10px] leading-none font-semibold tracking-wide uppercase">
+                                                        {date
+                                                            ? shortMonthLabel(
+                                                                  date,
+                                                              )
+                                                            : '—'}
+                                                    </span>
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <AgendaItemRow
+                                                        event={event}
+                                                    />
+                                                </div>
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
                             )}
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="min-w-0">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
-                                <Database className="size-4" />
+                                <Database className="size-4 shrink-0" />
                                 Ringkasan Status Agenda
                             </CardTitle>
                             <CardDescription>
                                 Distribusi status seluruh agenda.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="flex flex-col gap-2">
-                            {STATUS_KEYS.map((key) => (
-                                <div
-                                    key={key}
-                                    className="hover:bg-muted/60 flex items-center justify-between rounded-lg border p-3 transition-colors duration-200"
-                                >
-                                    <Badge variant={agendaStatusVariant[key]}>
-                                        {agendaStatusLabel[key]}
-                                    </Badge>
-                                    <span className="text-primary text-lg font-bold tabular-nums">
-                                        {stats.eventsByStatus[key]}
-                                    </span>
-                                </div>
-                            ))}
+                        <CardContent className="flex flex-col gap-3.5">
+                            {STATUS_KEYS.map((key) => {
+                                const value = stats.eventsByStatus[key] ?? 0;
+                                const percent =
+                                    statusTotal > 0
+                                        ? Math.round(
+                                              (value / statusTotal) * 100,
+                                          )
+                                        : 0;
+
+                                return (
+                                    <div
+                                        key={key}
+                                        className="flex flex-col gap-1.5"
+                                    >
+                                        <div className="flex items-center justify-between gap-2">
+                                            <span className="flex min-w-0 items-center gap-2 text-sm font-medium">
+                                                <span
+                                                    className="size-2.5 shrink-0 rounded-full"
+                                                    style={{
+                                                        backgroundColor:
+                                                            STATUS_DOT[key],
+                                                    }}
+                                                />
+                                                <span className="truncate">
+                                                    {agendaStatusLabel[key]}
+                                                </span>
+                                            </span>
+                                            <span className="shrink-0 text-sm tabular-nums">
+                                                <span className="text-foreground font-bold">
+                                                    {value}
+                                                </span>{' '}
+                                                <span className="text-muted-foreground text-xs font-medium">
+                                                    · {percent}%
+                                                </span>
+                                            </span>
+                                        </div>
+                                        <div
+                                            className="bg-muted h-1.5 overflow-hidden rounded-full"
+                                            role="progressbar"
+                                            aria-valuenow={percent}
+                                            aria-valuemin={0}
+                                            aria-valuemax={100}
+                                            aria-label={agendaStatusLabel[key]}
+                                        >
+                                            <div
+                                                className="h-full rounded-full transition-[width] duration-500"
+                                                style={{
+                                                    width: `${percent}%`,
+                                                    backgroundColor:
+                                                        STATUS_DOT[key],
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                            <div className="text-muted-foreground mt-1 flex items-center justify-between border-t pt-3 text-xs font-medium">
+                                <span>Total agenda</span>
+                                <span className="text-foreground text-sm font-bold tabular-nums">
+                                    {statusTotal}
+                                </span>
+                            </div>
                         </CardContent>
                     </Card>
                 </div>

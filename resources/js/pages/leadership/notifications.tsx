@@ -191,11 +191,6 @@ export default function LeadershipNotifications({ reminderTimings }: Props) {
                 </Card>
 
                 <div className="flex items-center justify-between gap-4">
-                    <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
-                        <BellRing className="size-3.5 shrink-0" />
-                        Pengaturan akan dikirim sebagai notifikasi push ke
-                        perangkat Anda sesuai waktu yang dipilih.
-                    </p>
                     <Button onClick={handleSubmit} disabled={processing}>
                         {processing ? (
                             <LoaderCircle className="animate-spin" />
