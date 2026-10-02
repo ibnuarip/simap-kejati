@@ -21,8 +21,12 @@ it('redirects an authenticated leader to the leadership dashboard', function (st
         ->assertRedirect('/leadership');
 })->with(['kajati', 'wakajati']);
 
-it('shows the welcome page to guests', function () {
+it('shows the login homepage to guests', function () {
     $this->get(route('home'))
         ->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->component('welcome'));
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('home')
+            ->has('canResetPassword')
+            ->has('canUsePasskey')
+        );
 });

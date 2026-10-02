@@ -1,25 +1,20 @@
 <?php
 
-use Laravel\Fortify\Features;
+test('registration screen redirects to login', function () {
+    $response = $this->get('/register');
 
-beforeEach(function () {
-    $this->skipUnlessFortifyHas(Features::registration());
+    $response->assertRedirect(route('login'));
 });
 
-test('registration screen can be rendered', function () {
-    $response = $this->get(route('register'));
-
-    $response->assertOk();
-});
-
-test('new users can register', function () {
-    $response = $this->post(route('register.store'), [
+test('registration requests are redirected to login without creating users', function () {
+    $response = $this->post('/register', [
         'name' => 'Test User',
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
     ]);
 
-    $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
+    $response->assertRedirect(route('login'));
+    $this->assertGuest();
+    $this->assertDatabaseCount('users', 0);
 });

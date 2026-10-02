@@ -20,6 +20,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Laravel\Fortify\Features;
 
 Route::get('/', function (Request $request) {
     $user = $request->user();
@@ -28,8 +29,17 @@ Route::get('/', function (Request $request) {
         return Redirect::to(LoginResponse::homeForRole($user));
     }
 
-    return Inertia::render('welcome');
+    return Inertia::render('home', [
+        'canResetPassword' => Features::enabled(Features::resetPasswords()),
+        'canUsePasskey' => Features::enabled(Features::passkeys()),
+        'status' => $request->session()->get('status'),
+    ]);
 })->name('home');
+
+// Registrasi publik dinonaktifkan — akun hanya dibuat operator lewat
+// Kelola Pengguna. Fitur registrasi Fortify dimatikan sehingga route
+// /register tidak terdaftar; semua akses dialihkan ke halaman login.
+Route::match(['get', 'post', 'put', 'patch', 'delete'], '/register', fn () => Redirect::route('login'));
 
 Route::middleware(['auth', 'verified', 'role:operator'])->group(function () {
     Route::get('dashboard', [OperatorDashboardController::class, 'index'])->name('dashboard');

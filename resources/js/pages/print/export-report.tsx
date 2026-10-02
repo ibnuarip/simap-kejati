@@ -179,20 +179,6 @@ export default function ExportReport({
                     </p>
                 </div>
             </div>
-
-            <style>{`
-                @media print {
-                    body * {
-                        visibility: hidden;
-                    }
-                    .print\\:visible {
-                        visibility: visible;
-                    }
-                    .no-print {
-                        display: none !important;
-                    }
-                }
-            `}</style>
         </>
     );
 }

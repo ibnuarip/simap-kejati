@@ -110,7 +110,7 @@ export default function LeadershipDashboard({
                 </div>
 
                 <div className="grid gap-6 lg:grid-cols-2">
-                    <Card>
+                    <Card className="min-w-0">
                         <CardHeader>
                             <CardTitle>Agenda Hari Ini</CardTitle>
                             <CardDescription>
@@ -130,11 +130,11 @@ export default function LeadershipDashboard({
                                     </p>
                                 </div>
                             ) : (
-                                <div className="divide-border flex flex-col divide-y">
+                                <div className="divide-border flex min-w-0 flex-col divide-y">
                                     {todayEvents.map((event) => (
                                         <div
                                             key={event.id}
-                                            className="hover:bg-muted/70 -mx-3 rounded-lg px-3 py-4 transition-colors duration-200 first:mt-0 first:pt-0 last:pb-0"
+                                            className="hover:bg-muted/60 min-w-0 rounded-xl px-3 py-3.5 transition-colors duration-200"
                                         >
                                             <AgendaItemRow event={event} />
                                         </div>
@@ -144,7 +144,7 @@ export default function LeadershipDashboard({
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="min-w-0">
                         <CardHeader>
                             <CardTitle>Agenda Mendatang</CardTitle>
                             <CardDescription>
@@ -157,11 +157,11 @@ export default function LeadershipDashboard({
                                     Belum ada agenda mendatang.
                                 </p>
                             ) : (
-                                <div className="divide-border flex flex-col divide-y">
+                                <div className="divide-border flex min-w-0 flex-col divide-y">
                                     {upcomingEvents.map((event) => (
                                         <div
                                             key={event.id}
-                                            className="hover:bg-muted/70 -mx-3 rounded-lg px-3 py-4 transition-colors duration-200 first:mt-0 first:pt-0 last:pb-0"
+                                            className="hover:bg-muted/60 min-w-0 rounded-xl px-3 py-3.5 transition-colors duration-200"
                                         >
                                             <AgendaItemRow event={event} />
                                         </div>

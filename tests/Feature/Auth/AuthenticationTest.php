@@ -3,6 +3,7 @@
 use App\Models\User;
 use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Fortify\Features;
+use PragmaRX\Google2FA\Google2FA;
 
 test('login screen can be rendered', function () {
     $response = $this->get(route('login'));
@@ -41,6 +42,36 @@ test('users with two factor enabled are redirected to two factor challenge', fun
     $response->assertSessionHas('login.id', $user->id);
     $this->assertGuest();
 });
+
+test('users are redirected to their role dashboard after completing two factor challenge', function (string $role, string $dashboard) {
+    $this->skipUnlessFortifyHas(Features::twoFactorAuthentication());
+
+    Features::twoFactorAuthentication([
+        'confirm' => true,
+        'confirmPassword' => true,
+    ]);
+
+    $user = User::factory()->withTwoFactor()->create(['role' => $role]);
+    $user->forceFill(['two_factor_secret' => encrypt($secret = 'JBSWY3DPEHPK3PXP')])->save();
+
+    $this->post(route('login'), [
+        'email' => $user->email,
+        'password' => 'password',
+    ])->assertRedirect(route('two-factor.login'));
+
+    $code = (new Google2FA)->getCurrentOtp($secret);
+
+    $this->post(route('two-factor.login.store'), ['code' => $code])
+        ->assertRedirect($dashboard);
+
+    $this->assertAuthenticatedAs($user);
+    $this->get($dashboard)->assertOk();
+})->with([
+    'operator' => ['operator', '/dashboard'],
+    'protokol' => ['protokol', '/protokol'],
+    'kajati' => ['kajati', '/leadership'],
+    'wakajati' => ['wakajati', '/leadership'],
+]);
 
 test('users can not authenticate with invalid password', function () {
     $user = User::factory()->create();

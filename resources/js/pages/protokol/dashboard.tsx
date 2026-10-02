@@ -110,24 +110,24 @@ export default function ProtokolDashboard({
                 </div>
 
                 <div className="grid gap-6 lg:grid-cols-2">
-                    <Card>
+                    <Card className="min-w-0">
                         <CardHeader>
                             <CardTitle>Agenda Hari Ini</CardTitle>
                             <CardDescription>
                                 Kegiatan yang perlu dipantau hari ini.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="flex flex-col gap-2">
+                        <CardContent className="flex min-w-0 flex-col gap-2">
                             {todayEvents.length === 0 ? (
                                 <p className="text-muted-foreground rounded-lg border border-dashed p-6 text-center text-sm">
                                     Tidak ada agenda hari ini.
                                 </p>
                             ) : (
-                                <div className="divide-border flex flex-col divide-y">
+                                <div className="divide-border flex min-w-0 flex-col divide-y">
                                     {todayEvents.map((event) => (
                                         <div
                                             key={event.id}
-                                            className="hover:bg-muted/70 -mx-3 rounded-lg px-3 py-4 transition-colors duration-200 first:mt-0 first:pt-0 last:pb-0"
+                                            className="hover:bg-muted/60 min-w-0 rounded-xl px-3 py-3.5 transition-colors duration-200"
                                         >
                                             <AgendaItemRow event={event} />
                                         </div>
@@ -137,24 +137,24 @@ export default function ProtokolDashboard({
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="min-w-0">
                         <CardHeader>
                             <CardTitle>Agenda Mendatang</CardTitle>
                             <CardDescription>
                                 3 agenda terjadwal berikutnya.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="flex flex-col gap-2">
+                        <CardContent className="flex min-w-0 flex-col gap-2">
                             {upcomingEvents.length === 0 ? (
                                 <p className="text-muted-foreground rounded-lg border border-dashed p-6 text-center text-sm">
                                     Belum ada agenda mendatang.
                                 </p>
                             ) : (
-                                <div className="divide-border flex flex-col divide-y">
+                                <div className="divide-border flex min-w-0 flex-col divide-y">
                                     {upcomingEvents.map((event) => (
                                         <div
                                             key={event.id}
-                                            className="hover:bg-muted/70 -mx-3 rounded-lg px-3 py-4 transition-colors duration-200 first:mt-0 first:pt-0 last:pb-0"
+                                            className="hover:bg-muted/60 min-w-0 rounded-xl px-3 py-3.5 transition-colors duration-200"
                                         >
                                             <AgendaItemRow event={event} />
                                         </div>

@@ -16,7 +16,7 @@ export function AgendaItemRow({ event, showStatus = true }: Props) {
     const time = `${formatTime(event.start_time)} – ${formatTime(event.end_time)}`;
 
     return (
-        <div className="flex flex-col gap-1">
+        <div className="flex min-w-0 flex-col gap-1">
             <div className="flex flex-wrap items-center gap-2">
                 {showStatus && (
                     <Badge variant={agendaStatusVariant[event.status]}>
@@ -28,7 +28,7 @@ export function AgendaItemRow({ event, showStatus = true }: Props) {
                 </span>
             </div>
 
-            <p className="font-medium">{event.title}</p>
+            <p className="font-medium break-words">{event.title}</p>
 
             <p className="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-0.5 text-sm">
                 <span className="inline-flex min-w-0 items-center gap-1.5">
