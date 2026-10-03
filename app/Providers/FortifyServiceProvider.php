@@ -105,6 +105,13 @@ class FortifyServiceProvider extends ServiceProvider
             'status' => $request->session()->get('status'),
         ]));
 
+        // Tetap didaftarkan agar halaman register langsung berfungsi saat
+        // fitur dinyalakan via ALLOW_PUBLIC_REGISTRATION=true. Callback ini
+        // tidak pernah dipanggil selama fiturnya nonaktif.
+        Fortify::registerView(fn () => Inertia::render('auth/register', [
+            'passwordRules' => Password::defaults()->toPasswordRulesString(),
+        ]));
+
         Fortify::twoFactorChallengeView(fn () => Inertia::render('auth/two-factor-challenge'));
 
         Fortify::confirmPasswordView(fn () => Inertia::render('auth/confirm-password'));

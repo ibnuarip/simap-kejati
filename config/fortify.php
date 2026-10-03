@@ -160,8 +160,11 @@ return [
     |
     */
 
-    'features' => [
-        Features::registration(),
+    'features' => array_values(array_filter([
+        // Registrasi publik nonaktif secara default: akun hanya dibuat
+        // operator lewat Kelola Pengguna. Nyalakan sewaktu-waktu via
+        // ALLOW_PUBLIC_REGISTRATION=true tanpa mengubah kode lain.
+        env('ALLOW_PUBLIC_REGISTRATION', false) ? Features::registration() : null,
         Features::resetPasswords(),
         Features::emailVerification(),
         Features::twoFactorAuthentication([
@@ -172,6 +175,5 @@ return [
         Features::passkeys([
             'confirmPassword' => true,
         ]),
-    ],
-
+    ])),
 ];

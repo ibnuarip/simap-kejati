@@ -36,10 +36,13 @@ Route::get('/', function (Request $request) {
     ]);
 })->name('home');
 
-// Registrasi publik dinonaktifkan — akun hanya dibuat operator lewat
-// Kelola Pengguna. Fitur registrasi Fortify dimatikan sehingga route
-// /register tidak terdaftar; semua akses dialihkan ke halaman login.
-Route::match(['get', 'post', 'put', 'patch', 'delete'], '/register', fn () => Redirect::route('login'));
+// Registrasi publik nonaktif secara default — akun hanya dibuat operator
+// lewat Kelola Pengguna. Selama fitur mati, route /register Fortify tidak
+// terdaftar sehingga semua akses dialihkan ke halaman login. Nyalakan
+// sewaktu-waktu via ALLOW_PUBLIC_REGISTRATION=true (lihat config/fortify).
+if (! Features::enabled(Features::registration())) {
+    Route::match(['get', 'post', 'put', 'patch', 'delete'], '/register', fn () => Redirect::route('login'));
+}
 
 Route::middleware(['auth', 'verified', 'role:operator'])->group(function () {
     Route::get('dashboard', [OperatorDashboardController::class, 'index'])->name('dashboard');
