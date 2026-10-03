@@ -270,8 +270,8 @@ export default function OperatorEvents({
                 <Card>
                     <CardHeader className="flex flex-col gap-3 space-y-0 sm:flex-row sm:items-center sm:justify-between">
                         <CardTitle>Daftar Agenda</CardTitle>
-                        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
-                            <div className="flex flex-wrap gap-2">
+                        <div className="flex w-full min-w-0 flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+                            <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap">
                                 {FILTER_OPTIONS.map((option) => (
                                     <Button
                                         key={option.value}
@@ -282,12 +282,15 @@ export default function OperatorEvents({
                                         }
                                         size="sm"
                                         onClick={() => setFilter(option.value)}
+                                        className="min-w-0 sm:flex-none"
                                     >
-                                        {option.label}
+                                        <span className="truncate">
+                                            {option.label}
+                                        </span>
                                     </Button>
                                 ))}
                             </div>
-                            <div className="relative w-full sm:w-64">
+                            <div className="relative w-full sm:w-64 sm:shrink-0">
                                 <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
                                 <Input
                                     value={search}
@@ -588,10 +591,13 @@ function EventFields({
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="grid gap-2">
+                <div className="grid min-w-0 gap-2">
                     <Label htmlFor="leader_id">Pimpinan</Label>
                     <Select value={leaderId} onValueChange={onLeaderChange}>
-                        <SelectTrigger id="leader_id" className="w-full">
+                        <SelectTrigger
+                            id="leader_id"
+                            className="w-full min-w-0 overflow-hidden [&_[data-slot=select-value]]:min-w-0 [&_[data-slot=select-value]]:truncate"
+                        >
                             <SelectValue placeholder="Pilih pimpinan" />
                         </SelectTrigger>
                         <SelectContent>
@@ -599,6 +605,7 @@ function EventFields({
                                 <SelectItem
                                     key={leader.id}
                                     value={String(leader.id)}
+                                    className="break-words whitespace-normal"
                                 >
                                     {leader.name}
                                 </SelectItem>

@@ -99,6 +99,18 @@ export default function LeadershipNotifications({ reminderTimings }: Props) {
                                 Gunakan Chrome, Edge, Firefox, atau Safari versi
                                 terbaru.
                             </p>
+                        ) : push.isChecking ? (
+                            <div
+                                className="flex flex-wrap items-center justify-between gap-4"
+                                aria-busy="true"
+                                aria-label="Memeriksa status notifikasi"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <div className="bg-muted size-4 animate-pulse rounded-full" />
+                                    <div className="bg-muted h-4 w-48 animate-pulse rounded" />
+                                </div>
+                                <div className="bg-muted h-9 w-44 animate-pulse rounded-lg" />
+                            </div>
                         ) : (
                             <div className="flex flex-wrap items-center justify-between gap-4">
                                 <p className="flex items-center gap-2 text-sm">

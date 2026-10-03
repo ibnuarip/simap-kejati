@@ -86,6 +86,7 @@ export function usePushNotifications() {
                 : Notification.permission,
     });
     const [isLoading, setIsLoading] = useState(false);
+    const [isChecking, setIsChecking] = useState(true);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const isSupported =
@@ -96,6 +97,8 @@ export function usePushNotifications() {
 
     const refreshStatus = useCallback(async () => {
         if (!isSupported) {
+            setIsChecking(false);
+
             return;
         }
 
@@ -141,13 +144,37 @@ export function usePushNotifications() {
             }
 
             if (!serverEndpoints.includes(browserSubscription.endpoint)) {
-                // Sisa subscription basi di browser (mis. gagal simpan ke
-                // server sebelumnya) — bersihkan agar tampil MATI.
-                await browserSubscription.unsubscribe().catch(() => false);
-                setStatus({
-                    subscribed: false,
-                    permission: Notification.permission,
-                });
+                // Endpoint tidak dikenal akun ini: kemungkinan milik akun
+                // lain di perangkat yang sama (atau yatim). Pindahkan
+                // kepemilikannya ke user yang sedang login — tanpa endpoint
+                // baru, tanpa prompt izin, tanpa menumpuk data ganda.
+                // JANGAN hapus subscription browser: itu mematikan notif
+                // pemilik sebelumnya secara permanen di perangkat ini.
+                try {
+                    const json = browserSubscription.toJSON() as {
+                        keys?: { p256dh?: string; auth?: string };
+                    };
+
+                    await api(SUBSCRIBE_URL, {
+                        endpoint: browserSubscription.endpoint,
+                        public_key: json.keys?.p256dh,
+                        auth_secret: json.keys?.auth,
+                        name: navigator.userAgent.includes('Mobile')
+                            ? 'Perangkat Mobile'
+                            : 'Perangkat Desktop',
+                        user_agent: navigator.userAgent.slice(0, 255),
+                    });
+
+                    setStatus({
+                        subscribed: true,
+                        permission: Notification.permission,
+                    });
+                } catch {
+                    setStatus({
+                        subscribed: false,
+                        permission: Notification.permission,
+                    });
+                }
 
                 return;
             }
@@ -158,6 +185,8 @@ export function usePushNotifications() {
             });
         } catch {
             // Abaikan — status default (mati) sudah cukup.
+        } finally {
+            setIsChecking(false);
         }
     }, [isSupported]);
 
@@ -272,6 +301,7 @@ export function usePushNotifications() {
         subscribed: status.subscribed,
         permission: status.permission,
         isLoading,
+        isChecking,
         errorMessage,
         enable,
         disable,

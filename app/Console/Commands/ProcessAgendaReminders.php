@@ -65,7 +65,15 @@ class ProcessAgendaReminders extends Command
                 foreach ($reminderHours as $hours) {
                     $remindAt = $agenda->start_time->copy()->subHours($hours)->startOfMinute();
 
-                    if (! $remindAt->equalTo($windowStart)) {
+                    // Tepat waktu: jendela pengingat jatuh pada menit ini.
+                    $isDue = $remindAt->equalTo($windowStart);
+
+                    // Susulan: jendela sudah lewat (mis. agenda dibuat mepet
+                    // setelah jendelanya tiba), selama agenda belum dimulai.
+                    // Ganda dicegah oleh log per jendela di bawah.
+                    $isMissed = ! $isDue && $remindAt->lessThan($windowStart);
+
+                    if (! $isDue && ! $isMissed) {
                         continue;
                     }
 
@@ -80,12 +88,14 @@ class ProcessAgendaReminders extends Command
                         [
                             'title' => $agenda->title,
                             'start_time' => $agenda->start_time->format('H:i'),
+                            'start_at' => $agenda->start_time->format('Y-m-d H:i:s'),
                         ],
                         $hours,
                     );
 
                     $totalDispatched++;
-                    $this->line("  [{$user->email}] Queued reminder for: {$agenda->title} ({$hours}j before)");
+                    $kind = $isDue ? 'Queued reminder' : 'Queued catch-up reminder';
+                    $this->line("  [{$user->email}] {$kind} for: {$agenda->title} ({$hours}j before)");
                 }
             }
         }

@@ -7,8 +7,8 @@ export default function AppLogoIcon({
     return (
         <img
             {...props}
-            src="/favicon.svg"
-            alt={props.alt ?? 'Logo'}
+            src="/images/logo-kejati.png"
+            alt={props.alt ?? 'Logo Kejati'}
             className={['block object-contain', className]
                 .filter(Boolean)
                 .join(' ')}

@@ -75,6 +75,119 @@ test('reminder command does not send twice for the same reminder', function () {
     Queue::assertPushed(SendAgendaPushNotification::class, 1);
 });
 
+test('reminder command catches up a missed window for a recently created agenda', function () {
+    Queue::fake();
+
+    // Agenda dibuat H-30 menit dengan pengingat H-1: jendelanya sudah lewat.
+    $user = createSubscribedKajati(['1']);
+    $start = now(config('app.timezone'))->addMinutes(30)->second(0);
+    $event = createKajatiEvent($start);
+    $event->forceFill([
+        'created_at' => now(config('app.timezone'))->subMinutes(30),
+        'updated_at' => now(config('app.timezone'))->subMinutes(30),
+    ])->save();
+
+    $this->artisan('agenda:process-reminders')->assertOk();
+
+    Queue::assertPushed(SendAgendaPushNotification::class, 1);
+    expect(AgendaReminderLog::where('user_id', $user->id)->count())->toBe(1);
+
+    // Dijalankan ulang: tidak boleh ganda.
+    $this->artisan('agenda:process-reminders')->assertOk();
+
+    Queue::assertPushed(SendAgendaPushNotification::class, 1);
+    expect(AgendaReminderLog::where('user_id', $user->id)->count())->toBe(1);
+});
+
+test('reminder command does not catch up agendas that already started', function () {
+    Queue::fake();
+
+    createSubscribedKajati(['1']);
+    $start = now(config('app.timezone'))->subMinutes(5);
+    createKajatiEvent($start);
+
+    $this->artisan('agenda:process-reminders')->assertOk();
+
+    Queue::assertNotPushed(SendAgendaPushNotification::class);
+});
+
+test('push job message adapts to the remaining time', function () {
+    $user = createSubscribedKajati(['1']);
+    $bodies = [];
+
+    $mock = $this->mock(WebPushService::class, function ($mock) use (&$bodies) {
+        $mock->makePartial();
+        $mock->shouldReceive('sendToUser')->once()->andReturnUsing(
+            function ($user, array $payload) use (&$bodies): int {
+                $bodies[] = $payload['body'];
+
+                return 1;
+            }
+        );
+    });
+
+    $job = new SendAgendaPushNotification(
+        $user->id,
+        [
+            'title' => 'Rapat Mepet',
+            'start_time' => now(config('app.timezone'))->addMinutes(35)->format('H:i'),
+            'start_at' => now(config('app.timezone'))->addMinutes(35)->format('Y-m-d H:i:s'),
+        ],
+        1,
+    );
+
+    $job->handle($mock);
+
+    expect($bodies[0])->toContain('menit lagi');
+});
+
+test('push job skips agendas that already started', function () {
+    $user = createSubscribedKajati(['1']);
+
+    $mock = $this->mock(WebPushService::class, function ($mock) {
+        $mock->makePartial();
+        $mock->shouldNotReceive('sendToUser');
+    });
+
+    $job = new SendAgendaPushNotification(
+        $user->id,
+        [
+            'title' => 'Rapat Terlambat',
+            'start_time' => now(config('app.timezone'))->subMinutes(5)->format('H:i'),
+            'start_at' => now(config('app.timezone'))->subMinutes(5)->format('Y-m-d H:i:s'),
+        ],
+        1,
+    );
+
+    $job->handle($mock);
+});
+
+test('subscribing an existing endpoint transfers it to the current user', function () {
+    $owner = User::factory()->kajati()->create();
+    $newcomer = User::factory()->wakajati()->create();
+    $endpoint = 'https://push.example.com/sub/shared-device';
+
+    $this->actingAs($owner)
+        ->postJson(route('leadership.push.subscribe'), [
+            'endpoint' => $endpoint,
+            'public_key' => 'test-public-key',
+            'auth_secret' => 'test-auth-secret',
+        ])
+        ->assertOk();
+
+    $this->actingAs($newcomer)
+        ->postJson(route('leadership.push.subscribe'), [
+            'endpoint' => $endpoint,
+            'public_key' => 'test-public-key',
+            'auth_secret' => 'test-auth-secret',
+        ])
+        ->assertOk();
+
+    // Satu baris, pemiliknya berpindah — tidak menumpuk ganda.
+    expect(PushSubscription::where('endpoint', $endpoint)->count())->toBe(1);
+    expect(PushSubscription::where('endpoint', $endpoint)->first()->user_id)->toBe($newcomer->id);
+});
+
 test('reminder command skips users without push subscriptions', function () {
     Queue::fake();
 
