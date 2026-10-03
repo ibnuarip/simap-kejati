@@ -186,10 +186,6 @@ class AgendaDummySeeder extends Seeder
         $plan = [];
 
         foreach ($days as $i => $date) {
-            if ($counts[$i] < 1) {
-                continue;
-            }
-
             $slotIndexes = array_keys(self::SLOTS);
             shuffle($slotIndexes);
 
@@ -218,7 +214,7 @@ class AgendaDummySeeder extends Seeder
             $upper = $lower->copy();
         }
 
-        return Carbon::createFromTimestamp(mt_rand($lower->timestamp, $upper->timestamp), $timezone);
+        return Carbon::createFromTimestamp(mt_rand($lower->getTimestamp(), $upper->getTimestamp()), $timezone);
     }
 
     private function printVerification(string $prefix, string $today): void
