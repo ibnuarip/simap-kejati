@@ -19,20 +19,16 @@ class ExportController extends Controller
 {
     public function index(Request $request): Response
     {
-        $today = CarbonImmutable::today(config('app.timezone'));
-
-        $todayEvents = Event::query()
-            ->with(['leader', 'room', 'category'])
-            ->whereBetween('start_time', [$today->startOfDay(), $today->endOfDay()])
-            ->orderBy('start_time')
-            ->get();
+        $timezone = (string) config('app.timezone');
+        $today = CarbonImmutable::today($timezone);
 
         return Inertia::render('protokol/exports', [
-            'date' => $today->format('Y-m-d'),
-            'month' => $today->format('Y-m'),
-            'dateLabel' => $today->translatedFormat('d F Y'),
-            'monthLabel' => $today->translatedFormat('F Y'),
-            'todayEvents' => EventResource::list($todayEvents),
+            'defaults' => [
+                'date' => $today->format('Y-m-d'),
+                'week' => $today->format('o-\WW'),
+                'month' => $today->format('Y-m'),
+                'year' => $today->format('Y'),
+            ],
         ]);
     }
 
@@ -97,7 +93,13 @@ class ExportController extends Controller
             $sheet->getColumnDimension($column)->setAutoSize(true);
         }
 
-        $slug = $report['type'] === 'monthly' ? 'rekap-bulanan' : 'agenda-harian';
+        $slug = match ($report['type']) {
+            'weekly' => 'rekap-mingguan',
+            'monthly' => 'rekap-bulanan',
+            'yearly' => 'rekap-tahunan',
+            'custom' => 'rekap-kustom',
+            default => 'agenda-harian',
+        };
         $filename = "{$slug}-{$report['periodKey']}.{$format}";
 
         $writer = $format === 'csv' ? new Csv($spreadsheet) : new Xlsx($spreadsheet);
@@ -116,53 +118,169 @@ class ExportController extends Controller
     /**
      * Bangun data laporan (filter umum) untuk cetak ataupun unduh.
      *
-     * @return array{type: 'daily'|'monthly', subtitle: string, periodLabel: string, periodKey: string, events: Collection<int, Event>}
+     * @return array{type: string, subtitle: string, periodLabel: string, periodKey: string, events: Collection<int, Event>}
      */
     private function report(Request $request): array
     {
+        $timezone = (string) config('app.timezone');
+
+        $request->validate(
+            ['type' => ['nullable', 'in:daily,weekly,monthly,yearly,custom']],
+            $this->messages()
+        );
+
         $type = $request->query('type', 'daily');
 
-        if ($type === 'monthly') {
-            $validated = $request->validate([
-                'month' => ['required', 'date_format:Y-m'],
-            ]);
+        $validated = $request->validate($this->rules($type), $this->messages());
 
-            [$year, $month] = explode('-', $validated['month']);
-
-            $events = Event::query()
-                ->with(['leader', 'room', 'category'])
-                ->whereYear('start_time', (int) $year)
-                ->whereMonth('start_time', (int) $month)
-                ->orderBy('start_time')
-                ->get();
-
-            return [
-                'type' => 'monthly',
-                'subtitle' => 'Rekap Bulanan',
-                'periodLabel' => CarbonImmutable::createFromFormat('Y-m', $validated['month'])->translatedFormat('F Y'),
-                'periodKey' => $validated['month'],
-                'events' => $events,
-            ];
-        }
-
-        $validated = $request->validate([
-            'date' => ['required', 'date_format:Y-m-d'],
-        ]);
-
-        $day = CarbonImmutable::createFromFormat('Y-m-d', $validated['date']);
+        $range = $this->resolveRange($type, $validated, $timezone);
 
         $events = Event::query()
             ->with(['leader', 'room', 'category'])
-            ->whereBetween('start_time', [$day->startOfDay(), $day->endOfDay()])
+            ->whereBetween('start_time', [$range['start'], $range['end']])
             ->orderBy('start_time')
             ->get();
 
         return [
+            'type' => $range['type'],
+            'subtitle' => $range['subtitle'],
+            'periodLabel' => $range['periodLabel'],
+            'periodKey' => $range['periodKey'],
+            'events' => $events,
+        ];
+    }
+
+    /**
+     * @return array<string, array<int, string>>
+     */
+    private function rules(?string $type): array
+    {
+        return match ($type) {
+            'weekly' => ['week' => ['required', 'regex:/^\d{4}-W\d{2}$/']],
+            'monthly' => ['month' => ['required', 'date_format:Y-m']],
+            'yearly' => ['year' => ['required', 'digits:4', 'integer', 'min:2000', 'max:2100']],
+            'custom' => [
+                'start' => ['required', 'date_format:Y-m-d'],
+                'end' => ['required', 'date_format:Y-m-d', 'after_or_equal:start'],
+            ],
+            default => [
+                'date' => ['required', 'date_format:Y-m-d'],
+            ],
+        };
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function messages(): array
+    {
+        return [
+            'type.in' => 'Jenis periode tidak valid.',
+            'date.required' => 'Tanggal wajib diisi.',
+            'date.date_format' => 'Format tanggal tidak valid (YYYY-MM-DD).',
+            'week.required' => 'Minggu wajib dipilih.',
+            'week.regex' => 'Format minggu tidak valid.',
+            'month.required' => 'Bulan wajib dipilih.',
+            'month.date_format' => 'Format bulan tidak valid (YYYY-MM).',
+            'year.required' => 'Tahun wajib diisi.',
+            'year.digits' => 'Tahun harus terdiri dari 4 digit.',
+            'year.integer' => 'Tahun harus berupa angka.',
+            'year.min' => 'Tahun minimal 2000.',
+            'year.max' => 'Tahun maksimal 2100.',
+            'start.required' => 'Tanggal mulai wajib diisi.',
+            'start.date_format' => 'Format tanggal mulai tidak valid (YYYY-MM-DD).',
+            'end.required' => 'Tanggal selesai wajib diisi.',
+            'end.date_format' => 'Format tanggal selesai tidak valid (YYYY-MM-DD).',
+            'end.after_or_equal' => 'Tanggal selesai tidak boleh sebelum tanggal mulai.',
+        ];
+    }
+
+    /**
+     * Ubah parameter periode menjadi rentang tanggal Asia/Jakarta.
+     *
+     * @param  array<string, string>  $validated
+     * @return array{type: string, subtitle: string, periodLabel: string, periodKey: string, start: CarbonImmutable, end: CarbonImmutable}
+     */
+    private function resolveRange(string $type, array $validated, string $timezone): array
+    {
+        $dayLabel = fn (CarbonImmutable $date): string => $date->translatedFormat('j F Y');
+
+        if ($type === 'weekly') {
+            [$year, $week] = explode('-W', $validated['week']);
+
+            // Senin pada minggu ISO tersebut (standar Indonesia).
+            $monday = CarbonImmutable::create((int) $year, 1, 4, 0, 0, 0, $timezone)
+                ->startOfWeek(CarbonImmutable::MONDAY)
+                ->addWeeks((int) $week - 1);
+
+            abort_if((int) $monday->format('W') !== (int) $week, 422, 'Minggu tidak valid untuk tahun tersebut.');
+
+            $start = $monday->startOfDay();
+            $end = $monday->addDays(6)->endOfDay();
+
+            return [
+                'type' => 'weekly',
+                'subtitle' => 'Rekap Mingguan',
+                'periodLabel' => $dayLabel($start).' - '.$dayLabel($end),
+                'periodKey' => $validated['week'],
+                'start' => $start,
+                'end' => $end,
+            ];
+        }
+
+        if ($type === 'monthly') {
+            [$year, $month] = explode('-', $validated['month']);
+
+            $start = CarbonImmutable::create((int) $year, (int) $month, 1, 0, 0, 0, $timezone)->startOfDay();
+            $end = $start->endOfMonth()->endOfDay();
+
+            return [
+                'type' => 'monthly',
+                'subtitle' => 'Rekap Bulanan',
+                'periodLabel' => $start->translatedFormat('F Y'),
+                'periodKey' => $validated['month'],
+                'start' => $start,
+                'end' => $end,
+            ];
+        }
+
+        if ($type === 'yearly') {
+            $start = CarbonImmutable::create((int) $validated['year'], 1, 1, 0, 0, 0, $timezone)->startOfDay();
+            $end = CarbonImmutable::create((int) $validated['year'], 12, 31, 0, 0, 0, $timezone)->endOfDay();
+
+            return [
+                'type' => 'yearly',
+                'subtitle' => 'Rekap Tahunan',
+                'periodLabel' => 'Tahun '.$validated['year'],
+                'periodKey' => $validated['year'],
+                'start' => $start,
+                'end' => $end,
+            ];
+        }
+
+        if ($type === 'custom') {
+            $start = CarbonImmutable::createFromFormat('Y-m-d', $validated['start'], $timezone)->startOfDay();
+            $end = CarbonImmutable::createFromFormat('Y-m-d', $validated['end'], $timezone)->endOfDay();
+
+            return [
+                'type' => 'custom',
+                'subtitle' => 'Rekap Agenda',
+                'periodLabel' => $dayLabel($start).' - '.$dayLabel($end),
+                'periodKey' => $validated['start'].'_sd_'.$validated['end'],
+                'start' => $start,
+                'end' => $end,
+            ];
+        }
+
+        $day = CarbonImmutable::createFromFormat('Y-m-d', $validated['date'], $timezone);
+
+        return [
             'type' => 'daily',
             'subtitle' => 'Agenda Harian',
-            'periodLabel' => $day->translatedFormat('d F Y'),
+            'periodLabel' => $dayLabel($day),
             'periodKey' => $validated['date'],
-            'events' => $events,
+            'start' => $day->startOfDay(),
+            'end' => $day->endOfDay(),
         ];
     }
 

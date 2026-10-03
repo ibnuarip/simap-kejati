@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Mail\Auth\ResetPasswordMail;
 use App\Models\User;
+use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Notifications\ResetPassword;
@@ -39,6 +40,10 @@ class AppServiceProvider extends ServiceProvider
     protected function configureDefaults(): void
     {
         Date::use(CarbonImmutable::class);
+
+        // Nama hari/bulan berbahasa Indonesia untuk laporan dan dokumen.
+        Carbon::setLocale('id');
+        CarbonImmutable::setLocale('id');
 
         DB::prohibitDestructiveCommands(
             app()->isProduction(),

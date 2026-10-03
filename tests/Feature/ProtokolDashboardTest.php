@@ -51,7 +51,7 @@ test('protokol can access events, calendar, and export pages', function () {
     }
 });
 
-test('protokol exports page exposes date and month filters', function () {
+test('protokol exports page exposes period filter defaults', function () {
     $user = User::factory()->protokol()->create();
     $this->actingAs($user);
 
@@ -59,24 +59,39 @@ test('protokol exports page exposes date and month filters', function () {
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('protokol/exports')
-            ->has('date')
-            ->has('month')
-            ->has('dateLabel')
-            ->has('monthLabel')
-            ->has('todayEvents'));
+            ->has('defaults', fn (Assert $defaults) => $defaults
+                ->has('date')
+                ->has('week')
+                ->has('month')
+                ->has('year')));
 });
 
-test('protokol can open daily and monthly print reports', function () {
+test('protokol can open print reports for every period type', function () {
     $user = User::factory()->protokol()->create();
     $this->actingAs($user);
 
-    $this->get(route('protokol.exports.print', ['type' => 'daily', 'date' => now()->format('Y-m-d')]))
-        ->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->component('print/export-report'));
+    $periods = [
+        ['type' => 'daily', 'date' => now()->format('Y-m-d')],
+        ['type' => 'weekly', 'week' => now()->format('o-\WW')],
+        ['type' => 'monthly', 'month' => now()->format('Y-m')],
+        ['type' => 'yearly', 'year' => now()->format('Y')],
+        ['type' => 'custom', 'start' => now()->format('Y-m-d'), 'end' => now()->format('Y-m-d')],
+    ];
 
-    $this->get(route('protokol.exports.print', ['type' => 'monthly', 'month' => now()->format('Y-m')]))
+    foreach ($periods as $params) {
+        $this->get(route('protokol.exports.print', $params))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component('print/export-report'));
+    }
+});
+
+test('monthly print report uses indonesian period label', function () {
+    $user = User::factory()->protokol()->create();
+    $this->actingAs($user);
+
+    $this->get(route('protokol.exports.print', ['type' => 'monthly', 'month' => '2026-10']))
         ->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->component('print/export-report'));
+        ->assertInertia(fn (Assert $page) => $page->where('periodLabel', 'Oktober 2026'));
 });
 
 test('protokol can create an event linked to master data', function () {

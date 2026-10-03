@@ -45,6 +45,69 @@ test('protokol can download a monthly report as xlsx', function () {
         ->assertDownload('rekap-bulanan-'.now()->format('Y-m').'.xlsx');
 });
 
+test('protokol can download weekly, yearly, and custom reports as xlsx', function () {
+    $protokol = User::factory()->protokol()->create();
+    Event::factory()->create();
+
+    $week = now()->format('o-\WW');
+
+    $this->actingAs($protokol)
+        ->get(route('protokol.exports.download', [
+            'type' => 'weekly',
+            'week' => $week,
+            'format' => 'xlsx',
+        ]))
+        ->assertOk()
+        ->assertDownload("rekap-mingguan-{$week}.xlsx");
+
+    $this->actingAs($protokol)
+        ->get(route('protokol.exports.download', [
+            'type' => 'yearly',
+            'year' => now()->format('Y'),
+            'format' => 'xlsx',
+        ]))
+        ->assertOk()
+        ->assertDownload('rekap-tahunan-'.now()->format('Y').'.xlsx');
+
+    $today = now()->format('Y-m-d');
+
+    $this->actingAs($protokol)
+        ->get(route('protokol.exports.download', [
+            'type' => 'custom',
+            'start' => $today,
+            'end' => $today,
+            'format' => 'csv',
+        ]))
+        ->assertOk()
+        ->assertDownload("rekap-kustom-{$today}_sd_{$today}.csv");
+});
+
+test('custom report rejects an end date before the start date in indonesian', function () {
+    $protokol = User::factory()->protokol()->create();
+
+    $this->actingAs($protokol)
+        ->get(route('protokol.exports.download', [
+            'type' => 'custom',
+            'start' => now()->format('Y-m-d'),
+            'end' => now()->subDay()->format('Y-m-d'),
+            'format' => 'xlsx',
+        ]))
+        ->assertStatus(302)
+        ->assertSessionHasErrors(['end' => 'Tanggal selesai tidak boleh sebelum tanggal mulai.']);
+});
+
+test('download rejects an unknown period type in indonesian', function () {
+    $protokol = User::factory()->protokol()->create();
+
+    $this->actingAs($protokol)
+        ->get(route('protokol.exports.download', [
+            'type' => 'semestran',
+            'format' => 'xlsx',
+        ]))
+        ->assertStatus(302)
+        ->assertSessionHasErrors(['type' => 'Jenis periode tidak valid.']);
+});
+
 test('download rejects an unsupported export format', function () {
     $protokol = User::factory()->protokol()->create();
 

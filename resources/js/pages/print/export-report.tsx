@@ -60,7 +60,9 @@ export default function ExportReport({
                 </div>
             </div>
 
-            <div className="mx-auto w-full max-w-[210mm] bg-white px-4 py-6 text-gray-900 sm:px-8 sm:py-10 print:max-w-none print:px-0 print:py-0">
+            <style>{`@page { size: A4; margin: 0; }`}</style>
+
+            <div className="mx-auto w-full max-w-[210mm] bg-white px-4 py-6 text-gray-900 sm:px-8 sm:py-10 print:max-w-none print:p-10">
                 <div className="border-b-4 border-gray-800 pb-4">
                     <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <img
