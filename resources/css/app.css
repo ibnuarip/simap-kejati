@@ -7,14 +7,15 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Poppins di-self-host agar tidak bergantung pada CDN saat runtime
-   (sebelumnya font CDN 404 di dalam container docker). */
+/* Poppins di-self-host lewat module graph Vite (resources/fonts) agar
+   dimuat di mode dev maupun build — folder public/ tidak dilayani oleh
+   dev-server sehingga URL absolut ke sana selalu 404 saat development. */
 @font-face {
     font-family: 'Poppins';
     font-style: normal;
     font-weight: 400;
     font-display: swap;
-    src: url('/fonts/poppins-400.woff2') format('woff2');
+    src: url('../fonts/poppins-400.woff2') format('woff2');
 }
 
 @font-face {
@@ -22,7 +23,7 @@
     font-style: normal;
     font-weight: 500;
     font-display: swap;
-    src: url('/fonts/poppins-500.woff2') format('woff2');
+    src: url('../fonts/poppins-500.woff2') format('woff2');
 }
 
 @font-face {
@@ -30,7 +31,7 @@
     font-style: normal;
     font-weight: 600;
     font-display: swap;
-    src: url('/fonts/poppins-600.woff2') format('woff2');
+    src: url('../fonts/poppins-600.woff2') format('woff2');
 }
 
 @font-face {
@@ -38,7 +39,7 @@
     font-style: normal;
     font-weight: 700;
     font-display: swap;
-    src: url('/fonts/poppins-700.woff2') format('woff2');
+    src: url('../fonts/poppins-700.woff2') format('woff2');
 }
 
 @theme {
