@@ -1,4 +1,5 @@
 import { Head, usePage } from '@inertiajs/react';
+import { lazy, Suspense } from 'react';
 import {
     Building2,
     CalendarCheck,
@@ -9,8 +10,6 @@ import {
     Users,
 } from 'lucide-react';
 import { AgendaItemRow } from '@/components/agenda-item-row';
-import { AgendaTrendChart } from '@/components/charts/agenda-trend-chart';
-import { CategoryDistributionChart } from '@/components/charts/category-distribution-chart';
 import { Badge } from '@/components/ui/badge';
 import {
     Card,
@@ -38,6 +37,33 @@ type Props = {
 };
 
 const STATUS_KEYS = ['scheduled', 'ongoing', 'completed', 'cancelled'] as const;
+
+// Recharts (~300KB) dimuat malas agar paint pertama dashboard tidak
+// tertahan parsing library chart. Skeleton tampil selama chunk diunduh.
+const AgendaTrendChart = lazy(() =>
+    import('@/components/charts/agenda-trend-chart').then((module) => ({
+        default: module.AgendaTrendChart,
+    })),
+);
+
+const CategoryDistributionChart = lazy(() =>
+    import('@/components/charts/category-distribution-chart').then(
+        (module) => ({ default: module.CategoryDistributionChart }),
+    ),
+);
+
+function ChartFallback() {
+    return (
+        <div
+            className="flex h-60 flex-col justify-end gap-2 sm:h-72"
+            aria-busy="true"
+            aria-label="Memuat grafik"
+        >
+            <div className="bg-muted flex-1 animate-pulse rounded-lg" />
+            <div className="bg-muted h-4 w-2/3 animate-pulse rounded" />
+        </div>
+    );
+}
 
 const STATUS_DOT: Record<(typeof STATUS_KEYS)[number], string> = {
     scheduled: '#2563eb',
@@ -179,7 +205,9 @@ export default function Dashboard({
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <AgendaTrendChart data={eventsTrend} />
+                            <Suspense fallback={<ChartFallback />}>
+                                <AgendaTrendChart data={eventsTrend} />
+                            </Suspense>
                         </CardContent>
                     </Card>
 
@@ -194,9 +222,11 @@ export default function Dashboard({
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <CategoryDistributionChart
-                                data={categoryDistribution}
-                            />
+                            <Suspense fallback={<ChartFallback />}>
+                                <CategoryDistributionChart
+                                    data={categoryDistribution}
+                                />
+                            </Suspense>
                         </CardContent>
                     </Card>
                 </div>
