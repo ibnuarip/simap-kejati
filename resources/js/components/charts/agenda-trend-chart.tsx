@@ -1,8 +1,8 @@
-import { useId } from 'react';
 import {
-    Area,
-    AreaChart,
+    Bar,
+    BarChart,
     CartesianGrid,
+    Cell,
     ResponsiveContainer,
     Tooltip,
     XAxis,
@@ -45,7 +45,6 @@ function TrendTooltip({ active, payload, label }: TrendTooltipProps) {
 
 export function AgendaTrendChart({ data }: Props) {
     const colors = useChartColors();
-    const gradientId = useId();
 
     if (data.length === 0) {
         return (
@@ -55,39 +54,16 @@ export function AgendaTrendChart({ data }: Props) {
         );
     }
 
+    const max = Math.max(...data.map((point) => point.total), 0);
+
     return (
-        <div className="h-60 w-full sm:h-72">
+        <div className="h-64 w-full sm:h-72">
             <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
+                <BarChart
                     data={data}
                     margin={{ top: 12, right: 12, left: -12, bottom: 0 }}
+                    barCategoryGap="28%"
                 >
-                    <defs>
-                        <linearGradient
-                            id={gradientId}
-                            x1="0"
-                            y1="0"
-                            x2="0"
-                            y2="1"
-                        >
-                            <stop
-                                offset="0%"
-                                stopColor={colors.primary}
-                                stopOpacity={0.32}
-                            />
-                            <stop
-                                offset="60%"
-                                stopColor={colors.primary}
-                                stopOpacity={0.08}
-                            />
-                            <stop
-                                offset="100%"
-                                stopColor={colors.primary}
-                                stopOpacity={0}
-                            />
-                        </linearGradient>
-                    </defs>
-
                     <CartesianGrid
                         vertical={false}
                         stroke={colors.border}
@@ -97,10 +73,11 @@ export function AgendaTrendChart({ data }: Props) {
                     <XAxis
                         dataKey="label"
                         axisLine={false}
-                        tick={{ fontSize: 12, fill: colors.mutedForeground }}
+                        tick={{ fontSize: 11, fill: colors.mutedForeground }}
                         tickLine={false}
                         tickMargin={10}
-                        minTickGap={8}
+                        minTickGap={4}
+                        interval="preserveStart"
                     />
                     <YAxis
                         allowDecimals={false}
@@ -113,33 +90,32 @@ export function AgendaTrendChart({ data }: Props) {
                     <Tooltip
                         content={<TrendTooltip />}
                         cursor={{
-                            stroke: colors.primary,
-                            strokeOpacity: 0.3,
-                            strokeWidth: 1.5,
+                            fill: colors.primary,
+                            fillOpacity: 0.08,
                         }}
                     />
-                    <Area
-                        type="monotone"
+                    <Bar
                         dataKey="total"
                         name="Agenda"
-                        stroke={colors.primary}
-                        strokeWidth={2.5}
-                        strokeLinecap="round"
-                        fill={`url(#${gradientId})`}
-                        dot={{
-                            r: 3.5,
-                            fill: colors.primary,
-                            strokeWidth: 0,
-                            fillOpacity: 0.9,
+                        radius={[6, 6, 0, 0]}
+                        maxBarSize={26}
+                        background={{
+                            fill: colors.border,
+                            fillOpacity: 0.22,
+                            radius: 6,
                         }}
-                        activeDot={{
-                            r: 5.5,
-                            fill: colors.primary,
-                            stroke: 'var(--card)',
-                            strokeWidth: 2.5,
-                        }}
-                    />
-                </AreaChart>
+                    >
+                        {data.map((point) => (
+                            <Cell
+                                key={point.month}
+                                fill={colors.primary}
+                                fillOpacity={
+                                    max > 0 && point.total === max ? 1 : 0.55
+                                }
+                            />
+                        ))}
+                    </Bar>
+                </BarChart>
             </ResponsiveContainer>
         </div>
     );

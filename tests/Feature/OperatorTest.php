@@ -38,19 +38,23 @@ test('dashboard provides trend and category distribution data for charts', funct
     $category = Category::factory()->create(['name' => 'Audiensi', 'color' => '#3B82F6']);
     $otherCategory = Category::factory()->create(['name' => 'Kunjungan Kerja']);
 
-    Event::factory()->create(['category_id' => $category->id, 'created_at' => now()->subMonth()]);
-    Event::factory()->create(['category_id' => $category->id, 'created_at' => now()->subMonths(2)]);
-    Event::factory()->create(['category_id' => $otherCategory->id, 'created_at' => now()]);
+    $year = now()->format('Y');
+    Event::factory()->create(['category_id' => $category->id, 'created_at' => "{$year}-01-15 10:00:00"]);
+    Event::factory()->create(['category_id' => $category->id, 'created_at' => "{$year}-03-10 10:00:00"]);
+    Event::factory()->create(['category_id' => $otherCategory->id, 'created_at' => "{$year}-03-20 10:00:00"]);
 
     $this->get(route('dashboard'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('dashboard')
-            ->has('eventsTrend', 6)
-            ->where('eventsTrend.3.total', 1)
-            ->where('eventsTrend.4.total', 1)
-            ->where('eventsTrend.5.total', 1)
-            ->where('eventsTrend.0.total', 0)
+            ->has('eventsTrend', 12)
+            ->where('eventsTrend.0.month', "{$year}-01")
+            ->where('eventsTrend.0.label', 'Jan')
+            ->where('eventsTrend.0.total', 1)
+            ->where('eventsTrend.1.total', 0)
+            ->where('eventsTrend.2.total', 2)
+            ->where('eventsTrend.11.month', "{$year}-12")
+            ->where('eventsTrend.11.label', 'Des')
             ->where('categoryDistribution.0.name', 'Audiensi')
             ->where('categoryDistribution.0.color', '#3B82F6')
             ->where('categoryDistribution.1.name', 'Kunjungan Kerja'));

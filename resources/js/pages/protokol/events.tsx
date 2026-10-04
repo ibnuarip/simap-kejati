@@ -267,7 +267,7 @@ export default function ProtokolEvents({
                 </div>
 
                 <Card>
-                    <CardHeader className="flex flex-col gap-3 space-y-0 sm:flex-row sm:items-center sm:justify-between">
+                    <CardHeader className="flex flex-col gap-3 space-y-0 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                         <CardTitle>Daftar Agenda</CardTitle>
                         <div className="flex w-full min-w-0 flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
                             <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap">
@@ -475,32 +475,36 @@ function AgendaRow({ event, onEdit }: AgendaRowProps) {
             <div className="flex min-w-0 flex-1 flex-col gap-1">
                 <span
                     className={cn(
-                        'leading-snug font-medium',
+                        'leading-snug font-medium break-words',
                         isCancelled && 'line-through',
                     )}
                 >
                     {event.title}
                 </span>
 
-                <div className="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
-                    <span className="flex items-center gap-1.5">
+                <div className="text-muted-foreground flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+                    <span className="flex min-w-0 items-center gap-1.5">
                         <User className="size-3.5 shrink-0" />
-                        {event.leader?.name ?? '-'}
+                        <span className="truncate">
+                            {event.leader?.name ?? '-'}
+                        </span>
                     </span>
-                    <span className="flex items-center gap-1.5">
+                    <span className="flex min-w-0 items-center gap-1.5">
                         <MapPin className="size-3.5 shrink-0" />
-                        {eventLocation(event)}
+                        <span className="truncate">{eventLocation(event)}</span>
                     </span>
                     {event.category && (
-                        <span className="flex items-center gap-1.5">
+                        <span className="flex min-w-0 items-center gap-1.5">
                             <Tag className="size-3.5 shrink-0" />
-                            {event.category.name}
+                            <span className="truncate">
+                                {event.category.name}
+                            </span>
                         </span>
                     )}
                 </div>
             </div>
 
-            <div className="flex shrink-0 items-center justify-between gap-3 sm:justify-end">
+            <div className="flex shrink-0 items-center justify-start gap-3 sm:justify-end">
                 <Badge variant={agendaStatusVariant[event.status]}>
                     {agendaStatusLabel[event.status]}
                 </Badge>

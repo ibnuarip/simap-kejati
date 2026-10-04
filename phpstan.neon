@@ -10,4 +10,10 @@ parameters:
         - database/
         - routes/
 
+    # Test Pest ditulis sebagai closure yang di-bind saat runtime, sehingga
+    # PHPStan tidak bisa mengenali method $this->... di dalamnya (positif
+    # palsu). Test sudah diverifikasi oleh Pest, bukan static analysis.
+    excludePaths:
+        - tests/*
+
     level: 7

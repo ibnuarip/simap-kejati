@@ -4,10 +4,7 @@ import {
     CalendarCheck,
     CalendarClock,
     Database,
-    Minus,
     Tags,
-    TrendingDown,
-    TrendingUp,
     UserCheck,
     Users,
 } from 'lucide-react';
@@ -69,13 +66,6 @@ export default function Dashboard({
     const { auth } = usePage().props;
 
     const trendTotal = eventsTrend.reduce((sum, point) => sum + point.total, 0);
-    const trendLast = eventsTrend[eventsTrend.length - 1]?.total ?? 0;
-    const trendPrevious = eventsTrend[eventsTrend.length - 2]?.total ?? 0;
-    const trendDiff = trendLast - trendPrevious;
-    const trendPercent =
-        trendPrevious > 0
-            ? Math.round((trendDiff / trendPrevious) * 100)
-            : null;
 
     const statusTotal = STATUS_KEYS.reduce(
         (sum, key) => sum + (stats.eventsByStatus[key] ?? 0),
@@ -174,39 +164,17 @@ export default function Dashboard({
                                         Tren Aktivitas Agenda
                                     </CardTitle>
                                     <CardDescription>
-                                        Jumlah agenda masuk per bulan dalam 6
-                                        bulan terakhir.
+                                        Jumlah agenda masuk per bulan pada tahun
+                                        berjalan.
                                     </CardDescription>
                                 </div>
-                                <div className="flex shrink-0 items-center gap-2.5">
-                                    <div className="text-right">
-                                        <p className="text-foreground text-2xl leading-none font-bold tabular-nums">
-                                            {trendTotal}
-                                        </p>
-                                        <p className="text-muted-foreground mt-1 text-[11px] font-medium tracking-wide uppercase">
-                                            Total 6 bulan
-                                        </p>
-                                    </div>
-                                    <span
-                                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold tabular-nums ${
-                                            trendDiff > 0
-                                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                                                : trendDiff < 0
-                                                  ? 'bg-red-500/10 text-red-600 dark:text-red-400'
-                                                  : 'bg-muted text-muted-foreground'
-                                        }`}
-                                    >
-                                        {trendDiff > 0 ? (
-                                            <TrendingUp className="size-3.5" />
-                                        ) : trendDiff < 0 ? (
-                                            <TrendingDown className="size-3.5" />
-                                        ) : (
-                                            <Minus className="size-3.5" />
-                                        )}
-                                        {trendPercent === null
-                                            ? `${trendDiff >= 0 ? '+' : ''}${trendDiff}`
-                                            : `${trendDiff >= 0 ? '+' : ''}${trendPercent}%`}
-                                    </span>
+                                <div className="shrink-0 text-right">
+                                    <p className="text-foreground text-2xl leading-none font-bold tabular-nums">
+                                        {trendTotal}
+                                    </p>
+                                    <p className="text-muted-foreground mt-1 text-[11px] font-medium tracking-wide uppercase">
+                                        Total tahun ini
+                                    </p>
                                 </div>
                             </div>
                         </CardHeader>

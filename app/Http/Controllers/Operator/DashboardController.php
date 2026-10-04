@@ -23,19 +23,21 @@ class DashboardController extends Controller
             ->countBy(fn (Event $event): string => $event->currentStatus())
             ->map(fn (int $total): int => $total);
 
+        $year = now()->format('Y');
+
         $agendaCountsByMonth = Event::query()
             ->whereNotNull('created_at')
-            ->where('created_at', '>=', now()->subMonths(5)->startOfMonth())
+            ->where('created_at', '>=', now()->startOfYear())
             ->pluck('created_at')
             ->countBy(fn ($createdAt): string => $createdAt->format('Y-m'));
 
-        $eventsTrend = collect(range(0, 5))->reverse()->map(function (int $offset) use ($agendaCountsByMonth): array {
-            $month = now()->subMonths($offset);
+        $eventsTrend = collect(range(1, 12))->map(function (int $monthNumber) use ($agendaCountsByMonth, $year): array {
+            $key = sprintf('%s-%02d', $year, $monthNumber);
 
             return [
-                'month' => $month->format('Y-m'),
-                'label' => self::MONTH_LABELS[$month->format('n') - 1],
-                'total' => $agendaCountsByMonth[$month->format('Y-m')] ?? 0,
+                'month' => $key,
+                'label' => self::MONTH_LABELS[$monthNumber - 1],
+                'total' => $agendaCountsByMonth[$key] ?? 0,
             ];
         })->values();
 
