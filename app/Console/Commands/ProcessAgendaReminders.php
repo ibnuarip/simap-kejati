@@ -35,9 +35,13 @@ class ProcessAgendaReminders extends Command
             ->whereNotNull('reminder_hours')
             ->get();
 
+        $protokolUsers = User::where('role', 'protokol')
+            ->whereNotNull('reminder_hours')
+            ->get();
+
         $totalDispatched = 0;
 
-        foreach ($leadershipUsers as $user) {
+        foreach ($leadershipUsers->concat($protokolUsers) as $user) {
             $reminderHours = array_filter(
                 array_map(intval(...), (array) $user->reminder_hours),
                 fn (int $hours) => $hours > 0
@@ -53,9 +57,14 @@ class ProcessAgendaReminders extends Command
                 continue;
             }
 
+            // Pimpinan hanya diingatkan agenda pimpinannya; tim protokol
+            // mengelola seluruh agenda sehingga menerima semuanya.
             $agendas = Event::query()
                 ->with('leader')
-                ->whereHas('leader', fn ($query) => $query->where('position', $this->positionForRole($user->role)))
+                ->when(
+                    $user->role !== 'protokol',
+                    fn ($query) => $query->whereHas('leader', fn ($leader) => $leader->where('position', $this->positionForRole($user->role)))
+                )
                 ->where('status', 'scheduled')
                 ->where('start_time', '>', $now)
                 ->orderBy('start_time')

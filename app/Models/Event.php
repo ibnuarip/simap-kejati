@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Database\Factories\EventFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -84,6 +85,28 @@ class Event extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Agenda lain yang waktunya tumpang tindih (tanggal yang sama).
+     * Agenda batal dikecualikan karena tidak lagi memakai jadwal.
+     *
+     * @param  Builder<self>  $query
+     */
+    public function scopeOverlapping(
+        Builder $query,
+        Carbon $start,
+        Carbon $end,
+        ?int $exceptId = null
+    ): void {
+        $query
+            ->where('status', '!=', 'cancelled')
+            ->where('start_time', '<', $end)
+            ->where('end_time', '>', $start);
+
+        if ($exceptId !== null) {
+            $query->where('id', '!=', $exceptId);
+        }
     }
 
     /**

@@ -14,6 +14,7 @@ import CancelAgenda from '@/components/cancel-agenda';
 import ConfirmDelete from '@/components/confirm-delete';
 import { DatetimeLocalField } from '@/components/datetime-local-field';
 import InputError from '@/components/input-error';
+import { ScheduleConflictAlert } from '@/components/schedule-conflict-alert';
 import TablePagination from '@/components/table-pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -45,6 +46,7 @@ import {
 import { cn } from '@/lib/utils';
 import { dashboard as protokolDashboard } from '@/routes/protokol';
 import { index as eventsIndex } from '@/routes/protokol/events';
+import { conflicts as eventsConflicts } from '@/routes/protokol/events';
 import type {
     AgendaItem,
     AgendaStatus,
@@ -351,7 +353,7 @@ export default function ProtokolEvents({
             </div>
 
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <DialogContent className="max-h-[90dvh] overflow-y-auto overscroll-contain sm:max-w-2xl">
+                <DialogContent className="max-h-[90dvh] overflow-y-auto overscroll-contain p-4 sm:max-w-2xl sm:p-6">
                     <DialogHeader>
                         <DialogTitle>
                             {editing ? 'Edit Agenda' : 'Tambah Agenda'}
@@ -383,6 +385,7 @@ export default function ProtokolEvents({
                                         categoryId={categoryId}
                                         onCategoryChange={setCategoryId}
                                         errors={errors}
+                                        conflictsUrl={eventsConflicts().url}
                                     />
                                     <DialogFooter>
                                         <Button
@@ -422,6 +425,7 @@ export default function ProtokolEvents({
                                         categoryId={categoryId}
                                         onCategoryChange={setCategoryId}
                                         errors={errors}
+                                        conflictsUrl={eventsConflicts().url}
                                     />
                                     <DialogFooter>
                                         <Button
@@ -565,7 +569,12 @@ type FieldProps = {
     categoryId: string;
     onCategoryChange: (value: string) => void;
     errors: Record<string, string>;
+    conflictsUrl: string;
 };
+
+function toDatetimeLocalInput(value: string | null | undefined): string {
+    return value ? value.replace(' ', 'T').slice(0, 16) : '';
+}
 
 function EventFields({
     defaultValue,
@@ -579,7 +588,15 @@ function EventFields({
     categoryId,
     onCategoryChange,
     errors,
+    conflictsUrl,
 }: FieldProps) {
+    const [startInput, setStartInput] = useState(
+        toDatetimeLocalInput(defaultValue?.start_time),
+    );
+    const [endInput, setEndInput] = useState(
+        toDatetimeLocalInput(defaultValue?.end_time),
+    );
+
     return (
         <>
             <div className="grid gap-2">
@@ -683,23 +700,25 @@ function EventFields({
                     <InputError message={errors.custom_location} />
                 </div>
 
-                <div className="grid gap-2">
+                <div className="grid min-w-0 gap-2">
                     <DatetimeLocalField
                         id="start_time"
                         name="start_time"
                         label="Mulai"
                         defaultValue={defaultValue?.start_time}
                         error={errors.start_time}
+                        onChange={setStartInput}
                     />
                 </div>
 
-                <div className="grid gap-2">
+                <div className="grid min-w-0 gap-2">
                     <DatetimeLocalField
                         id="end_time"
                         name="end_time"
                         label="Selesai"
                         defaultValue={defaultValue?.end_time}
                         error={errors.end_time}
+                        onChange={setEndInput}
                     />
                 </div>
 
@@ -714,6 +733,13 @@ function EventFields({
                     <InputError message={errors.dress_code} />
                 </div>
             </div>
+
+            <ScheduleConflictAlert
+                checkUrl={conflictsUrl}
+                start={startInput}
+                end={endInput}
+                exceptId={defaultValue?.id ?? null}
+            />
 
             <div className="grid gap-2">
                 <Label htmlFor="participants">Peserta</Label>

@@ -1,11 +1,15 @@
-import { Head, usePage } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import {
+    Bell,
+    BellOff,
     Calendar,
     CalendarCheck,
     CalendarClock,
     CalendarPlus,
+    LoaderCircle,
 } from 'lucide-react';
 import { AgendaItemRow } from '@/components/agenda-item-row';
+import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
@@ -13,7 +17,9 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { usePushNotifications } from '@/hooks/use-push-notifications';
 import { dashboard as protokolDashboard } from '@/routes/protokol';
+import { index as protokolNotifications } from '@/routes/protokol/notifications';
 import type { AgendaItem } from '@/types';
 
 type Props = {
@@ -33,6 +39,7 @@ export default function ProtokolDashboard({
     upcomingEvents,
 }: Props) {
     const { auth } = usePage().props;
+    const push = usePushNotifications('/protokol/push');
 
     const statCards = [
         {
@@ -108,6 +115,69 @@ export default function ProtokolDashboard({
                         </Card>
                     ))}
                 </div>
+
+                <Card className="min-w-0">
+                    <CardContent className="flex min-w-0 flex-wrap items-center justify-between gap-3 py-4">
+                        {push.isChecking ? (
+                            <div
+                                className="flex min-w-0 flex-1 items-center gap-2"
+                                aria-busy="true"
+                                aria-label="Memeriksa status notifikasi"
+                            >
+                                <div className="bg-muted size-4 shrink-0 animate-pulse rounded-full" />
+                                <div className="bg-muted h-4 w-40 animate-pulse rounded" />
+                            </div>
+                        ) : (
+                            <p className="flex min-w-0 items-center gap-2 text-sm">
+                                {push.subscribed ? (
+                                    <>
+                                        <Bell className="size-4 shrink-0 text-green-600" />
+                                        <span className="truncate font-medium">
+                                            Notifikasi agenda aktif di perangkat
+                                            ini.
+                                        </span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <BellOff className="text-muted-foreground size-4 shrink-0" />
+                                        <span className="text-muted-foreground truncate">
+                                            Aktifkan notifikasi agar pengingat
+                                            agenda muncul di perangkat ini.
+                                        </span>
+                                    </>
+                                )}
+                            </p>
+                        )}
+                        <div className="flex shrink-0 items-center gap-2">
+                            <Button asChild variant="ghost" size="sm">
+                                <Link href={protokolNotifications().url}>
+                                    Pengaturan
+                                </Link>
+                            </Button>
+                            {!push.isChecking && push.isSupported && (
+                                <Button
+                                    size="sm"
+                                    variant={
+                                        push.subscribed ? 'outline' : 'default'
+                                    }
+                                    onClick={() =>
+                                        push.subscribed
+                                            ? push.disable()
+                                            : push.enable()
+                                    }
+                                    disabled={push.isLoading}
+                                >
+                                    {push.isLoading ? (
+                                        <LoaderCircle className="animate-spin" />
+                                    ) : null}
+                                    {push.subscribed
+                                        ? 'Nonaktifkan'
+                                        : 'Aktifkan'}
+                                </Button>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
 
                 <div className="grid gap-6 lg:grid-cols-2">
                     <Card className="min-w-0">

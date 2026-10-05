@@ -9,7 +9,11 @@ use App\Models\Category;
 use App\Models\Event;
 use App\Models\Leader;
 use App\Models\Room;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -55,7 +59,7 @@ class EventController extends Controller
     public function store(EventRequest $request): RedirectResponse
     {
         Event::create([
-            ...$request->validated(),
+            ...$request->safe()->except('force_save'),
             'created_by' => $request->user()?->getAuthIdentifier(),
         ]);
 
@@ -64,9 +68,46 @@ class EventController extends Controller
 
     public function update(EventRequest $request, Event $event): RedirectResponse
     {
-        $event->update($request->validated());
+        $event->update($request->safe()->except('force_save'));
 
         return back();
+    }
+
+    /**
+     * Daftar agenda yang bentrok dengan rentang waktu usulan.
+     */
+    public function conflicts(Request $request): JsonResponse
+    {
+        $validated = $request->validate(
+            [
+                'start' => ['required', 'date'],
+                'end' => ['required', 'date', 'after:start'],
+                'except_id' => ['nullable', 'integer', Rule::exists('events', 'id')],
+            ],
+            [
+                'start.required' => 'Waktu mulai wajib diisi.',
+                'start.date' => 'Format waktu mulai tidak valid.',
+                'end.required' => 'Waktu selesai wajib diisi.',
+                'end.date' => 'Format waktu selesai tidak valid.',
+                'end.after' => 'Waktu selesai harus setelah waktu mulai.',
+            ]
+        );
+
+        $timezone = (string) config('app.timezone');
+        $start = Carbon::parse($validated['start'], $timezone);
+        $end = Carbon::parse($validated['end'], $timezone);
+
+        $conflicts = Event::query()
+            ->with(['leader', 'room', 'category'])
+            ->overlapping($start, $end, isset($validated['except_id']) ? (int) $validated['except_id'] : null)
+            ->orderBy('start_time')
+            ->limit(10)
+            ->get();
+
+        return response()->json([
+            'count' => Event::overlapping($start, $end, isset($validated['except_id']) ? (int) $validated['except_id'] : null)->count(),
+            'events' => EventResource::list($conflicts),
+        ]);
     }
 
     public function destroy(Event $event): RedirectResponse

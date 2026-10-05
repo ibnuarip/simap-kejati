@@ -39,6 +39,7 @@ class DatabaseSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'role' => 'protokol',
                 'email_verified_at' => now(),
+                'reminder_hours' => ['24'],
             ]
         );
 

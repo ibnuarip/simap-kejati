@@ -188,6 +188,30 @@ test('subscribing an existing endpoint transfers it to the current user', functi
     expect(PushSubscription::where('endpoint', $endpoint)->first()->user_id)->toBe($newcomer->id);
 });
 
+test('reminder command notifies protokol users for any agenda', function () {
+    Queue::fake();
+
+    $protokol = User::factory()->protokol()->create(['reminder_hours' => ['1']]);
+    PushSubscription::factory()->create(['user_id' => $protokol->id]);
+
+    // Agenda milik Wakajati tetap mengingatkan protokol (cakupan semua agenda).
+    $wakajatiLeader = Leader::factory()->create(['position' => 'Wakajati']);
+    $start = now(config('app.timezone'))->startOfMinute()->addHour();
+
+    Event::factory()->create([
+        'leader_id' => $wakajatiLeader->id,
+        'status' => 'scheduled',
+        'start_time' => $start,
+        'end_time' => $start->copy()->addHour(),
+    ]);
+
+    $this->artisan('agenda:process-reminders')->assertOk();
+
+    Queue::assertPushed(SendAgendaPushNotification::class, function ($job) use ($protokol) {
+        return $job->userId === $protokol->id && $job->reminderHours === 1;
+    });
+});
+
 test('reminder command skips users without push subscriptions', function () {
     Queue::fake();
 

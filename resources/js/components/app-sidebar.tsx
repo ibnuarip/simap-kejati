@@ -37,6 +37,7 @@ import { index as protokolCalendar } from '@/routes/protokol/calendar';
 import { dashboard as protokolDashboard } from '@/routes/protokol';
 import { index as protokolEvents } from '@/routes/protokol/events';
 import { index as protokolExports } from '@/routes/protokol/exports';
+import { index as protokolNotifications } from '@/routes/protokol/notifications';
 import { index as usersIndex } from '@/routes/users';
 import type { NavItem, UserRole } from '@/types';
 
@@ -120,6 +121,11 @@ function resolveSidebarConfig(role?: UserRole): SidebarConfig {
                         title: 'Cetak & Ekspor',
                         href: protokolExports().url,
                         icon: Printer,
+                    },
+                    {
+                        title: 'Pengaturan Notifikasi',
+                        href: protokolNotifications().url,
+                        icon: BellRing,
                     },
                 ],
             };

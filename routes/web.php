@@ -14,6 +14,7 @@ use App\Http\Controllers\Protokol\CalendarController as ProtokolCalendarControll
 use App\Http\Controllers\Protokol\DashboardController as ProtokolDashboardController;
 use App\Http\Controllers\Protokol\EventController as ProtokolEventController;
 use App\Http\Controllers\Protokol\ExportController as ProtokolExportController;
+use App\Http\Controllers\Protokol\NotificationController as ProtokolNotificationController;
 use App\Http\Controllers\PushNotificationController;
 use App\Http\Responses\LoginResponse;
 use Illuminate\Http\Request;
@@ -62,6 +63,7 @@ Route::middleware(['auth', 'verified', 'role:operator'])->group(function () {
     Route::resource('users', OperatorUserController::class)
         ->names('users')
         ->only(['index', 'store', 'update', 'destroy']);
+    Route::get('events/conflicts', [OperatorEventController::class, 'conflicts'])->name('events.conflicts');
     Route::resource('events', OperatorEventController::class)
         ->names('events')
         ->only(['index', 'store', 'update', 'destroy']);
@@ -72,6 +74,7 @@ Route::middleware(['auth', 'verified', 'role:operator'])->group(function () {
 // Tim Protokol
 Route::middleware(['auth', 'verified', 'role:protokol'])->prefix('protokol')->name('protokol.')->group(function () {
     Route::get('/', [ProtokolDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/events/conflicts', [ProtokolEventController::class, 'conflicts'])->name('events.conflicts');
     Route::resource('/events', ProtokolEventController::class)
         ->names('events')
         ->only(['index', 'store', 'update', 'destroy']);
@@ -80,6 +83,14 @@ Route::middleware(['auth', 'verified', 'role:protokol'])->prefix('protokol')->na
     Route::get('/exports/print', [ProtokolExportController::class, 'print'])->name('exports.print');
     Route::get('/exports/download', [ProtokolExportController::class, 'download'])->name('exports.download');
     Route::post('/events/{event}/cancel', [ProtokolEventController::class, 'cancel'])->name('events.cancel');
+
+    // Pengaturan & langganan push notification tim protokol.
+    Route::get('/notifications', [ProtokolNotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications', [ProtokolNotificationController::class, 'update'])->name('notifications.update');
+    Route::post('/push/subscribe', [PushNotificationController::class, 'subscribe'])->name('push.subscribe');
+    Route::post('/push/unsubscribe', [PushNotificationController::class, 'unsubscribe'])->name('push.unsubscribe');
+    Route::get('/push/status', [PushNotificationController::class, 'status'])->name('push.status');
+    Route::get('/push/vapid-key', [PushNotificationController::class, 'vapidKey'])->name('push.vapid-key');
 });
 
 // Ketua & Wakil Ketua (Leadership)

@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 
-const SUBSCRIBE_URL = '/leadership/push/subscribe';
-const UNSUBSCRIBE_URL = '/leadership/push/unsubscribe';
-const STATUS_URL = '/leadership/push/status';
-const VAPID_KEY_URL = '/leadership/push/vapid-key';
+const DEFAULT_BASE_PATH = '/leadership/push';
+
+function pushUrl(basePath: string, action: string): string {
+    return `${basePath}/${action}`;
+}
 
 type ServerSubscription = {
     endpoint: string;
@@ -75,7 +76,11 @@ export type PushStatus = {
     permission: NotificationPermission | 'unsupported';
 };
 
-export function usePushNotifications() {
+export function usePushNotifications(basePath: string = DEFAULT_BASE_PATH) {
+    const subscribeUrl = pushUrl(basePath, 'subscribe');
+    const unsubscribeUrl = pushUrl(basePath, 'unsubscribe');
+    const statusUrl = pushUrl(basePath, 'status');
+    const vapidKeyUrl = pushUrl(basePath, 'vapid-key');
     // Default: MATI. Hanya true setelah browser DAN server sama-sama
     // mengonfirmasi ada subscription yang cocok. Tidak ada auto-subscribe.
     const [status, setStatus] = useState<PushStatus>({
@@ -125,7 +130,7 @@ export function usePushNotifications() {
 
             try {
                 const data = await api<{ subscriptions: ServerSubscription[] }>(
-                    STATUS_URL,
+                    statusUrl,
                 );
                 serverEndpoints = data.subscriptions.map((s) => s.endpoint);
                 serverKnown = true;
@@ -155,7 +160,7 @@ export function usePushNotifications() {
                         keys?: { p256dh?: string; auth?: string };
                     };
 
-                    await api(SUBSCRIBE_URL, {
+                    await api(subscribeUrl, {
                         endpoint: browserSubscription.endpoint,
                         public_key: json.keys?.p256dh,
                         auth_secret: json.keys?.auth,
@@ -188,7 +193,7 @@ export function usePushNotifications() {
         } finally {
             setIsChecking(false);
         }
-    }, [isSupported]);
+    }, [isSupported, statusUrl, subscribeUrl]);
 
     useEffect(() => {
         void refreshStatus();
@@ -221,9 +226,7 @@ export function usePushNotifications() {
 
             await navigator.serviceWorker.ready;
 
-            const { publicKey } = await api<{ publicKey: string }>(
-                VAPID_KEY_URL,
-            );
+            const { publicKey } = await api<{ publicKey: string }>(vapidKeyUrl);
 
             // Hapus subscription lama/basi dulu agar subscribe selalu fresh
             // (mencegah "Registration failed - push service error").
@@ -241,7 +244,7 @@ export function usePushNotifications() {
             const subscriptionJson = subscription.toJSON();
 
             try {
-                await api(SUBSCRIBE_URL, {
+                await api(subscribeUrl, {
                     endpoint: subscription.endpoint,
                     public_key: subscriptionJson.keys?.p256dh,
                     auth_secret: subscriptionJson.keys?.auth,
@@ -264,7 +267,7 @@ export function usePushNotifications() {
         } finally {
             setIsLoading(false);
         }
-    }, [isSupported]);
+    }, [isSupported, vapidKeyUrl, subscribeUrl]);
 
     const disable = useCallback(async () => {
         setIsLoading(true);
@@ -278,7 +281,7 @@ export function usePushNotifications() {
                 await registration?.pushManager.getSubscription();
 
             if (subscription) {
-                await api(UNSUBSCRIBE_URL, {
+                await api(unsubscribeUrl, {
                     endpoint: subscription.endpoint,
                 });
                 await subscription.unsubscribe();
