@@ -23,7 +23,6 @@ class LeaderFactory extends Factory
             'nip' => fake()->numerify('################'),
             'email' => fake()->unique()->safeEmail(),
             'phone' => fake()->phoneNumber(),
-            'photo' => null,
             'is_active' => true,
         ];
     }

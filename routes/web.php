@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AvatarController;
 use App\Http\Controllers\Leadership\CalendarController as LeadershipCalendarController;
 use App\Http\Controllers\Leadership\DashboardController as LeadershipDashboardController;
 use App\Http\Controllers\Leadership\NotificationController as LeadershipNotificationController;
@@ -44,6 +45,9 @@ Route::get('/', function (Request $request) {
 if (! Features::enabled(Features::registration())) {
     Route::match(['get', 'post', 'put', 'patch', 'delete'], '/register', fn () => Redirect::route('login'));
 }
+
+// Foto profil: privat, hanya pemilik akun yang sedang login.
+Route::get('/avatar/{user}', AvatarController::class)->middleware('auth')->name('avatar.show');
 
 Route::middleware(['auth', 'verified', 'role:operator'])->group(function () {
     Route::get('dashboard', [OperatorDashboardController::class, 'index'])->name('dashboard');

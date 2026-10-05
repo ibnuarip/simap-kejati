@@ -22,7 +22,6 @@ class LeaderRequest extends FormRequest
             'nip' => ['nullable', 'string', 'digits:18'],
             'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:255'],
-            'photo' => ['nullable', 'string', 'max:255'],
             'is_active' => ['boolean'],
         ];
     }

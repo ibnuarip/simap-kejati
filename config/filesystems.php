@@ -60,6 +60,33 @@ return [
             'report' => false,
         ],
 
+        /*
+        |--------------------------------------------------------------------------
+        | Avatar Disk (private)
+        |--------------------------------------------------------------------------
+        |
+        | Foto profil disimpan di sini dan HANYA dilayani lewat route
+        | terotentikasi (pemilik akun), bukan URL publik. Lokal memakai
+        | driver "local" (storage/app/avatars). Saat production, cukup ubah
+        | environment berikut tanpa menyentuh kode:
+        |   AVATAR_DISK_DRIVER=s3 (+ kredensial AWS_* yang sudah ada).
+        |
+        */
+
+        'avatars' => [
+            'driver' => env('AVATAR_DISK_DRIVER', 'local'),
+            'root' => storage_path('app/avatars'),
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AVATAR_AWS_BUCKET', env('AWS_BUCKET')),
+            'url' => env('AVATAR_AWS_URL', env('AWS_URL')),
+            'endpoint' => env('AWS_ENDPOINT'),
+            'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+            'throw' => true,
+            'report' => false,
+        ],
+
     ],
 
     /*

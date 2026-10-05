@@ -7,6 +7,7 @@ use App\Http\Requests\UserRequest;
 use App\Mail\Auth\AccountCredentialsMail;
 use App\Mail\Auth\WelcomeMail;
 use App\Models\User;
+use App\Services\AvatarService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -28,6 +29,7 @@ class UserController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->role,
+                'avatar' => $user->avatar,
                 'email_verified_at' => $user->email_verified_at?->toDateTimeString(),
                 'created_at' => $user->created_at?->toDateTimeString(),
             ]);
@@ -37,11 +39,13 @@ class UserController extends Controller
         ]);
     }
 
-    public function store(UserRequest $request): RedirectResponse
+    public function store(UserRequest $request, AvatarService $avatars): RedirectResponse
     {
-        $validated = $request->validated();
+        $validated = $request->safe()->except(['avatar', 'remove_avatar']);
 
         $user = User::create($validated);
+
+        $avatars->syncFromRequest($user, $request);
 
         $this->notifyAccountCreated($user, $validated['password']);
 
@@ -65,7 +69,7 @@ class UserController extends Controller
         }
     }
 
-    public function update(UserRequest $request, User $user): RedirectResponse
+    public function update(UserRequest $request, User $user, AvatarService $avatars): RedirectResponse
     {
         $user->update(array_filter([
             'name' => $request->validated('name'),
@@ -74,13 +78,16 @@ class UserController extends Controller
             'password' => $request->filled('password') ? $request->input('password') : null,
         ], fn (mixed $value): bool => $value !== null));
 
+        $avatars->syncFromRequest($user, $request);
+
         return back();
     }
 
-    public function destroy(Request $request, User $user): RedirectResponse
+    public function destroy(Request $request, User $user, AvatarService $avatars): RedirectResponse
     {
         abort_if($request->user()?->getAuthIdentifier() === $user->id, 403, 'Akun yang sedang login tidak dapat dihapus.');
 
+        $avatars->delete($user);
         $user->delete();
 
         return back();

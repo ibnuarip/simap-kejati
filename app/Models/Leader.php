@@ -15,7 +15,6 @@ use Illuminate\Support\Carbon;
  * @property string $nip
  * @property string $email
  * @property string|null $phone
- * @property string|null $photo
  * @property bool $is_active
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -33,7 +32,6 @@ class Leader extends Model
         'nip',
         'email',
         'phone',
-        'photo',
         'is_active',
     ];
 

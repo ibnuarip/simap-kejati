@@ -2,8 +2,10 @@ import { Form, Head, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { Pencil, Plus, X } from 'lucide-react';
 import UserController from '@/actions/App/Http/Controllers/Operator/UserController';
+import { AvatarInput } from '@/components/avatar-input';
 import ConfirmDelete from '@/components/confirm-delete';
 import InputError from '@/components/input-error';
+import { UserAvatar } from '@/components/user-avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -142,24 +144,33 @@ export default function OperatorUsers({ users }: Props) {
                                                     className="hover:bg-muted/60 transition-colors"
                                                 >
                                                     <td className="max-w-xs py-4 pr-4">
-                                                        <div className="flex min-w-0 flex-col gap-0.5">
-                                                            <div className="flex flex-wrap items-center gap-2">
-                                                                <p className="truncate font-medium">
-                                                                    {user.name}
+                                                        <div className="flex min-w-0 items-center gap-3">
+                                                            <UserAvatar
+                                                                user={user}
+                                                                className="size-9 shrink-0 overflow-hidden rounded-full"
+                                                            />
+                                                            <div className="flex min-w-0 flex-col gap-0.5">
+                                                                <div className="flex flex-wrap items-center gap-2">
+                                                                    <p className="truncate font-medium">
+                                                                        {
+                                                                            user.name
+                                                                        }
+                                                                    </p>
+                                                                    {user.id ===
+                                                                        currentUserId && (
+                                                                        <Badge
+                                                                            variant="secondary"
+                                                                            className="text-xs"
+                                                                        >
+                                                                            Akun
+                                                                            ini
+                                                                        </Badge>
+                                                                    )}
+                                                                </div>
+                                                                <p className="text-muted-foreground truncate text-xs">
+                                                                    {user.email}
                                                                 </p>
-                                                                {user.id ===
-                                                                    currentUserId && (
-                                                                    <Badge
-                                                                        variant="secondary"
-                                                                        className="text-xs"
-                                                                    >
-                                                                        Akun ini
-                                                                    </Badge>
-                                                                )}
                                                             </div>
-                                                            <p className="text-muted-foreground truncate text-xs">
-                                                                {user.email}
-                                                            </p>
                                                         </div>
                                                     </td>
                                                     <td className="py-4 pr-4">
@@ -330,6 +341,10 @@ function UserCard({ user, currentUserId, onEdit }: UserCardProps) {
     return (
         <div className="flex flex-col gap-3 rounded-lg border p-4">
             <div className="flex items-start justify-between gap-2">
+                <UserAvatar
+                    user={user}
+                    className="size-10 shrink-0 overflow-hidden rounded-full"
+                />
                 <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                         <p className="truncate font-medium">{user.name}</p>
@@ -412,6 +427,13 @@ function UserFields({
 }: FieldProps) {
     return (
         <>
+            <AvatarInput
+                userId={defaultValue?.id ?? null}
+                userName={defaultValue?.name ?? ''}
+                currentAvatar={defaultValue?.avatar ?? null}
+                error={errors.avatar}
+            />
+
             <div className="grid gap-2">
                 <Label htmlFor="name">Nama Lengkap</Label>
                 <Input

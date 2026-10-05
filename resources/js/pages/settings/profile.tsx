@@ -1,6 +1,7 @@
 import { Form, Head, usePage } from '@inertiajs/react';
 import { Link } from '@inertiajs/react';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
+import { AvatarInput } from '@/components/avatar-input';
 import DeleteUser from '@/components/delete-user';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
@@ -46,6 +47,13 @@ export default function Profile({
                 >
                     {({ processing, errors }) => (
                         <>
+                            <AvatarInput
+                                userId={auth.user.id}
+                                userName={auth.user.name}
+                                currentAvatar={auth.user.avatar ?? null}
+                                error={errors.avatar}
+                            />
+
                             <div className="grid gap-2">
                                 <Label htmlFor="name">Name</Label>
 
