@@ -2,6 +2,7 @@ import { Form, Head } from '@inertiajs/react';
 import { useEffect, useMemo, useState } from 'react';
 import {
     CalendarPlus,
+    Clock,
     MapPin,
     Pencil,
     Search,
@@ -327,9 +328,9 @@ export default function OperatorEvents({
                                             </span>
                                         </div>
 
-                                        <ul className="divide-border divide-y">
+                                        <ul className="grid min-w-0 grid-cols-1 gap-3 p-4 md:grid-cols-2">
                                             {group.events.map((event) => (
-                                                <AgendaRow
+                                                <AgendaCard
                                                     key={event.id}
                                                     event={event}
                                                     onEdit={openEdit}
@@ -457,36 +458,43 @@ type AgendaRowProps = {
     onEdit: (event: AgendaItem) => void;
 };
 
-function AgendaRow({ event, onEdit }: AgendaRowProps) {
+function AgendaCard({ event, onEdit }: AgendaRowProps) {
     const isCancelled = event.status === 'cancelled';
 
     return (
         <li
             className={cn(
-                'flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:gap-4',
-                isCancelled && 'bg-muted/20 opacity-70',
+                'bg-card text-card-foreground flex h-full min-w-0 flex-col rounded-xl border shadow-sm',
+                isCancelled && 'opacity-70',
             )}
         >
-            <div className="flex shrink-0 items-baseline gap-1.5 sm:w-24 sm:flex-col sm:items-start sm:gap-0">
-                <span className="text-sm font-semibold tabular-nums">
-                    {formatTime(event.start_time)}
+            <div className="flex min-w-0 items-center justify-between gap-2 border-b px-4 py-2.5">
+                <span className="flex min-w-0 items-center gap-1.5 text-sm font-semibold tabular-nums">
+                    <Clock className="size-4 shrink-0" />
+                    <span className="truncate">
+                        {formatTime(event.start_time)} –{' '}
+                        {formatTime(event.end_time)}
+                    </span>
                 </span>
-                <span className="text-muted-foreground text-xs tabular-nums">
-                    s/d {formatTime(event.end_time)}
-                </span>
+                <Badge
+                    variant={agendaStatusVariant[event.status]}
+                    className="shrink-0"
+                >
+                    {agendaStatusLabel[event.status]}
+                </Badge>
             </div>
 
-            <div className="flex min-w-0 flex-1 flex-col gap-1">
-                <span
+            <div className="flex min-w-0 flex-1 flex-col gap-1 px-4 py-3">
+                <p
                     className={cn(
-                        'leading-snug font-medium break-words',
+                        'min-w-0 leading-snug font-medium break-words',
                         isCancelled && 'line-through',
                     )}
                 >
                     {event.title}
-                </span>
+                </p>
 
-                <div className="text-muted-foreground flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+                <div className="text-muted-foreground flex min-w-0 flex-col gap-1 text-xs">
                     <span className="flex min-w-0 items-center gap-1.5">
                         <User className="size-3.5 shrink-0" />
                         <span className="truncate">
@@ -508,10 +516,7 @@ function AgendaRow({ event, onEdit }: AgendaRowProps) {
                 </div>
             </div>
 
-            <div className="flex shrink-0 items-center justify-start gap-3 sm:justify-end">
-                <Badge variant={agendaStatusVariant[event.status]}>
-                    {agendaStatusLabel[event.status]}
-                </Badge>
+            <div className="flex shrink-0 items-center justify-end gap-2 border-t px-4 py-2.5">
                 <EventActions event={event} onEdit={onEdit} />
             </div>
         </li>
