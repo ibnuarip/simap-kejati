@@ -49,6 +49,9 @@ if (! Features::enabled(Features::registration())) {
 // Foto profil: privat, hanya pemilik akun yang sedang login.
 Route::get('/avatar/{user}', AvatarController::class)->middleware('auth')->name('avatar.show');
 
+// Penyegar session agar tab yang lama terbuka tidak 419 saat submit.
+Route::get('/session/ping', fn () => response()->json(['ok' => true]))->middleware('auth')->name('session.ping');
+
 Route::middleware(['auth', 'verified', 'role:operator'])->group(function () {
     Route::get('dashboard', [OperatorDashboardController::class, 'index'])->name('dashboard');
 

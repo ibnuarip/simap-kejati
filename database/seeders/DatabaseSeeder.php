@@ -88,57 +88,48 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // 3. Create Rooms
-        $roomAula = Room::firstOrCreate(
-            ['name' => 'Aula Utama Kejati'],
-            [
-                'location' => 'Gedung Utama Lt. 1',
-                'capacity' => 200,
-                'description' => 'Aula serbaguna untuk upacara dan pelantikan',
-                'is_active' => true,
-            ]
-        );
+        // 3. Create Rooms (mencakup lantai 1-8, idempotent by name)
+        $rooms = [
+            ['Aula Utama Kejati', 'Gedung Utama Lt. 1', 200, 'Aula serbaguna untuk upacara dan pelantikan'],
+            ['Ruang Audiensi', 'Gedung Utama Lt. 1', 15, 'Ruang penerimaan tamu pimpinan'],
+            ['Ruang Rapat Pimpinan', 'Gedung Utama Lt. 2', 30, 'Ruang rapat khusus pimpinan dan staf ahli'],
+            ['Ruang Rapat Koordinasi', 'Gedung Utama Lt. 3', 40, 'Ruang rapat koordinasi lintas bidang'],
+            ['Ruang Media Center', 'Gedung Utama Lt. 4', 20, 'Ruang konferensi pers dan pengelolaan media'],
+            ['Ruang Gelar Perkara', 'Gedung Utama Lt. 5', 25, 'Ruang ekspose dan gelar perkara'],
+            ['Ruang Diklat', 'Gedung Utama Lt. 6', 50, 'Ruang pelatihan dan peningkatan kapasitas'],
+            ['Ruang Command Center', 'Gedung Utama Lt. 7', 20, 'Ruang pemantauan dan komando'],
+            ['Ruang Pertemuan Terbatas', 'Gedung Utama Lt. 8', 12, 'Ruang pertemuan terbatas pimpinan'],
+        ];
 
-        $roomRapim = Room::firstOrCreate(
-            ['name' => 'Ruang Rapat Pimpinan'],
-            [
-                'location' => 'Gedung Utama Lt. 2',
-                'capacity' => 30,
-                'description' => 'Ruang rapat khusus pimpinan dan staf ahli',
-                'is_active' => true,
-            ]
-        );
+        foreach ($rooms as [$name, $location, $capacity, $description]) {
+            Room::firstOrCreate(
+                ['name' => $name],
+                ['location' => $location, 'capacity' => $capacity, 'description' => $description, 'is_active' => true]
+            );
+        }
 
-        $roomAudiensi = Room::firstOrCreate(
-            ['name' => 'Ruang Audiensi'],
-            [
-                'location' => 'Gedung Utama Lt. 1',
-                'capacity' => 15,
-                'description' => 'Ruang penerimaan tamu pimpinan',
-                'is_active' => true,
-            ]
-        );
+        $roomRapim = Room::where('name', 'Ruang Rapat Pimpinan')->firstOrFail();
 
-        // 4. Create Categories
-        $catRapat = Category::firstOrCreate(
-            ['name' => 'Rapat Internal'],
-            ['color' => '#008752', 'description' => 'Rapat koordinasi dan evaluasi internal']
-        );
+        // 4. Create Categories (7 kategori, idempotent by name)
+        $categories = [
+            ['Rapat Internal', '#008752', 'Rapat koordinasi dan evaluasi internal'],
+            ['Audiensi', '#3B82F6', 'Penerimaan kunjungan dan pemangku kepentingan'],
+            ['Kunjungan Kerja', '#F59E0B', 'Kunjungan dinas ke Kejari atau instansi luar'],
+            ['Upacara / Seremonial', '#8B5CF6', 'Kegiatan seremonial danperingatan hari besar'],
+            ['Bimbingan Teknis', '#0EA5E9', 'Pelatihan teknis dan peningkatan kapasitas jaksa'],
+            ['Penerangan Hukum', '#10B981', 'Penyuluhan dan penerangan hukum kepada masyarakat'],
+            ['Rapat Evaluasi', '#EF4444', 'Evaluasi capaian kinerja dan tindak lanjut'],
+        ];
 
-        $catAudiensi = Category::firstOrCreate(
-            ['name' => 'Audiensi'],
-            ['color' => '#3B82F6', 'description' => 'Penerimaan kunjungan dan pemangku kepentingan']
-        );
+        foreach ($categories as [$name, $color, $description]) {
+            Category::firstOrCreate(
+                ['name' => $name],
+                ['color' => $color, 'description' => $description]
+            );
+        }
 
-        $catKunker = Category::firstOrCreate(
-            ['name' => 'Kunjungan Kerja'],
-            ['color' => '#F59E0B', 'description' => 'Kunjungan dinas ke Kejari atau instansi luar']
-        );
-
-        $catUpacara = Category::firstOrCreate(
-            ['name' => 'Upacara / Seremonial'],
-            ['color' => '#8B5CF6', 'description' => 'Kegiatan seremonial danperingatan hari besar']
-        );
+        $catRapat = Category::where('name', 'Rapat Internal')->firstOrFail();
+        $catAudiensi = Category::where('name', 'Audiensi')->firstOrFail();
 
         // 5. Create Sample Events
         Event::firstOrCreate(
@@ -162,7 +153,7 @@ class DatabaseSeeder extends Seeder
             [
                 'description' => 'Silaturahmi dan pemantapan koordinasi kelembagaan.',
                 'leader_id' => $leaderWakajati->id,
-                'room_id' => $roomAudiensi->id,
+                'room_id' => Room::where('name', 'Ruang Audiensi')->firstOrFail()->id,
                 'category_id' => $catAudiensi->id,
                 'start_time' => Carbon::tomorrow()->setTime(10, 0),
                 'end_time' => Carbon::tomorrow()->setTime(12, 0),
