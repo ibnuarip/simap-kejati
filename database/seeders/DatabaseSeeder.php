@@ -46,7 +46,7 @@ class DatabaseSeeder extends Seeder
         $kajati = User::updateOrCreate(
             ['email' => 'kajati@kejati.go.id'],
             [
-                'name' => 'Kepala Kejaksaan Tinggi (Kajati)',
+                'name' => 'Kepala Kejaksaan Tinggi',
                 'password' => Hash::make('password'),
                 'role' => 'kajati',
                 'email_verified_at' => now(),
@@ -57,7 +57,7 @@ class DatabaseSeeder extends Seeder
         $wakajati = User::updateOrCreate(
             ['email' => 'wakajati@kejati.go.id'],
             [
-                'name' => 'Wakil Kepala Kejaksaan Tinggi (Wakajati)',
+                'name' => 'Wakil Kepala Kejaksaan Tinggi',
                 'password' => Hash::make('password'),
                 'role' => 'wakajati',
                 'email_verified_at' => now(),

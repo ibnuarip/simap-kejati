@@ -1,8 +1,10 @@
 import { Form, Head, usePage } from '@inertiajs/react';
 import { Link } from '@inertiajs/react';
+import { Ban } from 'lucide-react';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import { AvatarInput } from '@/components/avatar-input';
 import DeleteUser from '@/components/delete-user';
+import { userRoleLabel } from '@/lib/user';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -91,6 +93,33 @@ export default function Profile({
                                     className="mt-2"
                                     message={errors.email}
                                 />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="role">Peran (Role)</Label>
+
+                                <div className="relative mt-1">
+                                    <Input
+                                        id="role"
+                                        className="block w-full pr-10"
+                                        defaultValue={
+                                            auth.user.role
+                                                ? userRoleLabel[auth.user.role]
+                                                : '—'
+                                        }
+                                        readOnly
+                                        tabIndex={-1}
+                                        aria-readonly="true"
+                                    />
+                                    <Ban
+                                        className="text-destructive pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2"
+                                        aria-hidden="true"
+                                    />
+                                </div>
+
+                                <p className="text-muted-foreground text-xs">
+                                    Peran hanya dapat diubah oleh Tim SIMAP.
+                                </p>
                             </div>
 
                             {mustVerifyEmail &&

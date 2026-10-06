@@ -2,7 +2,6 @@ import { Form, Head, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { Pencil, Plus, X } from 'lucide-react';
 import UserController from '@/actions/App/Http/Controllers/Operator/UserController';
-import { AvatarInput } from '@/components/avatar-input';
 import ConfirmDelete from '@/components/confirm-delete';
 import InputError from '@/components/input-error';
 import { UserAvatar } from '@/components/user-avatar';
@@ -117,14 +116,11 @@ export default function OperatorUsers({ users }: Props) {
 
                                 {/* Desktop (≥1024px): tabel scrollable */}
                                 <div className="hidden overflow-x-auto lg:block">
-                                    <table className="w-full min-w-[720px] text-left text-sm">
+                                    <table className="w-full min-w-[640px] text-left text-sm">
                                         <thead className="border-border text-muted-foreground border-b text-xs tracking-wide uppercase">
                                             <tr>
                                                 <th className="py-3 pr-4 font-medium">
                                                     Nama & Email
-                                                </th>
-                                                <th className="py-3 pr-4 font-medium">
-                                                    Peran
                                                 </th>
                                                 <th className="py-3 pr-4 font-medium">
                                                     Status Email
@@ -170,17 +166,16 @@ export default function OperatorUsers({ users }: Props) {
                                                                 <p className="text-muted-foreground truncate text-xs">
                                                                     {user.email}
                                                                 </p>
+                                                                <p className="text-muted-foreground/80 truncate text-xs">
+                                                                    {
+                                                                        userRoleLabel[
+                                                                            user
+                                                                                .role
+                                                                        ]
+                                                                    }
+                                                                </p>
                                                             </div>
                                                         </div>
-                                                    </td>
-                                                    <td className="py-4 pr-4">
-                                                        <Badge>
-                                                            {
-                                                                userRoleLabel[
-                                                                    user.role
-                                                                ]
-                                                            }
-                                                        </Badge>
                                                     </td>
                                                     <td className="text-muted-foreground py-4 pr-4">
                                                         {user.email_verified_at
@@ -357,6 +352,9 @@ function UserCard({ user, currentUserId, onEdit }: UserCardProps) {
                     <p className="text-muted-foreground truncate text-xs">
                         {user.email}
                     </p>
+                    <p className="text-muted-foreground/80 truncate text-xs">
+                        {userRoleLabel[user.role]}
+                    </p>
                 </div>
                 <ConfirmDelete
                     url={UserController.destroy.url(user.id)}
@@ -365,10 +363,6 @@ function UserCard({ user, currentUserId, onEdit }: UserCardProps) {
                 />
             </div>
             <div className="grid grid-cols-2 gap-3 text-sm">
-                <div>
-                    <p className="text-muted-foreground text-xs">Peran</p>
-                    <Badge className="mt-0.5">{userRoleLabel[user.role]}</Badge>
-                </div>
                 <div>
                     <p className="text-muted-foreground text-xs">
                         Status Email
@@ -427,13 +421,6 @@ function UserFields({
 }: FieldProps) {
     return (
         <>
-            <AvatarInput
-                userId={defaultValue?.id ?? null}
-                userName={defaultValue?.name ?? ''}
-                currentAvatar={defaultValue?.avatar ?? null}
-                error={errors.avatar}
-            />
-
             <div className="grid gap-2">
                 <Label htmlFor="name">Nama Lengkap</Label>
                 <Input
