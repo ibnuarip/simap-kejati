@@ -27,6 +27,7 @@ import {
 import { dashboard } from '@/routes';
 import { index as calendarIndex } from '@/routes/calendar';
 import { index as eventsIndex } from '@/routes/events';
+import { index as exportsIndex } from '@/routes/exports';
 import { index as leadershipCalendar } from '@/routes/leadership/calendar';
 import { dashboard as leadershipDashboard } from '@/routes/leadership';
 import { index as leadershipNotifications } from '@/routes/leadership/notifications';
@@ -92,6 +93,11 @@ const operatorNavItems: SidebarNavItem[] = [
         title: 'Kalender Agenda',
         href: calendarIndex().url,
         icon: Calendar,
+    },
+    {
+        title: 'Cetak & Ekspor',
+        href: exportsIndex().url,
+        icon: Printer,
     },
 ];
 

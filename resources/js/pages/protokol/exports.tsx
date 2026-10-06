@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, router, setLayoutProps } from '@inertiajs/react';
 import { useState } from 'react';
 import {
     Calendar,
@@ -11,6 +11,8 @@ import {
     SlidersHorizontal,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { dashboard as protokolDashboard } from '@/routes/protokol';
+import { index as exportsIndex } from '@/routes/protokol/exports';
 import {
     Card,
     CardContent,
@@ -20,12 +22,6 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { dashboard as protokolDashboard } from '@/routes/protokol';
-import {
-    download as exportsDownload,
-    index as exportsIndex,
-    print as exportsPrint,
-} from '@/routes/protokol/exports';
 
 type PeriodType = 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom';
 
@@ -36,6 +32,10 @@ type Props = {
         month: string;
         year: string;
     };
+    homeUrl: string;
+    homeTitle: string;
+    printUrl: string;
+    downloadBaseUrl: string;
 };
 
 const PERIOD_OPTIONS: {
@@ -124,7 +124,25 @@ function formatWeekRange(value: string): string {
     return `${format(monday)} - ${format(sunday)}`;
 }
 
-export default function ProtokolExports({ defaults }: Props) {
+export default function ProtokolExports({
+    defaults,
+    homeUrl,
+    homeTitle,
+    printUrl,
+    downloadBaseUrl,
+}: Props) {
+    setLayoutProps({
+        breadcrumbs: [
+            { title: homeTitle, href: homeUrl },
+            {
+                title: 'Cetak & Ekspor',
+                href:
+                    typeof window === 'undefined'
+                        ? homeUrl
+                        : window.location.pathname,
+            },
+        ],
+    });
     const [periodType, setPeriodType] = useState<PeriodType>('monthly');
     const [date, setDate] = useState(defaults.date);
     const [week, setWeek] = useState(defaults.week);
@@ -181,13 +199,11 @@ export default function ProtokolExports({ defaults }: Props) {
             return;
         }
 
-        router.get(exportsPrint().url, periodParams());
+        router.get(printUrl, periodParams());
     };
 
     const downloadUrl = (format: 'xlsx' | 'csv') =>
-        exportsDownload.url({
-            query: { ...periodParams(), format },
-        });
+        `${downloadBaseUrl}?${new URLSearchParams({ ...periodParams(), format }).toString()}`;
 
     return (
         <>

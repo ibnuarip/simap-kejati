@@ -2,6 +2,7 @@
 
 use App\Models\Event;
 use App\Models\User;
+use Inertia\Testing\AssertableInertia as Assert;
 
 test('protokol can download an xlsx file for a daily report', function () {
     $protokol = User::factory()->protokol()->create();
@@ -121,13 +122,45 @@ test('download rejects an unsupported export format', function () {
 });
 
 test('non protokol roles cannot download exports', function () {
-    $operator = User::factory()->operator()->create();
+    $kajati = User::factory()->kajati()->create();
 
-    $this->actingAs($operator)
+    $this->actingAs($kajati)
         ->get(route('protokol.exports.download', [
             'type' => 'daily',
             'date' => now()->format('Y-m-d'),
             'format' => 'xlsx',
         ]))
         ->assertForbidden();
+});
+
+test('operator can open the exports page and download reports', function () {
+    $operator = User::factory()->operator()->create();
+    Event::factory()->create();
+
+    $this->actingAs($operator);
+
+    $this->get(route('exports.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('protokol/exports')
+            ->has('defaults')
+            ->where('homeUrl', route('dashboard'))
+            ->where('printUrl', route('exports.print'))
+            ->where('downloadBaseUrl', route('exports.download')));
+
+    $this->get(route('exports.print', ['type' => 'monthly', 'month' => now()->format('Y-m')]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('print/export-report'));
+
+    $this->get(route('exports.download', [
+        'type' => 'monthly',
+        'month' => now()->format('Y-m'),
+        'format' => 'xlsx',
+    ]))
+        ->assertOk()
+        ->assertDownload('rekap-bulanan-'.now()->format('Y-m').'.xlsx');
+});
+
+test('guest cannot open operator exports', function () {
+    $this->get(route('exports.index'))->assertRedirect(route('login'));
 });
