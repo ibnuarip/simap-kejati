@@ -18,10 +18,10 @@ class LeaderRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'position' => ['required', 'in:Kajati,Wakajati,Other'],
+            'position' => ['required', 'in:Kajati,Wakajati'],
             'nip' => ['nullable', 'string', 'digits:18'],
             'email' => ['nullable', 'email', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'regex:/^08\d{8,12}$/'],
             'is_active' => ['boolean'],
         ];
     }
@@ -33,6 +33,7 @@ class LeaderRequest extends FormRequest
     {
         return [
             'nip.digits' => 'NIP harus terdiri dari 18 digit angka.',
+            'phone.regex' => 'Nomor telepon harus diawali 08 dan terdiri dari 10–14 digit angka.',
         ];
     }
 }

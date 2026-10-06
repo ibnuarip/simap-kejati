@@ -1,6 +1,6 @@
 import type { AgendaStatus, UserRole } from '@/types';
 
-export type LeaderPosition = 'Kajati' | 'Wakajati' | 'Other';
+export type LeaderPosition = 'Kajati' | 'Wakajati';
 
 export type Leader = {
     id: number;

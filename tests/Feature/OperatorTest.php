@@ -80,6 +80,38 @@ test('operators can create a leader', function () {
     ]);
 });
 
+test('leader phone must start with 08 and be 10 to 14 digits', function () {
+    $operator = makeOperator();
+    $this->actingAs($operator);
+
+    $payload = [
+        'name' => 'Drs. H. Bambang',
+        'position' => 'Kajati',
+        'is_active' => '1',
+    ];
+
+    foreach (['123', '0712345678', '08123456789012345', '08abc12345'] as $phone) {
+        $this->post(route('master.leaders.store'), [...$payload, 'phone' => $phone])
+            ->assertSessionHasErrors('phone');
+    }
+
+    $this->post(route('master.leaders.store'), [...$payload, 'phone' => '081234567890'])
+        ->assertSessionHasNoErrors();
+});
+
+test('leader position other than kajati or wakajati is rejected', function () {
+    $operator = makeOperator();
+    $this->actingAs($operator);
+
+    $this->post(route('master.leaders.store'), [
+        'name' => 'Drs. H. Bambang',
+        'position' => 'Other',
+        'is_active' => '1',
+    ])->assertSessionHasErrors('position');
+
+    expect(Leader::where('position', 'Other')->exists())->toBeFalse();
+});
+
 test('creating a leader requires a name and a valid position', function () {
     $operator = makeOperator();
     $this->actingAs($operator);

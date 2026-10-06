@@ -10,5 +10,4 @@ export const userRoleLabel: Record<UserRole, string> = {
 export const leaderPositionLabel: Record<LeaderPosition, string> = {
     Kajati: 'Kajati',
     Wakajati: 'Wakajati',
-    Other: 'Lainnya',
 };

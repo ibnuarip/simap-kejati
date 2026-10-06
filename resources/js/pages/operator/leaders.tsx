@@ -45,13 +45,9 @@ type Props = {
     leaders: Leader[];
 };
 
-const positionBadgeVariant: Record<
-    LeaderPosition,
-    'ketua' | 'wakil' | 'secondary'
-> = {
+const positionBadgeVariant: Record<LeaderPosition, 'ketua' | 'wakil'> = {
     Kajati: 'ketua',
     Wakajati: 'wakil',
-    Other: 'secondary',
 };
 
 export default function OperatorLeaders({ leaders }: Props) {
@@ -389,13 +385,11 @@ function LeaderFields({
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                        {(['Kajati', 'Wakajati', 'Other'] as const).map(
-                            (value) => (
-                                <SelectItem key={value} value={value}>
-                                    {leaderPositionLabel[value]}
-                                </SelectItem>
-                            ),
-                        )}
+                        {(['Kajati', 'Wakajati'] as const).map((value) => (
+                            <SelectItem key={value} value={value}>
+                                {leaderPositionLabel[value]}
+                            </SelectItem>
+                        ))}
                     </SelectContent>
                 </Select>
                 <input type="hidden" name="position" value={position} />
@@ -437,8 +431,10 @@ function LeaderFields({
                 <Input
                     id="phone"
                     name="phone"
+                    inputMode="tel"
+                    maxLength={14}
                     defaultValue={defaultValue?.phone ?? ''}
-                    placeholder="Nomor telepon / WA"
+                    placeholder="08xxxxxxxxxx"
                 />
                 <InputError message={errors.phone} />
             </div>
