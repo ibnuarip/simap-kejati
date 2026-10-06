@@ -54,7 +54,7 @@
                     <tr>
                         <td style="background-color:#f7f9f8;padding:20px 32px;border-top:1px solid #e2e8e6;">
                             <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.6;color:#6b7280;">
-                                Kejaksaan Tinggi — {{ config('app.name') }} · Sistem Informasi Manajemen Agenda Pimpinan<br>
+                                Kejaksaan Tinggi Jawa Barat · SIMAP<br>
                                 Email ini dikirim secara otomatis oleh sistem. Mohon tidak membalas email ini.
                             </div>
                         </td>

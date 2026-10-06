@@ -75,7 +75,7 @@ export default function ExportReport({
                                 Kejaksaan Agung Republik Indonesia
                             </p>
                             <h1 className="mt-0.5 text-lg font-bold tracking-wide uppercase">
-                                Kejaksaan Tinggi — SIMAP
+                                Kejaksaan Tinggi Jawa Barat
                             </h1>
                             <p className="mt-0.5 text-xs">
                                 Sistem Informasi Manajemen Agenda Pimpinan

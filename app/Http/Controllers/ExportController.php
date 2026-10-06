@@ -1,8 +1,7 @@
 <?php
 
-namespace App\Http\Controllers\Protokol;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Http\Resources\EventResource;
 use App\Models\Event;
 use Carbon\CarbonImmutable;
@@ -22,6 +21,10 @@ class ExportController extends Controller
         $timezone = (string) config('app.timezone');
         $today = CarbonImmutable::today($timezone);
 
+        // Dipakai dua grup route (operator & protokol): breadcrumb dan
+        // endpoint mengikuti role user yang sedang login.
+        $prefix = $request->user()?->role === 'operator' ? '' : 'protokol.';
+
         return Inertia::render('protokol/exports', [
             'defaults' => [
                 'date' => $today->format('Y-m-d'),
@@ -29,6 +32,10 @@ class ExportController extends Controller
                 'month' => $today->format('Y-m'),
                 'year' => $today->format('Y'),
             ],
+            'homeUrl' => route($prefix.'dashboard'),
+            'homeTitle' => $prefix === '' ? 'Dashboard' : 'Beranda',
+            'printUrl' => route($prefix.'exports.print'),
+            'downloadBaseUrl' => route($prefix.'exports.download'),
         ]);
     }
 

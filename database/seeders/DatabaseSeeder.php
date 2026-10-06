@@ -23,9 +23,9 @@ class DatabaseSeeder extends Seeder
     {
         // 1. Create 4 Role Users
         $operator = User::updateOrCreate(
-            ['email' => 'operator@kejati.go.id'],
+            ['email' => 'daskrimti.kejatijabar@gmail.com'],
             [
-                'name' => 'Operator Admin',
+                'name' => 'Super Admin',
                 'password' => Hash::make('password'),
                 'role' => 'operator',
                 'email_verified_at' => now(),

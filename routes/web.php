@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AvatarController;
+use App\Http\Controllers\ExportController;
 use App\Http\Controllers\Leadership\CalendarController as LeadershipCalendarController;
 use App\Http\Controllers\Leadership\DashboardController as LeadershipDashboardController;
 use App\Http\Controllers\Leadership\NotificationController as LeadershipNotificationController;
@@ -14,7 +15,6 @@ use App\Http\Controllers\Operator\UserController as OperatorUserController;
 use App\Http\Controllers\Protokol\CalendarController as ProtokolCalendarController;
 use App\Http\Controllers\Protokol\DashboardController as ProtokolDashboardController;
 use App\Http\Controllers\Protokol\EventController as ProtokolEventController;
-use App\Http\Controllers\Protokol\ExportController as ProtokolExportController;
 use App\Http\Controllers\Protokol\NotificationController as ProtokolNotificationController;
 use App\Http\Controllers\PushNotificationController;
 use App\Http\Responses\LoginResponse;
@@ -73,6 +73,9 @@ Route::middleware(['auth', 'verified', 'role:operator'])->group(function () {
         ->only(['index', 'store', 'update', 'destroy']);
     Route::post('events/{event}/cancel', [OperatorEventController::class, 'cancel'])->name('events.cancel');
     Route::get('calendar', [OperatorCalendarController::class, 'index'])->name('calendar.index');
+    Route::get('exports', [ExportController::class, 'index'])->name('exports.index');
+    Route::get('exports/print', [ExportController::class, 'print'])->name('exports.print');
+    Route::get('exports/download', [ExportController::class, 'download'])->name('exports.download');
 });
 
 // Tim Protokol
@@ -83,9 +86,9 @@ Route::middleware(['auth', 'verified', 'role:protokol'])->prefix('protokol')->na
         ->names('events')
         ->only(['index', 'store', 'update', 'destroy']);
     Route::get('/calendar', [ProtokolCalendarController::class, 'index'])->name('calendar.index');
-    Route::get('/exports', [ProtokolExportController::class, 'index'])->name('exports.index');
-    Route::get('/exports/print', [ProtokolExportController::class, 'print'])->name('exports.print');
-    Route::get('/exports/download', [ProtokolExportController::class, 'download'])->name('exports.download');
+    Route::get('/exports', [ExportController::class, 'index'])->name('exports.index');
+    Route::get('/exports/print', [ExportController::class, 'print'])->name('exports.print');
+    Route::get('/exports/download', [ExportController::class, 'download'])->name('exports.download');
     Route::post('/events/{event}/cancel', [ProtokolEventController::class, 'cancel'])->name('events.cancel');
 
     // Pengaturan & langganan push notification tim protokol.
