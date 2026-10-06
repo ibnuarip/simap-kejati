@@ -14,6 +14,7 @@ type DatetimeLocalFieldProps = {
     label: string;
     defaultValue?: string | null;
     error?: string;
+    value?: string;
     onChange?: (value: string) => void;
 };
 
@@ -23,11 +24,14 @@ export function DatetimeLocalField({
     label,
     defaultValue,
     error,
+    value,
     onChange,
 }: DatetimeLocalFieldProps) {
-    const [value, setValue] = useState(
+    const [internalValue, setInternalValue] = useState(
         defaultValue ? toDatetimeLocal(defaultValue) : '',
     );
+
+    const displayValue = value ?? internalValue;
 
     return (
         <div className="grid min-w-0 gap-2">
@@ -38,13 +42,13 @@ export function DatetimeLocalField({
                 type="datetime-local"
                 required
                 step={60}
-                value={value}
+                value={displayValue}
                 onChange={(event) => {
-                    setValue(event.target.value);
+                    setInternalValue(event.target.value);
                     onChange?.(event.target.value);
                 }}
             />
-            <DatetimePreview value={value} />
+            <DatetimePreview value={displayValue} />
             <InputError message={error} />
         </div>
     );

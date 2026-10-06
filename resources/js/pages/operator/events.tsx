@@ -38,8 +38,10 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import {
+    addMinutesToInput,
     agendaStatusLabel,
     agendaStatusVariant,
+    durationLabel,
     eventDateKey,
     formatDateLong,
     formatTime,
@@ -602,6 +604,16 @@ function EventFields({
         toDatetimeLocalInput(defaultValue?.end_time),
     );
 
+    const duration = durationLabel(startInput, endInput);
+
+    const handleStartChange = (value: string) => {
+        setStartInput(value);
+
+        if (value && (!endInput || endInput <= value)) {
+            setEndInput(addMinutesToInput(value, 120));
+        }
+    };
+
     return (
         <>
             <div className="grid gap-2">
@@ -712,7 +724,8 @@ function EventFields({
                         label="Mulai"
                         defaultValue={defaultValue?.start_time}
                         error={errors.start_time}
-                        onChange={setStartInput}
+                        value={startInput}
+                        onChange={handleStartChange}
                     />
                 </div>
 
@@ -723,6 +736,7 @@ function EventFields({
                         label="Selesai"
                         defaultValue={defaultValue?.end_time}
                         error={errors.end_time}
+                        value={endInput}
                         onChange={setEndInput}
                     />
                 </div>
@@ -738,6 +752,15 @@ function EventFields({
                     <InputError message={errors.dress_code} />
                 </div>
             </div>
+
+            {duration ? (
+                <p className="text-muted-foreground text-xs">
+                    Durasi:{' '}
+                    <span className="text-foreground font-medium">
+                        {duration}
+                    </span>
+                </p>
+            ) : null}
 
             <ScheduleConflictAlert
                 checkUrl={conflictsUrl}
