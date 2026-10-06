@@ -87,6 +87,8 @@ test('leader phone must start with 08 and be 10 to 14 digits', function () {
     $payload = [
         'name' => 'Drs. H. Bambang',
         'position' => 'Kajati',
+        'nip' => '198001012010011001',
+        'email' => 'bambang@kejati.go.id',
         'is_active' => '1',
     ];
 
@@ -106,10 +108,26 @@ test('leader position other than kajati or wakajati is rejected', function () {
     $this->post(route('master.leaders.store'), [
         'name' => 'Drs. H. Bambang',
         'position' => 'Other',
+        'nip' => '198001012010011001',
+        'email' => 'bambang@kejati.go.id',
+        'phone' => '081234567890',
         'is_active' => '1',
     ])->assertSessionHasErrors('position');
 
     expect(Leader::where('position', 'Other')->exists())->toBeFalse();
+});
+
+test('creating a leader requires every field', function () {
+    $operator = makeOperator();
+    $this->actingAs($operator);
+
+    $this->post(route('master.leaders.store'), [
+        'name' => 'Tanpa Data Lengkap',
+        'position' => 'Kajati',
+        'is_active' => '1',
+    ])->assertSessionHasErrors(['nip', 'email', 'phone']);
+
+    $this->assertDatabaseCount('leaders', 0);
 });
 
 test('creating a leader requires a name and a valid position', function () {
@@ -137,6 +155,8 @@ test('a leader nip must be exactly 18 digits', function (string $nip) {
         'name' => 'Drs. H. Bambang',
         'position' => 'Kajati',
         'nip' => $nip,
+        'email' => 'bambang@kejati.go.id',
+        'phone' => '081234567890',
         'is_active' => '1',
     ])->assertSessionHasErrors('nip');
 
@@ -157,6 +177,9 @@ test('operators can update and delete a leader', function () {
     $this->patch(route('master.leaders.update', $leader), [
         'name' => 'Dr. H. Siti',
         'position' => 'Wakajati',
+        'nip' => '198001012010011001',
+        'email' => 'siti@kejati.go.id',
+        'phone' => '081234567890',
         'is_active' => '0',
     ])->assertRedirect();
 

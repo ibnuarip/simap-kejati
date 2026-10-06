@@ -401,6 +401,7 @@ function LeaderFields({
                 <Input
                     id="nip"
                     name="nip"
+                    required
                     inputMode="numeric"
                     pattern="[0-9]*"
                     maxLength={18}
@@ -420,6 +421,7 @@ function LeaderFields({
                     id="email"
                     type="email"
                     name="email"
+                    required
                     defaultValue={defaultValue?.email ?? ''}
                     placeholder="email@kejati.go.id"
                 />
@@ -431,6 +433,7 @@ function LeaderFields({
                 <Input
                     id="phone"
                     name="phone"
+                    required
                     inputMode="tel"
                     maxLength={14}
                     defaultValue={defaultValue?.phone ?? ''}
