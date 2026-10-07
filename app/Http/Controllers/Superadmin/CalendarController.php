@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Operator;
+namespace App\Http\Controllers\Superadmin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\EventResource;
@@ -17,7 +17,7 @@ class CalendarController extends Controller
             ->orderBy('start_time')
             ->get();
 
-        return Inertia::render('operator/calendar', [
+        return Inertia::render('superadmin/calendar', [
             'events' => EventResource::list($events),
         ]);
     }

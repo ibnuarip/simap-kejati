@@ -52,7 +52,7 @@ type SidebarNavItem = NavItem & {
     icon?: LucideIcon | null;
 };
 
-const operatorNavItems: SidebarNavItem[] = [
+const superadminNavItems: SidebarNavItem[] = [
     {
         title: 'Dashboard',
         href: dashboard(),
@@ -135,8 +135,7 @@ function resolveSidebarConfig(role?: UserRole): SidebarConfig {
                     },
                 ],
             };
-        case 'kajati':
-        case 'wakajati':
+        case 'pimpinan':
             return {
                 label: 'Leadership',
                 home: leadershipDashboard().url,
@@ -160,9 +159,9 @@ function resolveSidebarConfig(role?: UserRole): SidebarConfig {
             };
         default:
             return {
-                label: 'Platform',
+                label: 'Superadmin',
                 home: dashboard().url,
-                navItems: operatorNavItems,
+                navItems: superadminNavItems,
             };
     }
 }

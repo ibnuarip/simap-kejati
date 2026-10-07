@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Leader;
 use App\Models\User;
 use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Fortify\Features;
@@ -52,6 +53,11 @@ test('users are redirected to their role dashboard after completing two factor c
     ]);
 
     $user = User::factory()->withTwoFactor()->create(['role' => $role]);
+
+    if ($role === 'pimpinan') {
+        $user->forceFill(['leader_id' => Leader::factory()->create()->id])->save();
+    }
+
     $user->forceFill(['two_factor_secret' => encrypt($secret = 'JBSWY3DPEHPK3PXP')])->save();
 
     $this->post(route('login'), [
@@ -67,10 +73,9 @@ test('users are redirected to their role dashboard after completing two factor c
     $this->assertAuthenticatedAs($user);
     $this->get($dashboard)->assertOk();
 })->with([
-    'operator' => ['operator', '/dashboard'],
+    'superadmin' => ['superadmin', '/dashboard'],
     'protokol' => ['protokol', '/protokol'],
-    'kajati' => ['kajati', '/leadership'],
-    'wakajati' => ['wakajati', '/leadership'],
+    'pimpinan' => ['pimpinan', '/leadership'],
 ]);
 
 test('users can not authenticate with invalid password', function () {

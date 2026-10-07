@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Operator;
+namespace App\Http\Controllers\Superadmin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LeaderRequest;
@@ -13,13 +13,16 @@ class LeaderController extends Controller
 {
     public function index(): Response
     {
+        $order = array_flip(Leader::POSITIONS);
+
         $leaders = Leader::query()
             ->withCount('events')
-            ->orderByRaw("CASE position WHEN 'Kajati' THEN 0 WHEN 'Wakajati' THEN 1 ELSE 2 END")
             ->orderBy('name')
-            ->get();
+            ->get()
+            ->sortBy(fn (Leader $leader): array => [$order[$leader->position] ?? 999, $leader->name])
+            ->values();
 
-        return Inertia::render('operator/leaders', [
+        return Inertia::render('superadmin/leaders', [
             'leaders' => $leaders->map(fn (Leader $leader): array => [
                 'id' => $leader->id,
                 'name' => $leader->name,

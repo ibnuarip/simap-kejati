@@ -19,7 +19,7 @@ class LeaderFactory extends Factory
     {
         return [
             'name' => fake()->name(),
-            'position' => fake()->randomElement(['Kajati', 'Wakajati']),
+            'position' => fake()->randomElement(Leader::POSITIONS),
             'nip' => fake()->numerify('################'),
             'email' => fake()->unique()->safeEmail(),
             'phone' => fake()->phoneNumber(),

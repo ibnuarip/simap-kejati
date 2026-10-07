@@ -7,6 +7,8 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -29,16 +31,16 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'email', 'password', 'role', 'avatar', 'reminder_hours', 'email_verified_at'])]
+#[Fillable(['name', 'email', 'password', 'role', 'leader_id', 'avatar', 'reminder_hours', 'email_verified_at'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
 
-    public function isOperator(): bool
+    public function isSuperadmin(): bool
     {
-        return $this->role === 'operator';
+        return $this->role === 'superadmin';
     }
 
     public function isProtokol(): bool
@@ -46,14 +48,55 @@ class User extends Authenticatable implements PasskeyUser
         return $this->role === 'protokol';
     }
 
-    public function isKajati(): bool
+    public function isPimpinan(): bool
     {
-        return $this->role === 'kajati';
+        return $this->role === 'pimpinan';
     }
 
-    public function isWakajati(): bool
+    /**
+     * Data pimpinan yang tautkan ke akun ini (khusus role pimpinan).
+     *
+     * @return BelongsTo<Leader, $this>
+     */
+    public function leader(): BelongsTo
     {
-        return $this->role === 'wakajati';
+        return $this->belongsTo(Leader::class);
+    }
+
+    /**
+     * Akun pimpinan dianggap aktif bila tertaut ke data pimpinan yang
+     * masih aktif. Akun tanpa tautan tidak dapat mengakses halaman
+     * pimpinan sehingga dianggap nonaktif.
+     */
+    public function hasActiveLeader(): bool
+    {
+        return $this->leader()->where('is_active', true)->exists();
+    }
+
+    /**
+     * Pimpinan yang ditugaskan ke akun protokol (pivot leader_user).
+     *
+     * @return BelongsToMany<Leader, $this>
+     */
+    public function leaders(): BelongsToMany
+    {
+        return $this->belongsToMany(Leader::class)->withTimestamps();
+    }
+
+    /**
+     * ID pimpinan yang boleh diakses akun protokol ini.
+     *
+     * @return list<int>
+     */
+    public function assignedLeaderIds(): array
+    {
+        $ids = [];
+
+        foreach ($this->leaders()->pluck('leaders.id') as $id) {
+            $ids[] = (int) $id;
+        }
+
+        return $ids;
     }
 
     /**
@@ -62,17 +105,6 @@ class User extends Authenticatable implements PasskeyUser
     public function pushSubscriptions(): HasMany
     {
         return $this->hasMany(PushSubscription::class);
-    }
-
-    /**
-     * A leadership account is considered active unless a leader record with
-     * a matching email exists and has been deactivated.
-     */
-    public function isLeaderActive(): bool
-    {
-        $leader = Leader::query()->where('email', $this->email)->first();
-
-        return $leader ? (bool) $leader->is_active : true;
     }
 
     /**

@@ -17,6 +17,7 @@ test('protokol can access the protokol dashboard', function () {
 test('today events do not appear in the upcoming list', function () {
     $user = User::factory()->protokol()->create();
     $leader = Leader::factory()->create();
+    $user->leaders()->attach($leader->id);
     $now = now(config('app.timezone'));
 
     $makeEvent = fn (string $title, $start, string $status = 'scheduled') => Event::factory()->create([
@@ -97,6 +98,7 @@ test('monthly print report uses indonesian period label', function () {
 test('protokol can create an event linked to master data', function () {
     $protokol = User::factory()->protokol()->create();
     $leader = Leader::factory()->create();
+    $protokol->leaders()->attach($leader->id);
     $room = Room::factory()->create();
     $category = Category::factory()->create();
 
@@ -131,6 +133,7 @@ test('protokol can create an event linked to master data', function () {
 test('protokol can update and delete an event', function () {
     $protokol = User::factory()->protokol()->create();
     $event = Event::factory()->create();
+    $protokol->leaders()->attach($event->leader_id);
 
     $this->actingAs($protokol);
 
@@ -160,6 +163,7 @@ test('protokol can update and delete an event', function () {
 test('protokol sees the newly created event in the manage list', function () {
     $protokol = User::factory()->protokol()->create();
     $leader = Leader::factory()->create();
+    $protokol->leaders()->attach($leader->id);
 
     $this->actingAs($protokol);
 
@@ -188,9 +192,9 @@ test('protokol sees the newly created event in the manage list', function () {
 
 test('non protokol roles cannot write protokol events', function () {
     $leader = Leader::factory()->create();
-    $operator = User::factory()->operator()->create();
+    $superadmin = User::factory()->superadmin()->create();
 
-    $this->actingAs($operator)
+    $this->actingAs($superadmin)
         ->post(route('protokol.events.store'), [
             'title' => 'Dilarang',
             'leader_id' => $leader->id,
@@ -199,10 +203,15 @@ test('non protokol roles cannot write protokol events', function () {
 
 test('non protokol roles are forbidden from protokol routes', function (string $role) {
     $user = User::factory()->create(['role' => $role]);
+
+    if ($role === 'pimpinan') {
+        $user->forceFill(['leader_id' => Leader::factory()->create()->id])->save();
+    }
+
     $this->actingAs($user);
 
     $this->get(route('protokol.dashboard'))->assertForbidden();
-})->with(['operator', 'kajati', 'wakajati']);
+})->with(['superadmin', 'pimpinan']);
 
 test('guests are redirected to login before accessing protokol routes', function () {
     $this->get(route('protokol.dashboard'))->assertRedirect(route('login'));

@@ -5,18 +5,18 @@ use App\Http\Controllers\ExportController;
 use App\Http\Controllers\Leadership\CalendarController as LeadershipCalendarController;
 use App\Http\Controllers\Leadership\DashboardController as LeadershipDashboardController;
 use App\Http\Controllers\Leadership\NotificationController as LeadershipNotificationController;
-use App\Http\Controllers\Operator\CalendarController as OperatorCalendarController;
-use App\Http\Controllers\Operator\CategoryController as OperatorCategoryController;
-use App\Http\Controllers\Operator\DashboardController as OperatorDashboardController;
-use App\Http\Controllers\Operator\EventController as OperatorEventController;
-use App\Http\Controllers\Operator\LeaderController as OperatorLeaderController;
-use App\Http\Controllers\Operator\RoomController as OperatorRoomController;
-use App\Http\Controllers\Operator\UserController as OperatorUserController;
 use App\Http\Controllers\Protokol\CalendarController as ProtokolCalendarController;
 use App\Http\Controllers\Protokol\DashboardController as ProtokolDashboardController;
 use App\Http\Controllers\Protokol\EventController as ProtokolEventController;
 use App\Http\Controllers\Protokol\NotificationController as ProtokolNotificationController;
 use App\Http\Controllers\PushNotificationController;
+use App\Http\Controllers\Superadmin\CalendarController as SuperadminCalendarController;
+use App\Http\Controllers\Superadmin\CategoryController as SuperadminCategoryController;
+use App\Http\Controllers\Superadmin\DashboardController as SuperadminDashboardController;
+use App\Http\Controllers\Superadmin\EventController as SuperadminEventController;
+use App\Http\Controllers\Superadmin\LeaderController as SuperadminLeaderController;
+use App\Http\Controllers\Superadmin\RoomController as SuperadminRoomController;
+use App\Http\Controllers\Superadmin\UserController as SuperadminUserController;
 use App\Http\Responses\LoginResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -38,7 +38,7 @@ Route::get('/', function (Request $request) {
     ]);
 })->name('home');
 
-// Registrasi publik nonaktif secara default — akun hanya dibuat operator
+// Registrasi publik nonaktif secara default — akun hanya dibuat superadmin
 // lewat Kelola Pengguna. Selama fitur mati, route /register Fortify tidak
 // terdaftar sehingga semua akses dialihkan ke halaman login. Nyalakan
 // sewaktu-waktu via ALLOW_PUBLIC_REGISTRATION=true (lihat config/fortify).
@@ -52,30 +52,30 @@ Route::get('/avatar/{user}', AvatarController::class)->middleware('auth')->name(
 // Penyegar session agar tab yang lama terbuka tidak 419 saat submit.
 Route::get('/session/ping', fn () => response()->json(['ok' => true]))->middleware('auth')->name('session.ping');
 
-Route::middleware(['auth', 'verified', 'role:operator'])->group(function () {
-    Route::get('dashboard', [OperatorDashboardController::class, 'index'])->name('dashboard');
+Route::middleware(['auth', 'verified', 'role:superadmin'])->group(function () {
+    Route::get('dashboard', [SuperadminDashboardController::class, 'index'])->name('dashboard');
 
     // Master Data
-    Route::resource('master/leaders', OperatorLeaderController::class)
+    Route::resource('master/leaders', SuperadminLeaderController::class)
         ->names('master.leaders')
         ->only(['index', 'store', 'update', 'destroy']);
-    Route::resource('master/rooms', OperatorRoomController::class)
+    Route::resource('master/rooms', SuperadminRoomController::class)
         ->names('master.rooms')
         ->only(['index', 'store', 'update', 'destroy']);
-    Route::resource('master/categories', OperatorCategoryController::class)
+    Route::resource('master/categories', SuperadminCategoryController::class)
         ->names('master.categories')
         ->only(['index', 'store', 'update', 'destroy']);
 
-    // Operator Features
-    Route::resource('users', OperatorUserController::class)
+    // Superadmin Features
+    Route::resource('users', SuperadminUserController::class)
         ->names('users')
         ->only(['index', 'store', 'update', 'destroy']);
-    Route::get('events/conflicts', [OperatorEventController::class, 'conflicts'])->name('events.conflicts');
-    Route::resource('events', OperatorEventController::class)
+    Route::get('events/conflicts', [SuperadminEventController::class, 'conflicts'])->name('events.conflicts');
+    Route::resource('events', SuperadminEventController::class)
         ->names('events')
         ->only(['index', 'store', 'update', 'destroy']);
-    Route::post('events/{event}/cancel', [OperatorEventController::class, 'cancel'])->name('events.cancel');
-    Route::get('calendar', [OperatorCalendarController::class, 'index'])->name('calendar.index');
+    Route::post('events/{event}/cancel', [SuperadminEventController::class, 'cancel'])->name('events.cancel');
+    Route::get('calendar', [SuperadminCalendarController::class, 'index'])->name('calendar.index');
     Route::get('exports', [ExportController::class, 'index'])->name('exports.index');
     Route::get('exports/print', [ExportController::class, 'print'])->name('exports.print');
     Route::get('exports/download', [ExportController::class, 'download'])->name('exports.download');
@@ -103,8 +103,8 @@ Route::middleware(['auth', 'verified', 'role:protokol'])->prefix('protokol')->na
     Route::get('/push/vapid-key', [PushNotificationController::class, 'vapidKey'])->name('push.vapid-key');
 });
 
-// Ketua & Wakil Ketua (Leadership)
-Route::middleware(['auth', 'verified', 'role:kajati,wakajati'])->prefix('leadership')->name('leadership.')->group(function () {
+// Pimpinan (satu role generik, ditautkan ke data pimpinan via leader_id)
+Route::middleware(['auth', 'verified', 'role:pimpinan'])->prefix('leadership')->name('leadership.')->group(function () {
     Route::get('/', [LeadershipDashboardController::class, 'index'])->name('dashboard');
     Route::get('/calendar', [LeadershipCalendarController::class, 'index'])->name('calendar.index');
     Route::get('/notifications', [LeadershipNotificationController::class, 'index'])->name('notifications.index');

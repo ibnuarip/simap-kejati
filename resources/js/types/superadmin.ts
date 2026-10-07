@@ -1,6 +1,6 @@
 import type { AgendaStatus, UserRole } from '@/types';
 
-export type LeaderPosition = 'Kajati' | 'Wakajati';
+export type LeaderPosition = string;
 
 export type Leader = {
     id: number;
@@ -37,6 +37,8 @@ export type ManagedUser = {
     email: string;
     role: UserRole;
     avatar: string | null;
+    leader_id: number | null;
+    leader_ids: number[];
     email_verified_at: string | null;
     created_at: string | null;
 };
@@ -47,6 +49,8 @@ export type ResourceOption = {
 };
 
 export type LeaderOption = ResourceOption & {
+    position?: string | null;
+    email?: string | null;
     inactive?: boolean;
 };
 

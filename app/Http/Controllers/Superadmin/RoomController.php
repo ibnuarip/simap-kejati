@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Operator;
+namespace App\Http\Controllers\Superadmin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RoomRequest;
@@ -18,7 +18,7 @@ class RoomController extends Controller
             ->orderBy('name')
             ->get();
 
-        return Inertia::render('operator/rooms', [
+        return Inertia::render('superadmin/rooms', [
             'rooms' => $rooms->map(fn (Room $room): array => [
                 'id' => $room->id,
                 'name' => $room->name,

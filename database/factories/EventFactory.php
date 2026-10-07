@@ -38,7 +38,7 @@ class EventFactory extends Factory
             'dress_code' => $this->faker->randomElement(static::dressCodes()),
             'participants' => $this->faker->randomElement(static::participants()),
             'status' => 'scheduled',
-            // Aturan sistem: agenda hanya diinput operator/protokol,
+            // Aturan sistem: agenda hanya diinput superadmin/protokol,
             // bukan oleh akun pimpinan (kajati/wakajati).
             'created_by' => User::factory()->protokol(),
         ];

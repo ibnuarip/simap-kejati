@@ -4,13 +4,14 @@ namespace App\Mail\Auth;
 
 use App\Models\User;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class AccountCredentialsMail extends Mailable
+class AccountCredentialsMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
@@ -28,7 +29,7 @@ class AccountCredentialsMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Kredensial Akun Anda — '.config('app.name'),
+            subject: 'Selamat Datang — Kredensial Akun Anda — '.config('app.name'),
         );
     }
 

@@ -10,7 +10,7 @@ import {
     Search,
     X,
 } from 'lucide-react';
-import LeaderController from '@/actions/App/Http/Controllers/Operator/LeaderController';
+import LeaderController from '@/actions/App/Http/Controllers/Superadmin/LeaderController';
 import { ActiveToggle } from '@/components/active-toggle';
 import ConfirmDelete from '@/components/confirm-delete';
 import InputError from '@/components/input-error';
@@ -36,7 +36,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { useInitials } from '@/hooks/use-initials';
-import { leaderPositionLabel } from '@/lib/user';
+import { leaderPositionLabel, leaderPositions } from '@/lib/user';
 import { dashboard } from '@/routes';
 import { index as leadersIndex } from '@/routes/master/leaders';
 import type { Leader, LeaderPosition } from '@/types';
@@ -45,12 +45,7 @@ type Props = {
     leaders: Leader[];
 };
 
-const positionBadgeVariant: Record<LeaderPosition, 'ketua' | 'wakil'> = {
-    Kajati: 'ketua',
-    Wakajati: 'wakil',
-};
-
-export default function OperatorLeaders({ leaders }: Props) {
+export default function SuperadminLeaders({ leaders }: Props) {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editing, setEditing] = useState<Leader | null>(null);
     const [position, setPosition] = useState<LeaderPosition>('Kajati');
@@ -68,7 +63,8 @@ export default function OperatorLeaders({ leaders }: Props) {
         return leaders.filter((leader) =>
             [
                 leader.name,
-                leaderPositionLabel[leader.position],
+                leader.position,
+                leaderPositionLabel[leader.position] ?? '',
                 leader.nip,
                 leader.email,
                 leader.phone,
@@ -167,19 +163,11 @@ export default function OperatorLeaders({ leaders }: Props) {
                                                     {leader.name}
                                                 </p>
                                                 <div className="flex flex-wrap items-center gap-2">
-                                                    <Badge
-                                                        variant={
-                                                            positionBadgeVariant[
-                                                                leader.position
-                                                            ]
-                                                        }
-                                                    >
-                                                        {
-                                                            leaderPositionLabel[
-                                                                leader.position
-                                                            ]
-                                                        }
-                                                    </Badge>
+                                                    <p className="text-muted-foreground w-full text-xs">
+                                                        {leaderPositionLabel[
+                                                            leader.position
+                                                        ] ?? leader.position}
+                                                    </p>
                                                     <Badge
                                                         variant={
                                                             leader.is_active
@@ -344,8 +332,8 @@ export default function OperatorLeaders({ leaders }: Props) {
 
 type FieldProps = {
     defaultValue: Leader | null;
-    position: LeaderPosition;
-    onPositionChange: (value: LeaderPosition) => void;
+    position: string;
+    onPositionChange: (value: string) => void;
     isActive: boolean;
     onActiveChange: (value: boolean) => void;
     errors: Record<string, string>;
@@ -381,13 +369,18 @@ function LeaderFields({
                         onPositionChange(value as LeaderPosition)
                     }
                 >
-                    <SelectTrigger id="position" className="w-full">
-                        <SelectValue />
+                    <SelectTrigger
+                        id="position"
+                        className="h-auto min-h-9 w-full min-w-0 py-2 [&>span]:min-w-0 [&>span]:line-clamp-none [&>span]:whitespace-normal sm:[&>span]:line-clamp-1"
+                    >
+                        <SelectValue placeholder="Pilih jabatan" />
                     </SelectTrigger>
-                    <SelectContent>
-                        {(['Kajati', 'Wakajati'] as const).map((value) => (
+                    <SelectContent className="max-w-[calc(100vw-2rem)]">
+                        {leaderPositions.map((value) => (
                             <SelectItem key={value} value={value}>
-                                {leaderPositionLabel[value]}
+                                <span className="block min-w-0 whitespace-normal break-words sm:truncate">
+                                    {leaderPositionLabel[value] ?? value}
+                                </span>
                             </SelectItem>
                         ))}
                     </SelectContent>
@@ -447,7 +440,7 @@ function LeaderFields({
     );
 }
 
-OperatorLeaders.layout = {
+SuperadminLeaders.layout = {
     breadcrumbs: [
         { title: 'Dashboard', href: dashboard().url },
         { title: 'Data Pimpinan', href: leadersIndex().url },

@@ -1,9 +1,21 @@
 <?php
 
+use App\Models\Leader;
 use App\Models\User;
 
-test('users are redirected to their role home after login', function (string $role, string $redirect) {
+function createRoleUser(string $role): User
+{
     $user = User::factory()->create(['role' => $role]);
+
+    if ($role === 'pimpinan') {
+        $user->forceFill(['leader_id' => Leader::factory()->create()->id])->save();
+    }
+
+    return $user;
+}
+
+test('users are redirected to their role home after login', function (string $role, string $redirect) {
+    $user = createRoleUser($role);
 
     $this->post('/login', [
         'email' => $user->email,
@@ -14,64 +26,63 @@ test('users are redirected to their role home after login', function (string $ro
     $this->get($redirect)->assertOk();
 })->with(
     fn (): array => [
-        'operator' => ['operator', '/dashboard'],
+        'superadmin' => ['superadmin', '/dashboard'],
         'protokol' => ['protokol', '/protokol'],
-        'kajati' => ['kajati', '/leadership'],
-        'wakajati' => ['wakajati', '/leadership'],
+        'pimpinan' => ['pimpinan', '/leadership'],
     ],
 );
 
 test('one browser session can only hold one authenticated user', function () {
-    $operator = User::factory()->operator()->create();
+    $superadmin = User::factory()->superadmin()->create();
     $protokol = User::factory()->protokol()->create();
 
     $this->post('/login', [
-        'email' => $operator->email,
+        'email' => $superadmin->email,
         'password' => 'password',
     ])->assertRedirect('/dashboard');
-    $this->assertAuthenticatedAs($operator);
+    $this->assertAuthenticatedAs($superadmin);
 
     $this->post('/login', [
         'email' => $protokol->email,
         'password' => 'password',
     ])->assertRedirect('/dashboard');
-    $this->assertAuthenticatedAs($operator);
+    $this->assertAuthenticatedAs($superadmin);
 });
 
 test('authenticated users visiting the login page go to their role home', function (string $role, string $redirect) {
-    $user = User::factory()->create(['role' => $role]);
+    $user = createRoleUser($role);
     $this->actingAs($user);
 
     $this->get(route('login'))->assertRedirect($redirect);
 })->with(
     fn (): array => [
-        'operator' => ['operator', '/dashboard'],
+        'superadmin' => ['superadmin', '/dashboard'],
         'protokol' => ['protokol', '/protokol'],
-        'kajati' => ['kajati', '/leadership'],
+        'pimpinan' => ['pimpinan', '/leadership'],
     ],
 );
 
-test('operator routes are forbidden to other roles', function (string $route, string $role) {
-    $user = User::factory()->create(['role' => $role]);
+test('superadmin routes are forbidden to other roles', function (string $route, string $role) {
+    $user = createRoleUser($role);
     $this->actingAs($user);
 
     $this->get(route($route))->assertForbidden();
 })->with(
     fn (): array => [
         'dashboard - protokol' => ['dashboard', 'protokol'],
-        'dashboard - kajati' => ['dashboard', 'kajati'],
+        'dashboard - pimpinan' => ['dashboard', 'pimpinan'],
         'master.leaders.index - protokol' => ['master.leaders.index', 'protokol'],
-        'master.leaders.index - kajati' => ['master.leaders.index', 'kajati'],
-        'master.rooms.index - wakajati' => ['master.rooms.index', 'wakajati'],
+        'master.leaders.index - pimpinan' => ['master.leaders.index', 'pimpinan'],
+        'master.rooms.index - pimpinan' => ['master.rooms.index', 'pimpinan'],
         'master.categories.index - protokol' => ['master.categories.index', 'protokol'],
-        'users.index - kajati' => ['users.index', 'kajati'],
+        'users.index - pimpinan' => ['users.index', 'pimpinan'],
         'events.index - protokol' => ['events.index', 'protokol'],
-        'calendar.index - wakajati' => ['calendar.index', 'wakajati'],
+        'calendar.index - pimpinan' => ['calendar.index', 'pimpinan'],
     ],
 );
 
-test('operator can access operator routes', function (string $route) {
-    $user = User::factory()->operator()->create();
+test('superadmin can access superadmin routes', function (string $route) {
+    $user = User::factory()->superadmin()->create();
     $this->actingAs($user);
 
     $this->get(route($route))->assertOk();

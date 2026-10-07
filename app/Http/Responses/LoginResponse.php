@@ -17,7 +17,7 @@ class LoginResponse implements LoginResponseContract
     {
         return match ($user->role) {
             'protokol' => '/protokol',
-            'kajati', 'wakajati' => '/leadership',
+            'pimpinan' => '/leadership',
             default => '/dashboard',
         };
     }

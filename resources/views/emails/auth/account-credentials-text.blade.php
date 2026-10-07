@@ -1,6 +1,8 @@
 Halo {{ $user->name }},
 
-Berikut adalah kredensial untuk masuk ke akun {{ config('app.name') }} Anda:
+Selamat datang di {{ config('app.name') }} — Sistem Informasi Manajemen Agenda Pimpinan Kejaksaan Tinggi.
+
+Akun Anda telah berhasil dibuat. Berikut adalah kredensial untuk masuk ke akun Anda:
 
 Email       : {{ $email }}
 Kata Sandi  : {{ $password }}

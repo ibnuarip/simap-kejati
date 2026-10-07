@@ -4,22 +4,15 @@ use App\Models\Event;
 use App\Models\Leader;
 use App\Models\User;
 
-test('kajati can access the leadership dashboard', function () {
-    $user = User::factory()->kajati()->create();
-    $this->actingAs($user);
-
-    $this->get(route('leadership.dashboard'))->assertOk();
-});
-
-test('wakajati can access the leadership dashboard', function () {
-    $user = User::factory()->wakajati()->create();
+test('pimpinan can access the leadership dashboard', function () {
+    $user = User::factory()->pimpinan()->create();
     $this->actingAs($user);
 
     $this->get(route('leadership.dashboard'))->assertOk();
 });
 
 test('leadership can access calendar and notification pages', function () {
-    $user = User::factory()->kajati()->create();
+    $user = User::factory()->pimpinan()->create();
     $this->actingAs($user);
 
     foreach (['leadership.calendar.index', 'leadership.notifications.index'] as $route) {
@@ -32,20 +25,20 @@ test('non leadership roles are forbidden from leadership routes', function (stri
     $this->actingAs($user);
 
     $this->get(route('leadership.dashboard'))->assertForbidden();
-})->with(['operator', 'protokol']);
+})->with(['superadmin', 'protokol']);
 
-test('leadership is redirected to their dashboard after login', function (string $role) {
-    $user = User::factory()->create(['role' => $role]);
+test('leadership is redirected to their dashboard after login', function () {
+    $user = User::factory()->pimpinan()->create();
 
     $this->post('/login', [
         'email' => $user->email,
         'password' => 'password',
     ])->assertRedirect('/leadership');
-})->with(['kajati', 'wakajati']);
+});
 
 test('today events do not appear in the upcoming list', function () {
-    $user = User::factory()->kajati()->create();
-    $leader = Leader::factory()->create(['position' => 'Kajati']);
+    $leader = Leader::factory()->create();
+    $user = User::factory()->pimpinan()->create(['leader_id' => $leader->id]);
     $now = now(config('app.timezone'));
 
     $makeEvent = fn (string $title, $start, string $status = 'scheduled') => Event::factory()->create([
@@ -71,4 +64,19 @@ test('today events do not appear in the upcoming list', function () {
     expect($upcomingIds)->not->toContain($todayEvent->id, $yesterdayEvent->id, $cancelledEvent->id);
     expect($todayIds)->not->toContain($tomorrowEvent->id);
     expect($upcomingIds)->toHaveCount(1);
+});
+
+test('pimpinan only sees their own agenda', function () {
+    $leader = Leader::factory()->create();
+    $user = User::factory()->pimpinan()->create(['leader_id' => $leader->id]);
+    $otherLeader = Leader::factory()->create();
+
+    $mine = Event::factory()->create(['leader_id' => $leader->id]);
+    Event::factory()->create(['leader_id' => $otherLeader->id]);
+
+    $response = $this->actingAs($user)->get(route('leadership.calendar.index'))->assertOk();
+
+    $ids = collect($response->viewData('page')['props']['events'])->pluck('id')->all();
+
+    expect($ids)->toBe([$mine->id]);
 });

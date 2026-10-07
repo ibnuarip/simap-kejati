@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Operator;
+namespace App\Http\Controllers\Superadmin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserRequest;
 use App\Mail\Auth\AccountCredentialsMail;
-use App\Mail\Auth\WelcomeMail;
+use App\Models\Leader;
 use App\Models\User;
 use App\Services\AvatarService;
 use Illuminate\Http\RedirectResponse;
@@ -21,6 +21,7 @@ class UserController extends Controller
     public function index(): Response
     {
         $users = User::query()
+            ->with('leaders:id')
             ->orderBy('role')
             ->orderBy('name')
             ->get()
@@ -30,22 +31,43 @@ class UserController extends Controller
                 'email' => $user->email,
                 'role' => $user->role,
                 'avatar' => $user->avatar,
+                'leader_id' => $user->leader_id,
+                'leader_ids' => $user->leaders->map(fn (Leader $leader): int => $leader->id)->all(),
                 'email_verified_at' => $user->email_verified_at?->toDateTimeString(),
                 'created_at' => $user->created_at?->toDateTimeString(),
             ]);
 
-        return Inertia::render('operator/users', [
+        $order = array_flip(Leader::POSITIONS);
+
+        $leaders = Leader::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get()
+            ->sortBy(fn (Leader $leader): array => [$order[$leader->position] ?? 999, $leader->name])
+            ->values()
+            ->map(fn (Leader $leader): array => [
+                'id' => $leader->id,
+                'name' => $leader->name,
+                'position' => $leader->position,
+                'email' => $leader->email,
+            ]);
+
+        return Inertia::render('superadmin/users', [
             'users' => $users,
+            'leaders' => $leaders,
         ]);
     }
 
     public function store(UserRequest $request, AvatarService $avatars): RedirectResponse
     {
-        $validated = $request->safe()->except(['avatar', 'remove_avatar']);
+        $validated = $request->safe()->except(['avatar', 'remove_avatar', 'leaders', 'leader_id']);
 
         $user = User::create($validated);
 
         $avatars->syncFromRequest($user, $request);
+
+        $this->syncLeaderLink($user, $request->validated('leader_id'));
+        $this->syncAssignedLeaders($user, $request->validated('leaders'));
 
         $this->notifyAccountCreated($user, $validated['password']);
 
@@ -53,12 +75,11 @@ class UserController extends Controller
     }
 
     /**
-     * Send the welcome and account credentials emails to a newly created user.
+     * Send the single account-created email (welcome + credentials) to a newly created user.
      */
     protected function notifyAccountCreated(User $user, string $password): void
     {
         try {
-            Mail::to($user)->send(new WelcomeMail($user));
             Mail::to($user)->send(new AccountCredentialsMail($user, $password));
         } catch (Throwable $e) {
             Log::error('Gagal mengirim email kredensial akun baru.', [
@@ -80,7 +101,30 @@ class UserController extends Controller
 
         $avatars->syncFromRequest($user, $request);
 
+        $this->syncLeaderLink($user, $request->validated('leader_id'));
+        $this->syncAssignedLeaders($user, $request->validated('leaders'));
+
         return back();
+    }
+
+    /**
+     * Tautkan akun ke data pimpinan. Hanya berlaku untuk role pimpinan;
+     * role lain tidak memiliki tautan sehingga kolomnya dikosongkan.
+     */
+    protected function syncLeaderLink(User $user, ?int $leaderId): void
+    {
+        $user->forceFill(['leader_id' => $user->isPimpinan() ? $leaderId : null])->save();
+    }
+
+    /**
+     * Sinkronkan penugasan pimpinan. Hanya berlaku untuk role protokol;
+     * role lain tidak memiliki penugasan sehingga relasinya dikosongkan.
+     *
+     * @param  list<int>|null  $leaderIds
+     */
+    protected function syncAssignedLeaders(User $user, ?array $leaderIds): void
+    {
+        $user->leaders()->sync($user->isProtokol() ? array_map(intval(...), $leaderIds ?? []) : []);
     }
 
     public function destroy(Request $request, User $user, AvatarService $avatars): RedirectResponse

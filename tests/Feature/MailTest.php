@@ -2,7 +2,6 @@
 
 use App\Mail\Auth\AccountCredentialsMail;
 use App\Mail\Auth\ResetPasswordMail;
-use App\Mail\Auth\WelcomeMail;
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 
@@ -20,25 +19,17 @@ test('reset password email links to the password reset page', function () {
     ]));
 });
 
-test('welcome email greets the new user without a login link', function () {
-    $user = User::factory()->create(['name' => 'Budi Santoso']);
-
-    $mail = new WelcomeMail($user);
-
-    $mail->assertSeeInHtml('Budi Santoso');
-    $mail->assertSeeInText('Budi Santoso');
-    $mail->assertSeeInHtml('Selamat datang');
-    $mail->assertDontSeeInHtml(route('login'));
-    $mail->assertDontSeeInText(route('login'));
-});
-
-test('account credentials email contains the email and temporary password', function () {
-    $user = User::factory()->create(['email' => 'budi@kejati.go.id']);
+test('account credentials email greets the new user and contains the email and temporary password', function () {
+    $user = User::factory()->create(['name' => 'Budi Santoso', 'email' => 'budi@kejati.go.id']);
 
     $mail = new AccountCredentialsMail($user, 'sandi-rahasia-123');
 
+    $mail->assertSeeInHtml('Budi Santoso');
+    $mail->assertSeeInHtml('Selamat datang');
     $mail->assertSeeInHtml('budi@kejati.go.id');
     $mail->assertSeeInHtml('sandi-rahasia-123');
+    $mail->assertSeeInText('Budi Santoso');
+    $mail->assertSeeInText('Selamat datang');
     $mail->assertSeeInText('budi@kejati.go.id');
     $mail->assertSeeInText('sandi-rahasia-123');
 });

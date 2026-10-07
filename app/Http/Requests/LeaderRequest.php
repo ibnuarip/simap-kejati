@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Leader;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class LeaderRequest extends FormRequest
 {
@@ -18,7 +20,7 @@ class LeaderRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'position' => ['required', 'in:Kajati,Wakajati'],
+            'position' => ['required', 'string', Rule::in(Leader::POSITIONS)],
             'nip' => ['required', 'string', 'digits:18'],
             'email' => ['required', 'email', 'max:255'],
             'phone' => ['required', 'string', 'regex:/^08\d{8,12}$/'],

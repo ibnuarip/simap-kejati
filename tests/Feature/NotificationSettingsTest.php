@@ -4,7 +4,7 @@ use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
 
 test('leadership can save reminder notification timings', function () {
-    $user = User::factory()->kajati()->create();
+    $user = User::factory()->pimpinan()->create();
 
     $this->actingAs($user)
         ->post(route('leadership.notifications.update'), [
@@ -17,7 +17,7 @@ test('leadership can save reminder notification timings', function () {
 });
 
 test('notification settings page shows the saved reminder timings', function () {
-    $user = User::factory()->wakajati()->create(['reminder_hours' => ['3', '48']]);
+    $user = User::factory()->pimpinan()->create(['reminder_hours' => ['3', '48']]);
 
     $this->actingAs($user)
         ->get(route('leadership.notifications.index'))
@@ -28,7 +28,7 @@ test('notification settings page shows the saved reminder timings', function () 
 });
 
 test('notification timings must contain at least one supported value', function () {
-    $user = User::factory()->kajati()->create();
+    $user = User::factory()->pimpinan()->create();
 
     $this->actingAs($user)
         ->post(route('leadership.notifications.update'), [
@@ -38,9 +38,9 @@ test('notification timings must contain at least one supported value', function 
 });
 
 test('non leadership roles are forbidden from notification settings', function () {
-    $operator = User::factory()->operator()->create();
+    $superadmin = User::factory()->superadmin()->create();
 
-    $this->actingAs($operator)
+    $this->actingAs($superadmin)
         ->post(route('leadership.notifications.update'), ['timings' => ['24']])
         ->assertForbidden();
 });
@@ -69,10 +69,10 @@ test('protokol notification settings page shows the saved reminder timings', fun
             ->where('reminderTimings', ['3', '48']));
 });
 
-test('operator is forbidden from protokol notification settings', function () {
-    $operator = User::factory()->operator()->create();
+test('superadmin is forbidden from protokol notification settings', function () {
+    $superadmin = User::factory()->superadmin()->create();
 
-    $this->actingAs($operator)
+    $this->actingAs($superadmin)
         ->post(route('protokol.notifications.update'), ['timings' => ['24']])
         ->assertForbidden();
 });

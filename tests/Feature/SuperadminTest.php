@@ -1,7 +1,6 @@
 <?php
 
 use App\Mail\Auth\AccountCredentialsMail;
-use App\Mail\Auth\WelcomeMail;
 use App\Models\Category;
 use App\Models\Event;
 use App\Models\Leader;
@@ -11,14 +10,14 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Testing\AssertableInertia as Assert;
 
-function makeOperator(): User
+function makeSuperadmin(): User
 {
-    return User::factory()->operator()->create();
+    return User::factory()->superadmin()->create();
 }
 
-test('dashboard renders stats and recent activity for operators', function () {
-    $operator = makeOperator();
-    $this->actingAs($operator);
+test('dashboard renders stats and recent activity for superadmins', function () {
+    $superadmin = makeSuperadmin();
+    $this->actingAs($superadmin);
 
     $this->get(route('dashboard'))
         ->assertOk()
@@ -32,8 +31,8 @@ test('dashboard renders stats and recent activity for operators', function () {
 });
 
 test('dashboard provides trend and category distribution data for charts', function () {
-    $operator = makeOperator();
-    $this->actingAs($operator);
+    $superadmin = makeSuperadmin();
+    $this->actingAs($superadmin);
 
     $category = Category::factory()->create(['name' => 'Audiensi', 'color' => '#3B82F6']);
     $otherCategory = Category::factory()->create(['name' => 'Kunjungan Kerja']);
@@ -60,9 +59,9 @@ test('dashboard provides trend and category distribution data for charts', funct
             ->where('categoryDistribution.1.name', 'Kunjungan Kerja'));
 });
 
-test('operators can create a leader', function () {
-    $operator = makeOperator();
-    $this->actingAs($operator);
+test('superadmins can create a leader', function () {
+    $superadmin = makeSuperadmin();
+    $this->actingAs($superadmin);
 
     $this->post(route('master.leaders.store'), [
         'name' => 'Drs. H. Bambang',
@@ -81,8 +80,8 @@ test('operators can create a leader', function () {
 });
 
 test('leader phone must start with 08 and be 10 to 14 digits', function () {
-    $operator = makeOperator();
-    $this->actingAs($operator);
+    $superadmin = makeSuperadmin();
+    $this->actingAs($superadmin);
 
     $payload = [
         'name' => 'Drs. H. Bambang',
@@ -101,25 +100,43 @@ test('leader phone must start with 08 and be 10 to 14 digits', function () {
         ->assertSessionHasNoErrors();
 });
 
-test('leader position other than kajati or wakajati is rejected', function () {
-    $operator = makeOperator();
-    $this->actingAs($operator);
+test('leader accepts any of the 12 structural positions', function () {
+    $superadmin = makeSuperadmin();
+    $this->actingAs($superadmin);
 
     $this->post(route('master.leaders.store'), [
         'name' => 'Drs. H. Bambang',
-        'position' => 'Other',
+        'position' => 'Asisten Bidang Intelijen',
+        'nip' => '198001012010011001',
+        'email' => 'bambang@kejati.go.id',
+        'phone' => '081234567890',
+        'is_active' => '1',
+    ])->assertRedirect()->assertSessionHasNoErrors();
+
+    $this->assertDatabaseHas('leaders', [
+        'position' => 'Asisten Bidang Intelijen',
+    ]);
+});
+
+test('leader rejects a position outside the 12 structural positions', function () {
+    $superadmin = makeSuperadmin();
+    $this->actingAs($superadmin);
+
+    $this->post(route('master.leaders.store'), [
+        'name' => 'Drs. H. Bambang',
+        'position' => 'Direktur',
         'nip' => '198001012010011001',
         'email' => 'bambang@kejati.go.id',
         'phone' => '081234567890',
         'is_active' => '1',
     ])->assertSessionHasErrors('position');
 
-    expect(Leader::where('position', 'Other')->exists())->toBeFalse();
+    expect(Leader::where('position', 'Direktur')->exists())->toBeFalse();
 });
 
 test('creating a leader requires every field', function () {
-    $operator = makeOperator();
-    $this->actingAs($operator);
+    $superadmin = makeSuperadmin();
+    $this->actingAs($superadmin);
 
     $this->post(route('master.leaders.store'), [
         'name' => 'Tanpa Data Lengkap',
@@ -131,8 +148,8 @@ test('creating a leader requires every field', function () {
 });
 
 test('creating a leader requires a name and a valid position', function () {
-    $operator = makeOperator();
-    $this->actingAs($operator);
+    $superadmin = makeSuperadmin();
+    $this->actingAs($superadmin);
 
     $this->post(route('master.leaders.store'), [])->assertSessionHasErrors([
         'name',
@@ -148,12 +165,13 @@ test('creating a leader requires a name and a valid position', function () {
 });
 
 test('a leader nip must be exactly 18 digits', function (string $nip) {
-    $operator = makeOperator();
-    $this->actingAs($operator);
+    $superadmin = makeSuperadmin();
+    $this->actingAs($superadmin);
 
     $this->post(route('master.leaders.store'), [
         'name' => 'Drs. H. Bambang',
         'position' => 'Kajati',
+        'sort_order' => '0',
         'nip' => $nip,
         'email' => 'bambang@kejati.go.id',
         'phone' => '081234567890',
@@ -168,11 +186,11 @@ test('a leader nip must be exactly 18 digits', function (string $nip) {
     'formatted with spaces' => ['19800101 199503 1 001'],
 ]);
 
-test('operators can update and delete a leader', function () {
-    $operator = makeOperator();
+test('superadmins can update and delete a leader', function () {
+    $superadmin = makeSuperadmin();
     $leader = Leader::factory()->create();
 
-    $this->actingAs($operator);
+    $this->actingAs($superadmin);
 
     $this->patch(route('master.leaders.update', $leader), [
         'name' => 'Dr. H. Siti',
@@ -195,9 +213,9 @@ test('operators can update and delete a leader', function () {
     $this->assertDatabaseMissing('leaders', ['id' => $leader->id]);
 });
 
-test('operators can create and delete a room', function () {
-    $operator = makeOperator();
-    $this->actingAs($operator);
+test('superadmins can create and delete a room', function () {
+    $superadmin = makeSuperadmin();
+    $this->actingAs($superadmin);
 
     $this->post(route('master.rooms.store'), [
         'name' => 'Ruang Sidang Utama',
@@ -218,9 +236,9 @@ test('operators can create and delete a room', function () {
     $this->assertDatabaseMissing('rooms', ['id' => $room->id]);
 });
 
-test('operators can create, update, and delete a category', function () {
-    $operator = makeOperator();
-    $this->actingAs($operator);
+test('superadmins can create, update, and delete a category', function () {
+    $superadmin = makeSuperadmin();
+    $this->actingAs($superadmin);
 
     $this->post(route('master.categories.store'), [
         'name' => 'Rapat Pimpinan',
@@ -248,22 +266,25 @@ test('operators can create, update, and delete a category', function () {
     $this->assertDatabaseMissing('categories', ['id' => $category->id]);
 });
 
-test('operators can create a user with a given role and password', function () {
+test('superadmins can create a user with a given role and password', function () {
     Mail::fake();
 
-    $operator = makeOperator();
-    $this->actingAs($operator);
+    $superadmin = makeSuperadmin();
+    $this->actingAs($superadmin);
+    $leader = Leader::factory()->create();
 
     $this->post(route('users.store'), [
         'name' => 'Budi Santoso',
         'email' => 'budi@kejati.go.id',
-        'role' => 'kajati',
+        'role' => 'pimpinan',
+        'leader_id' => $leader->id,
         'password' => 'rahasia1234',
     ])->assertRedirect();
 
     $this->assertDatabaseHas('users', [
         'email' => 'budi@kejati.go.id',
-        'role' => 'kajati',
+        'role' => 'pimpinan',
+        'leader_id' => $leader->id,
     ]);
 
     $user = User::where('email', 'budi@kejati.go.id')->firstOrFail();
@@ -271,10 +292,10 @@ test('operators can create a user with a given role and password', function () {
     expect(Hash::check('rahasia1234', $user->password))->toBeTrue();
     expect($user->email_verified_at)->toBeNull();
 
-    Mail::assertSent(WelcomeMail::class, fn (WelcomeMail $mail) => $mail->hasTo('budi@kejati.go.id'));
-    Mail::assertSent(AccountCredentialsMail::class, function (AccountCredentialsMail $mail) {
+    Mail::assertQueued(AccountCredentialsMail::class, function (AccountCredentialsMail $mail) {
         return $mail->hasTo('budi@kejati.go.id') && $mail->password === 'rahasia1234';
     });
+    Mail::assertQueuedCount(1);
 });
 
 test('a newly created account becomes verified after its first successful login', function () {
@@ -290,23 +311,23 @@ test('a newly created account becomes verified after its first successful login'
 });
 
 test('creating a user requires a password', function () {
-    $operator = makeOperator();
-    $this->actingAs($operator);
+    $superadmin = makeSuperadmin();
+    $this->actingAs($superadmin);
 
     $this->post(route('users.store'), [
         'name' => 'Tanpa Password',
         'email' => 'abc@kejati.go.id',
-        'role' => 'operator',
+        'role' => 'superadmin',
     ])->assertSessionHasErrors('password');
 
     $this->assertDatabaseMissing('users', ['email' => 'abc@kejati.go.id']);
 });
 
-test('operators can update a user password and role', function () {
-    $operator = makeOperator();
-    $user = User::factory()->operator()->create();
+test('superadmins can update a user password and role', function () {
+    $superadmin = makeSuperadmin();
+    $user = User::factory()->superadmin()->create();
 
-    $this->actingAs($operator);
+    $this->actingAs($superadmin);
 
     $this->patch(route('users.update', $user), [
         'name' => $user->name,
@@ -322,11 +343,11 @@ test('operators can update a user password and role', function () {
 });
 
 test('updating a user without a password keeps the existing password', function () {
-    $operator = makeOperator();
-    $user = User::factory()->operator()->create();
+    $superadmin = makeSuperadmin();
+    $user = User::factory()->superadmin()->create();
     $originalPassword = $user->password;
 
-    $this->actingAs($operator);
+    $this->actingAs($superadmin);
 
     $this->patch(route('users.update', $user), [
         'name' => 'Nama Baru',
@@ -340,28 +361,28 @@ test('updating a user without a password keeps the existing password', function 
         ->and($user->name)->toBe('Nama Baru');
 });
 
-test('operators cannot delete their own account', function () {
-    $operator = makeOperator();
-    $this->actingAs($operator);
+test('superadmins cannot delete their own account', function () {
+    $superadmin = makeSuperadmin();
+    $this->actingAs($superadmin);
 
-    $this->delete(route('users.destroy', $operator))->assertForbidden();
+    $this->delete(route('users.destroy', $superadmin))->assertForbidden();
 
-    $this->assertModelExists($operator);
+    $this->assertModelExists($superadmin);
 });
 
-test('operators can delete another user', function () {
-    $operator = makeOperator();
+test('superadmins can delete another user', function () {
+    $superadmin = makeSuperadmin();
     $other = User::factory()->protokol()->create();
 
-    $this->actingAs($operator);
+    $this->actingAs($superadmin);
 
     $this->delete(route('users.destroy', $other))->assertRedirect();
 
     $this->assertDatabaseMissing('users', ['id' => $other->id]);
 });
 
-test('operators can create an event linked to master data', function () {
-    $operator = makeOperator();
+test('superadmins can create an event linked to master data', function () {
+    $superadmin = makeSuperadmin();
     $leader = Leader::factory()->create();
     $room = Room::factory()->create();
     $category = Category::factory()->create();
@@ -369,7 +390,7 @@ test('operators can create an event linked to master data', function () {
     $start = now()->addDay()->setTime(9, 0);
     $end = $start->copy()->addHours(2);
 
-    $this->actingAs($operator);
+    $this->actingAs($superadmin);
 
     $this->post(route('events.store'), [
         'title' => 'Rapat Koordinasi Pimpinan',
@@ -390,13 +411,13 @@ test('operators can create an event linked to master data', function () {
         'room_id' => $room->id,
         'category_id' => $category->id,
         'status' => 'scheduled',
-        'created_by' => $operator->id,
+        'created_by' => $superadmin->id,
     ]);
 });
 
 test('creating an event requires a leader and a valid time window', function () {
-    $operator = makeOperator();
-    $this->actingAs($operator);
+    $superadmin = makeSuperadmin();
+    $this->actingAs($superadmin);
 
     $this->post(route('events.store'), [
         'title' => 'Agenda Tanpa Pimpinan',
@@ -406,10 +427,10 @@ test('creating an event requires a leader and a valid time window', function () 
 });
 
 test('an event must end after it starts', function () {
-    $operator = makeOperator();
+    $superadmin = makeSuperadmin();
     $leader = Leader::factory()->create();
 
-    $this->actingAs($operator);
+    $this->actingAs($superadmin);
 
     $this->post(route('events.store'), [
         'title' => 'Waktu Terbalik',
@@ -421,11 +442,11 @@ test('an event must end after it starts', function () {
     $this->assertDatabaseCount('events', 0);
 });
 
-test('operators can update and delete an event', function () {
-    $operator = makeOperator();
+test('superadmins can update and delete an event', function () {
+    $superadmin = makeSuperadmin();
     $event = Event::factory()->create();
 
-    $this->actingAs($operator);
+    $this->actingAs($superadmin);
 
     $this->patch(route('events.update', $event), [
         'title' => $event->title,
@@ -463,6 +484,10 @@ test('agenda lists are ordered newest first', function (string $route, string $r
         'end_time' => now()->subDay()->setTime(11, 0),
     ]);
 
+    if ($user->isProtokol()) {
+        $user->leaders()->attach([$older->leader_id, $newer->leader_id]);
+    }
+
     $this->actingAs($user);
 
     $this->get(route($route))
@@ -471,11 +496,11 @@ test('agenda lists are ordered newest first', function (string $route, string $r
             ->where('events.0.id', $newer->id)
             ->where('events.1.id', $older->id));
 })->with([
-    'operator' => ['events.index', 'operator'],
+    'superadmin' => ['events.index', 'superadmin'],
     'protokol' => ['protokol.events.index', 'protokol'],
 ]);
 
-test('operator write routes are forbidden to other roles', function (string $route, array $payload) {
+test('superadmin write routes are forbidden to other roles', function (string $route, array $payload) {
     $protokol = User::factory()->protokol()->create();
     $this->actingAs($protokol);
 
@@ -484,7 +509,7 @@ test('operator write routes are forbidden to other roles', function (string $rou
     'master.leaders.store' => ['master.leaders.store', ['name' => 'Dilarang']],
     'master.rooms.store' => ['master.rooms.store', ['name' => 'Dilarang']],
     'master.categories.store' => ['master.categories.store', ['name' => 'Dilarang']],
-    'users.store' => ['users.store', ['name' => 'Dilarang', 'email' => 'x@y.z', 'role' => 'operator', 'password' => 'rahasia1234']],
+    'users.store' => ['users.store', ['name' => 'Dilarang', 'email' => 'x@y.z', 'role' => 'superadmin', 'password' => 'rahasia1234']],
     'events.store' => ['events.store', ['title' => 'Dilarang']],
 ]);
 
@@ -492,6 +517,6 @@ test('guest write requests are redirected to login', function (string $route, ar
     $this->post(route($route), $payload)->assertRedirect(route('login'));
 })->with([
     'master.leaders.store' => ['master.leaders.store', ['name' => 'Anonim']],
-    'users.store' => ['users.store', ['name' => 'Anonim', 'email' => 'anon@kejati.go.id', 'role' => 'operator', 'password' => 'rahasia1234']],
+    'users.store' => ['users.store', ['name' => 'Anonim', 'email' => 'anon@kejati.go.id', 'role' => 'superadmin', 'password' => 'rahasia1234']],
     'events.store' => ['events.store', ['title' => 'Anonim']],
 ]);

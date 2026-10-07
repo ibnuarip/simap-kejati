@@ -11,14 +11,14 @@ use Symfony\Component\HttpFoundation\Response;
 class EnsureLeaderActive
 {
     /**
-     * Revoke the session of a leadership user whose leader has been
-     * deactivated, and send them back to the login screen.
+     * Revoke the session of a pimpinan user whose linked leader has been
+     * deactivated (or unlinked), and send them back to the login screen.
      */
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
 
-        if ($user && in_array($user->role, ['kajati', 'wakajati'], true) && ! $user->isLeaderActive()) {
+        if ($user && $user->isPimpinan() && ! $user->hasActiveLeader()) {
             Auth::logout();
 
             $request->session()->invalidate();

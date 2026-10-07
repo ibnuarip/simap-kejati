@@ -21,9 +21,9 @@ class ExportController extends Controller
         $timezone = (string) config('app.timezone');
         $today = CarbonImmutable::today($timezone);
 
-        // Dipakai dua grup route (operator & protokol): breadcrumb dan
+        // Dipakai dua grup route (superadmin & protokol): breadcrumb dan
         // endpoint mengikuti role user yang sedang login.
-        $prefix = $request->user()?->role === 'operator' ? '' : 'protokol.';
+        $prefix = $request->user()?->role === 'superadmin' ? '' : 'protokol.';
 
         return Inertia::render('protokol/exports', [
             'defaults' => [
@@ -144,6 +144,10 @@ class ExportController extends Controller
 
         $events = Event::query()
             ->with(['leader', 'room', 'category'])
+            ->when(
+                $request->user()?->isProtokol(),
+                fn ($query) => $query->whereAssignedTo($request->user())
+            )
             ->whereBetween('start_time', [$range['start'], $range['end']])
             ->orderBy('start_time')
             ->get();

@@ -31,7 +31,7 @@ class ProcessAgendaReminders extends Command
 
         $this->line("Checking reminders for minute: {$windowStart->format('Y-m-d H:i')}");
 
-        $leadershipUsers = User::whereIn('role', ['kajati', 'wakajati'])
+        $leadershipUsers = User::where('role', 'pimpinan')
             ->whereNotNull('reminder_hours')
             ->get();
 
@@ -57,13 +57,18 @@ class ProcessAgendaReminders extends Command
                 continue;
             }
 
-            // Pimpinan hanya diingatkan agenda pimpinannya; tim protokol
-            // mengelola seluruh agenda sehingga menerima semuanya.
+            // Pimpinan hanya diingatkan agenda miliknya sendiri; tim
+            // protokol hanya diingatkan agenda milik pimpinan yang
+            // ditugaskan.
             $agendas = Event::query()
                 ->with('leader')
                 ->when(
-                    $user->role !== 'protokol',
-                    fn ($query) => $query->whereHas('leader', fn ($leader) => $leader->where('position', $this->positionForRole($user->role)))
+                    $user->role === 'pimpinan',
+                    fn ($query) => $query->where('leader_id', $user->leader_id)
+                )
+                ->when(
+                    $user->role === 'protokol',
+                    fn ($query) => $query->whereAssignedTo($user)
                 )
                 ->where('status', 'scheduled')
                 ->where('start_time', '>', $now)
@@ -112,11 +117,6 @@ class ProcessAgendaReminders extends Command
         $this->info("Total notifications queued: {$totalDispatched}");
 
         return 0;
-    }
-
-    private function positionForRole(?string $role): string
-    {
-        return $role === 'wakajati' ? 'Wakajati' : 'Kajati';
     }
 
     private function isAlreadySent(Event $agenda, User $user, CarbonInterface $remindAt): bool
