@@ -375,7 +375,7 @@ function LeaderFields({
                     <SelectContent className="max-w-[calc(100vw-2rem)]">
                         {leaderPositions.map((value) => (
                             <SelectItem key={value} value={value}>
-                                <span className="block min-w-0 whitespace-normal break-words sm:truncate">
+                                <span className="block min-w-0 break-words whitespace-normal sm:truncate">
                                     {value}
                                 </span>
                             </SelectItem>
