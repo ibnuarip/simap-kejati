@@ -7,7 +7,7 @@ use App\Models\User;
 
 function createOverlapScenario(): array
 {
-    $leader = Leader::factory()->create(['position' => 'Kajati']);
+    $leader = Leader::factory()->create(['position' => 'Kepala Kejaksaan Tinggi']);
     $category = Category::factory()->create();
     $day = now(config('app.timezone'))->addDay()->format('Y-m-d');
 

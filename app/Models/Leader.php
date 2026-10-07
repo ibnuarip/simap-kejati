@@ -31,8 +31,8 @@ class Leader extends Model
      * @var list<string>
      */
     public const POSITIONS = [
-        'Kajati',
-        'Wakajati',
+        'Kepala Kejaksaan Tinggi',
+        'Wakil Kepala Kejaksaan Tinggi',
         'Asisten Bidang Pembinaan',
         'Asisten Bidang Intelijen',
         'Asisten Bidang Tindak Pidana Umum',

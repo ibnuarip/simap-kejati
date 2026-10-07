@@ -117,8 +117,8 @@ test('superadmin can assign leaders when creating a protokol user', function () 
     $superadmin = User::factory()->superadmin()->create();
     $this->actingAs($superadmin);
 
-    $kajati = Leader::factory()->create(['position' => 'Kajati']);
-    $wakajati = Leader::factory()->create(['position' => 'Wakajati']);
+    $kajati = Leader::factory()->create(['position' => 'Kepala Kejaksaan Tinggi']);
+    $wakajati = Leader::factory()->create(['position' => 'Wakil Kepala Kejaksaan Tinggi']);
 
     $this->post(route('users.store'), [
         'name' => 'Protokol Kajati',

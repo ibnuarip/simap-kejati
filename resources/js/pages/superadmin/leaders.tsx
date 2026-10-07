@@ -36,7 +36,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { useInitials } from '@/hooks/use-initials';
-import { leaderPositionLabel, leaderPositions } from '@/lib/user';
+import { leaderPositions } from '@/lib/user';
 import { dashboard } from '@/routes';
 import { index as leadersIndex } from '@/routes/master/leaders';
 import type { Leader, LeaderPosition } from '@/types';
@@ -64,7 +64,6 @@ export default function SuperadminLeaders({ leaders }: Props) {
             [
                 leader.name,
                 leader.position,
-                leaderPositionLabel[leader.position] ?? '',
                 leader.nip,
                 leader.email,
                 leader.phone,
@@ -164,9 +163,7 @@ export default function SuperadminLeaders({ leaders }: Props) {
                                                 </p>
                                                 <div className="flex flex-wrap items-center gap-2">
                                                     <p className="text-muted-foreground w-full text-xs">
-                                                        {leaderPositionLabel[
-                                                            leader.position
-                                                        ] ?? leader.position}
+                                                        {leader.position}
                                                     </p>
                                                     <Badge
                                                         variant={
@@ -378,8 +375,8 @@ function LeaderFields({
                     <SelectContent className="max-w-[calc(100vw-2rem)]">
                         {leaderPositions.map((value) => (
                             <SelectItem key={value} value={value}>
-                                <span className="block min-w-0 break-words whitespace-normal sm:truncate">
-                                    {leaderPositionLabel[value] ?? value}
+                                <span className="block min-w-0 whitespace-normal break-words sm:truncate">
+                                    {value}
                                 </span>
                             </SelectItem>
                         ))}

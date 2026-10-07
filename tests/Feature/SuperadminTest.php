@@ -65,7 +65,7 @@ test('superadmins can create a leader', function () {
 
     $this->post(route('master.leaders.store'), [
         'name' => 'Drs. H. Bambang',
-        'position' => 'Kajati',
+        'position' => 'Kepala Kejaksaan Tinggi',
         'nip' => '198001012010011001',
         'email' => 'kajati@kejati.go.id',
         'phone' => '081234567890',
@@ -74,7 +74,7 @@ test('superadmins can create a leader', function () {
 
     $this->assertDatabaseHas('leaders', [
         'name' => 'Drs. H. Bambang',
-        'position' => 'Kajati',
+        'position' => 'Kepala Kejaksaan Tinggi',
         'email' => 'kajati@kejati.go.id',
     ]);
 });
@@ -85,7 +85,7 @@ test('leader phone must start with 08 and be 10 to 14 digits', function () {
 
     $payload = [
         'name' => 'Drs. H. Bambang',
-        'position' => 'Kajati',
+        'position' => 'Kepala Kejaksaan Tinggi',
         'nip' => '198001012010011001',
         'email' => 'bambang@kejati.go.id',
         'is_active' => '1',
@@ -140,7 +140,7 @@ test('creating a leader requires every field', function () {
 
     $this->post(route('master.leaders.store'), [
         'name' => 'Tanpa Data Lengkap',
-        'position' => 'Kajati',
+        'position' => 'Kepala Kejaksaan Tinggi',
         'is_active' => '1',
     ])->assertSessionHasErrors(['nip', 'email', 'phone']);
 
@@ -170,7 +170,7 @@ test('a leader nip must be exactly 18 digits', function (string $nip) {
 
     $this->post(route('master.leaders.store'), [
         'name' => 'Drs. H. Bambang',
-        'position' => 'Kajati',
+        'position' => 'Kepala Kejaksaan Tinggi',
         'sort_order' => '0',
         'nip' => $nip,
         'email' => 'bambang@kejati.go.id',
@@ -194,7 +194,7 @@ test('superadmins can update and delete a leader', function () {
 
     $this->patch(route('master.leaders.update', $leader), [
         'name' => 'Dr. H. Siti',
-        'position' => 'Wakajati',
+        'position' => 'Wakil Kepala Kejaksaan Tinggi',
         'nip' => '198001012010011001',
         'email' => 'siti@kejati.go.id',
         'phone' => '081234567890',
@@ -204,7 +204,7 @@ test('superadmins can update and delete a leader', function () {
     $this->assertDatabaseHas('leaders', [
         'id' => $leader->id,
         'name' => 'Dr. H. Siti',
-        'position' => 'Wakajati',
+        'position' => 'Wakil Kepala Kejaksaan Tinggi',
         'is_active' => 0,
     ]);
 

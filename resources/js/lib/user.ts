@@ -7,8 +7,8 @@ export const userRoleLabel: Record<UserRole, string> = {
 };
 
 export const leaderPositions = [
-    'Kajati',
-    'Wakajati',
+    'Kepala Kejaksaan Tinggi',
+    'Wakil Kepala Kejaksaan Tinggi',
     'Asisten Bidang Pembinaan',
     'Asisten Bidang Intelijen',
     'Asisten Bidang Tindak Pidana Umum',
@@ -20,12 +20,3 @@ export const leaderPositions = [
     'Bagian Tata Usaha',
     'Koordinator',
 ] as const;
-
-/**
- * Label lengkap untuk dropdown jabatan. Kajati/Wakajati ditulis
- * panjang; sisanya sama dengan nilainya.
- */
-export const leaderPositionLabel: Record<string, string> = {
-    Kajati: 'Kepala Kejaksaan Tinggi',
-    Wakajati: 'Wakil Kepala Kejaksaan Tinggi',
-};

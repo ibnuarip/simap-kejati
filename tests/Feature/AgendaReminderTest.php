@@ -193,7 +193,7 @@ test('reminder command notifies protokol users for assigned agendas', function (
     PushSubscription::factory()->create(['user_id' => $protokol->id]);
 
     // Agenda milik pimpinan yang ditugaskan mengingatkan protokol.
-    $wakajatiLeader = Leader::factory()->create(['position' => 'Wakajati']);
+    $wakajatiLeader = Leader::factory()->create(['position' => 'Wakil Kepala Kejaksaan Tinggi']);
     $protokol->leaders()->attach($wakajatiLeader->id);
     $start = now(config('app.timezone'))->startOfMinute()->addHour();
 

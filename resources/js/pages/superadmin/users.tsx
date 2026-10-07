@@ -26,7 +26,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { leaderPositionLabel, userRoleLabel } from '@/lib/user';
+import { userRoleLabel } from '@/lib/user';
 import { dashboard } from '@/routes';
 import { index as leadersIndex } from '@/routes/master/leaders';
 import { index as usersIndex } from '@/routes/users';
@@ -546,9 +546,7 @@ function UserFields({
                                         {leader.name}
                                         {leader.position ? (
                                             <span className="text-muted-foreground block text-xs">
-                                                {leaderPositionLabel[
-                                                    leader.position
-                                                ] ?? leader.position}
+                                                {leader.position}
                                             </span>
                                         ) : null}
                                     </span>
@@ -610,13 +608,11 @@ function UserFields({
                                                 <span className="block truncate font-medium">
                                                     {selected.name}
                                                 </span>
-                                                {selected.position ? (
-                                                    <span className="text-muted-foreground block truncate text-xs font-normal">
-                                                        {leaderPositionLabel[
-                                                            selected.position
-                                                        ] ?? selected.position}
-                                                    </span>
-                                                ) : null}
+                                            {selected.position ? (
+                                                <span className="text-muted-foreground block truncate text-xs font-normal">
+                                                    {selected.position}
+                                                </span>
+                                            ) : null}
                                             </span>
                                         );
                                     })()}
@@ -632,15 +628,13 @@ function UserFields({
                                             <span className="w-full truncate font-medium">
                                                 {leader.name}
                                             </span>
-                                            {leader.position ? (
-                                                <span className="text-muted-foreground w-full truncate text-xs font-normal">
-                                                    {leaderPositionLabel[
-                                                        leader.position
-                                                    ] ?? leader.position}
-                                                </span>
-                                            ) : null}
-                                        </span>
-                                    </SelectItem>
+                                        {leader.position ? (
+                                            <span className="text-muted-foreground w-full truncate text-xs font-normal">
+                                                {leader.position}
+                                            </span>
+                                        ) : null}
+                                    </span>
+                                </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
