@@ -118,7 +118,7 @@ export default function Home({
                                                 autoFocus
                                                 tabIndex={1}
                                                 autoComplete="email"
-                                                placeholder="nama@kejati.go.id"
+                                                placeholder="email@gmail.com"
                                             />
                                             <InputError
                                                 message={errors.email}

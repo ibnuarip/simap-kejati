@@ -33,6 +33,15 @@ export default function LeadershipDashboard({
     upcomingEvents,
 }: Props) {
     const { auth } = usePage().props;
+    const hour = new Date().getHours();
+    const greeting =
+        hour >= 4 && hour < 11
+            ? 'Selamat pagi'
+            : hour >= 11 && hour < 15
+              ? 'Selamat siang'
+              : hour >= 15 && hour < 18
+                ? 'Selamat sore'
+                : 'Selamat malam';
 
     return (
         <>
@@ -44,7 +53,7 @@ export default function LeadershipDashboard({
                         {leader.position}
                     </p>
                     <h1 className="text-foreground text-2xl font-bold tracking-tight md:text-3xl">
-                        Selamat pagi, {auth.user?.name}
+                        {greeting}, {auth.user?.name}
                     </h1>
                     <p className="text-muted-foreground max-w-2xl text-sm">
                         Ringkasan kegiatan Anda hari ini dan mendatang.
