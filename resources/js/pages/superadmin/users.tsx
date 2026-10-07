@@ -407,11 +407,6 @@ function UserCard({ user, currentUserId, onEdit }: UserCardProps) {
                         {userRoleLabel[user.role]}
                     </p>
                 </div>
-                <ConfirmDelete
-                    url={UserController.destroy.url(user.id)}
-                    only={['users']}
-                    itemName={user.email}
-                />
             </div>
             <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
@@ -438,17 +433,25 @@ function UserCard({ user, currentUserId, onEdit }: UserCardProps) {
                             : '—'}
                     </p>
                 </div>
-                <div>
+                <div className="col-span-2">
                     <p className="text-muted-foreground text-xs">Aksi</p>
-                    <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => onEdit(user)}
-                        className="mt-0.5"
-                    >
-                        <Pencil />
-                        Edit
-                    </Button>
+                    <div className="mt-1.5 flex items-center justify-between gap-2">
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => onEdit(user)}
+                        >
+                            <Pencil />
+                            Edit
+                        </Button>
+                        {user.id !== currentUserId && (
+                            <ConfirmDelete
+                                url={UserController.destroy.url(user.id)}
+                                only={['users']}
+                                itemName={user.email}
+                            />
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
