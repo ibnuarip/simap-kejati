@@ -617,8 +617,34 @@ function UserFields({
                         </div>
                     ) : (
                     <Select value={leaderId} onValueChange={onLeaderChange}>
-                        <SelectTrigger className="w-full min-w-0 [&>[data-slot='select-value']]:min-w-0">
-                            <SelectValue placeholder="Pilih pimpinan" />
+                        <SelectTrigger className="h-auto min-h-9 w-full min-w-0 justify-center py-2 text-center [&>span]:min-w-0 [&>span]:line-clamp-none [&>span]:whitespace-normal sm:[&>span]:line-clamp-1">
+                            <SelectValue placeholder="Pilih pimpinan">
+                                {(() => {
+                                    const selected = leaders.find(
+                                        (leader) =>
+                                            String(leader.id) === leaderId,
+                                    );
+
+                                    if (!selected) {
+                                        return null;
+                                    }
+
+                                    return (
+                                        <span className="block min-w-0">
+                                            <span className="block truncate font-medium">
+                                                {selected.name}
+                                            </span>
+                                            {selected.position ? (
+                                                <span className="text-muted-foreground block truncate text-xs font-normal">
+                                                    {leaderPositionLabel[
+                                                        selected.position
+                                                    ] ?? selected.position}
+                                                </span>
+                                            ) : null}
+                                        </span>
+                                    );
+                                })()}
+                            </SelectValue>
                         </SelectTrigger>
                             <SelectContent className="max-w-[calc(100vw-2rem)]">
                                 {leaders.map((leader) => (
@@ -626,14 +652,12 @@ function UserFields({
                                     key={leader.id}
                                     value={String(leader.id)}
                                 >
-                                    <span className="block min-w-0 truncate">
-                                        <span className="font-medium">
+                                    <span className="flex min-w-0 flex-col items-start leading-snug">
+                                        <span className="w-full truncate font-medium">
                                             {leader.name}
                                         </span>
                                         {leader.position ? (
-                                            <span className="text-muted-foreground font-normal">
-                                                {' '}
-                                                ·{' '}
+                                            <span className="text-muted-foreground w-full truncate text-xs font-normal">
                                                 {leaderPositionLabel[
                                                     leader.position
                                                 ] ?? leader.position}
@@ -646,17 +670,6 @@ function UserFields({
                         </Select>
                     )}
                     <input type="hidden" name="leader_id" value={leaderId} />
-                    {(() => {
-                        const selected = leaders.find(
-                            (leader) => String(leader.id) === leaderId,
-                        );
-
-                        return selected?.email ? (
-                            <p className="text-muted-foreground text-xs">
-                                Email data pimpinan: {selected.email}
-                            </p>
-                        ) : null;
-                    })()}
                     <InputError message={errors.leader_id} />
                 </div>
             )}
