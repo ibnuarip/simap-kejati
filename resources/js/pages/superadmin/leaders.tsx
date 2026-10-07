@@ -64,6 +64,7 @@ export default function SuperadminLeaders({ leaders }: Props) {
             [
                 leader.name,
                 leader.position,
+                leaderPositionLabel[leader.position] ?? '',
                 leader.nip,
                 leader.email,
                 leader.phone,
@@ -163,7 +164,9 @@ export default function SuperadminLeaders({ leaders }: Props) {
                                                 </p>
                                                 <div className="flex flex-wrap items-center gap-2">
                                                     <p className="text-muted-foreground w-full text-xs">
-                                                        {leader.position}
+                                                        {leaderPositionLabel[
+                                                            leader.position
+                                                        ] ?? leader.position}
                                                     </p>
                                                     <Badge
                                                         variant={
@@ -366,13 +369,16 @@ function LeaderFields({
                         onPositionChange(value as LeaderPosition)
                     }
                 >
-                    <SelectTrigger id="position" className="w-full">
+                    <SelectTrigger
+                        id="position"
+                        className="w-full min-w-0 [&>[data-slot='select-value']]:min-w-0"
+                    >
                         <SelectValue placeholder="Pilih jabatan" />
                     </SelectTrigger>
                     <SelectContent className="max-w-[calc(100vw-2rem)]">
                         {leaderPositions.map((value) => (
                             <SelectItem key={value} value={value}>
-                                <span className="whitespace-normal break-words">
+                                <span className="block min-w-0 truncate">
                                     {leaderPositionLabel[value] ?? value}
                                 </span>
                             </SelectItem>

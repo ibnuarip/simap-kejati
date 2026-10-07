@@ -9,6 +9,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { dashboard as leadershipDashboard } from '@/routes/leadership';
+import { leaderPositionLabel } from '@/lib/user';
 import type { AgendaItem } from '@/types';
 
 type Props = {
@@ -41,7 +42,8 @@ export default function LeadershipDashboard({
             <div className="flex flex-1 flex-col gap-6 lg:gap-8">
                 <div className="flex flex-col gap-1.5">
                     <p className="text-primary flex items-center gap-1.5 text-sm font-medium">
-                        {leader.position}
+                        {leaderPositionLabel[leader.position] ??
+                            leader.position}
                     </p>
                     <h1 className="text-foreground text-2xl font-bold tracking-tight md:text-3xl">
                         Selamat pagi, {auth.user?.name}

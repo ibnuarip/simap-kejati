@@ -26,8 +26,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { userRoleLabel } from '@/lib/user';
+import { leaderPositionLabel, userRoleLabel } from '@/lib/user';
 import { dashboard } from '@/routes';
+import { index as leadersIndex } from '@/routes/master/leaders';
 import { index as usersIndex } from '@/routes/users';
 import type { LeaderOption, ManagedUser, UserRole } from '@/types';
 
@@ -47,6 +48,20 @@ export default function SuperadminUsers({ users, leaders }: Props) {
     const [role, setRole] = useState<UserRole>('superadmin');
     const [leaderIds, setLeaderIds] = useState<number[]>([]);
     const [leaderId, setLeaderId] = useState<string>('');
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+
+    const handleLeaderChange = (id: string) => {
+        setLeaderId(id);
+
+        // Sinkronkan identitas akun dengan data pimpinan yang dipilih.
+        const selected = leaders.find((leader) => String(leader.id) === id);
+
+        if (selected) {
+            setName(selected.name);
+            setEmail(selected.email ?? '');
+        }
+    };
 
     const toggleLeader = (id: number) => {
         setLeaderIds((current) =>
@@ -65,6 +80,8 @@ export default function SuperadminUsers({ users, leaders }: Props) {
         setRole('superadmin');
         setLeaderIds([]);
         setLeaderId('');
+        setName('');
+        setEmail('');
         setEditing(null);
         setDialogOpen(true);
     };
@@ -73,6 +90,8 @@ export default function SuperadminUsers({ users, leaders }: Props) {
         setRole(user.role);
         setLeaderIds(user.leader_ids);
         setLeaderId(user.leader_id ? String(user.leader_id) : '');
+        setName(user.name);
+        setEmail(user.email);
         setEditing(user);
         setDialogOpen(true);
     };
@@ -278,14 +297,17 @@ export default function SuperadminUsers({ users, leaders }: Props) {
                             {({ processing, errors }) => (
                                 <>
                                     <UserFields
-                                        defaultValue={editing}
                                         role={role}
                                         onRoleChange={setRole}
                                         leaders={leaders}
                                         leaderIds={leaderIds}
                                         onToggleLeader={toggleLeader}
                                         leaderId={leaderId}
-                                        onLeaderChange={setLeaderId}
+                                        onLeaderChange={handleLeaderChange}
+                                        name={name}
+                                        onNameChange={setName}
+                                        email={email}
+                                        onEmailChange={setEmail}
                                         passwordRequired={false}
                                         errors={errors}
                                     />
@@ -316,14 +338,17 @@ export default function SuperadminUsers({ users, leaders }: Props) {
                             {({ processing, errors }) => (
                                 <>
                                     <UserFields
-                                        defaultValue={null}
                                         role={role}
                                         onRoleChange={setRole}
                                         leaders={leaders}
                                         leaderIds={leaderIds}
                                         onToggleLeader={toggleLeader}
                                         leaderId={leaderId}
-                                        onLeaderChange={setLeaderId}
+                                        onLeaderChange={handleLeaderChange}
+                                        name={name}
+                                        onNameChange={setName}
+                                        email={email}
+                                        onEmailChange={setEmail}
                                         passwordRequired
                                         errors={errors}
                                     />
@@ -431,7 +456,6 @@ function UserCard({ user, currentUserId, onEdit }: UserCardProps) {
 }
 
 type FieldProps = {
-    defaultValue: ManagedUser | null;
     role: UserRole;
     onRoleChange: (value: UserRole) => void;
     leaders: LeaderOption[];
@@ -439,12 +463,15 @@ type FieldProps = {
     onToggleLeader: (id: number) => void;
     leaderId: string;
     onLeaderChange: (value: string) => void;
+    name: string;
+    onNameChange: (value: string) => void;
+    email: string;
+    onEmailChange: (value: string) => void;
     passwordRequired: boolean;
     errors: Record<string, string>;
 };
 
 function UserFields({
-    defaultValue,
     role,
     onRoleChange,
     leaders,
@@ -452,6 +479,10 @@ function UserFields({
     onToggleLeader,
     leaderId,
     onLeaderChange,
+    name,
+    onNameChange,
+    email,
+    onEmailChange,
     passwordRequired,
     errors,
 }: FieldProps) {
@@ -463,7 +494,8 @@ function UserFields({
                     id="name"
                     name="name"
                     required
-                    defaultValue={defaultValue?.name}
+                    value={name}
+                    onChange={(event) => onNameChange(event.target.value)}
                     placeholder="Nama pengguna"
                 />
                 <InputError message={errors.name} />
@@ -476,7 +508,8 @@ function UserFields({
                     type="email"
                     name="email"
                     required
-                    defaultValue={defaultValue?.email}
+                    value={email}
+                    onChange={(event) => onEmailChange(event.target.value)}
                     placeholder="email@kejati.go.id"
                 />
                 <InputError message={errors.email} />
@@ -513,7 +546,13 @@ function UserFields({
                     <div className="flex flex-col gap-1 rounded-lg border p-3">
                         {leaders.length === 0 ? (
                             <p className="text-muted-foreground text-xs">
-                                Belum ada data pimpinan aktif.
+                                Belum ada data pimpinan aktif.{' '}
+                                <a
+                                    href={leadersIndex().url}
+                                    className="text-primary font-medium underline underline-offset-4"
+                                >
+                                    Tambah di Data Pimpinan
+                                </a>
                             </p>
                         ) : (
                             leaders.map((leader) => (
@@ -531,7 +570,9 @@ function UserFields({
                                         {leader.name}
                                         {leader.position ? (
                                             <span className="text-muted-foreground block text-xs">
-                                                {leader.position}
+                                                {leaderPositionLabel[
+                                                    leader.position
+                                                ] ?? leader.position}
                                             </span>
                                         ) : null}
                                     </span>
@@ -561,26 +602,49 @@ function UserFields({
                         akun ini. Email akun disarankan sama dengan email
                         data pimpinan agar mudah dikenali.
                     </p>
+                    {leaders.length === 0 ? (
+                        <div className="flex flex-col items-start gap-2 rounded-lg border border-dashed p-4">
+                            <p className="text-muted-foreground text-xs">
+                                Belum ada data pimpinan. Tambahkan dulu di
+                                Data Pimpinan sebelum membuat akun ini.
+                            </p>
+                            <a
+                                href={leadersIndex().url}
+                                className="text-primary text-xs font-medium underline underline-offset-4"
+                            >
+                                Buka Data Pimpinan
+                            </a>
+                        </div>
+                    ) : (
                     <Select value={leaderId} onValueChange={onLeaderChange}>
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger className="w-full min-w-0 [&>[data-slot='select-value']]:min-w-0">
                             <SelectValue placeholder="Pilih pimpinan" />
                         </SelectTrigger>
-                        <SelectContent className="max-w-[calc(100vw-2rem)]">
-                            {leaders.map((leader) => (
+                            <SelectContent className="max-w-[calc(100vw-2rem)]">
+                                {leaders.map((leader) => (
                                 <SelectItem
                                     key={leader.id}
                                     value={String(leader.id)}
                                 >
-                                    <span className="whitespace-normal break-words">
-                                        {leader.name}
-                                        {leader.position
-                                            ? ` · ${leader.position}`
-                                            : ''}
+                                    <span className="block min-w-0 truncate">
+                                        <span className="font-medium">
+                                            {leader.name}
+                                        </span>
+                                        {leader.position ? (
+                                            <span className="text-muted-foreground font-normal">
+                                                {' '}
+                                                ·{' '}
+                                                {leaderPositionLabel[
+                                                    leader.position
+                                                ] ?? leader.position}
+                                            </span>
+                                        ) : null}
                                     </span>
                                 </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    )}
                     <input type="hidden" name="leader_id" value={leaderId} />
                     {(() => {
                         const selected = leaders.find(
