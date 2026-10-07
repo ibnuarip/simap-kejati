@@ -203,10 +203,15 @@ test('non protokol roles cannot write protokol events', function () {
 
 test('non protokol roles are forbidden from protokol routes', function (string $role) {
     $user = User::factory()->create(['role' => $role]);
+
+    if ($role === 'pimpinan') {
+        $user->forceFill(['leader_id' => Leader::factory()->create()->id])->save();
+    }
+
     $this->actingAs($user);
 
     $this->get(route('protokol.dashboard'))->assertForbidden();
-})->with(['superadmin', 'kajati', 'wakajati']);
+})->with(['superadmin', 'pimpinan']);
 
 test('guests are redirected to login before accessing protokol routes', function () {
     $this->get(route('protokol.dashboard'))->assertRedirect(route('login'));

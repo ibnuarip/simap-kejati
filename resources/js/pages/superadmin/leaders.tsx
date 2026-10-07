@@ -36,18 +36,13 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { useInitials } from '@/hooks/use-initials';
-import { leaderPositionLabel } from '@/lib/user';
+import { leaderPositionLabel, leaderPositions } from '@/lib/user';
 import { dashboard } from '@/routes';
 import { index as leadersIndex } from '@/routes/master/leaders';
 import type { Leader, LeaderPosition } from '@/types';
 
 type Props = {
     leaders: Leader[];
-};
-
-const positionBadgeVariant: Record<LeaderPosition, 'ketua' | 'wakil'> = {
-    Kajati: 'ketua',
-    Wakajati: 'wakil',
 };
 
 export default function SuperadminLeaders({ leaders }: Props) {
@@ -68,7 +63,7 @@ export default function SuperadminLeaders({ leaders }: Props) {
         return leaders.filter((leader) =>
             [
                 leader.name,
-                leaderPositionLabel[leader.position],
+                leader.position,
                 leader.nip,
                 leader.email,
                 leader.phone,
@@ -167,19 +162,9 @@ export default function SuperadminLeaders({ leaders }: Props) {
                                                     {leader.name}
                                                 </p>
                                                 <div className="flex flex-wrap items-center gap-2">
-                                                    <Badge
-                                                        variant={
-                                                            positionBadgeVariant[
-                                                                leader.position
-                                                            ]
-                                                        }
-                                                    >
-                                                        {
-                                                            leaderPositionLabel[
-                                                                leader.position
-                                                            ]
-                                                        }
-                                                    </Badge>
+                                                    <p className="text-muted-foreground w-full text-xs">
+                                                        {leader.position}
+                                                    </p>
                                                     <Badge
                                                         variant={
                                                             leader.is_active
@@ -344,8 +329,8 @@ export default function SuperadminLeaders({ leaders }: Props) {
 
 type FieldProps = {
     defaultValue: Leader | null;
-    position: LeaderPosition;
-    onPositionChange: (value: LeaderPosition) => void;
+    position: string;
+    onPositionChange: (value: string) => void;
     isActive: boolean;
     onActiveChange: (value: boolean) => void;
     errors: Record<string, string>;
@@ -382,12 +367,14 @@ function LeaderFields({
                     }
                 >
                     <SelectTrigger id="position" className="w-full">
-                        <SelectValue />
+                        <SelectValue placeholder="Pilih jabatan" />
                     </SelectTrigger>
-                    <SelectContent>
-                        {(['Kajati', 'Wakajati'] as const).map((value) => (
+                    <SelectContent className="max-w-[calc(100vw-2rem)]">
+                        {leaderPositions.map((value) => (
                             <SelectItem key={value} value={value}>
-                                {leaderPositionLabel[value]}
+                                <span className="whitespace-normal break-words">
+                                    {leaderPositionLabel[value] ?? value}
+                                </span>
                             </SelectItem>
                         ))}
                     </SelectContent>

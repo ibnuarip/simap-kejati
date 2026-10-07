@@ -36,7 +36,7 @@ type Props = {
     leaders: LeaderOption[];
 };
 
-const ROLE_OPTIONS: UserRole[] = ['superadmin', 'protokol', 'kajati', 'wakajati'];
+const ROLE_OPTIONS: UserRole[] = ['superadmin', 'protokol', 'pimpinan'];
 
 export default function SuperadminUsers({ users, leaders }: Props) {
     const { auth } = usePage().props;
@@ -46,6 +46,7 @@ export default function SuperadminUsers({ users, leaders }: Props) {
     const [editing, setEditing] = useState<ManagedUser | null>(null);
     const [role, setRole] = useState<UserRole>('superadmin');
     const [leaderIds, setLeaderIds] = useState<number[]>([]);
+    const [leaderId, setLeaderId] = useState<string>('');
 
     const toggleLeader = (id: number) => {
         setLeaderIds((current) =>
@@ -63,6 +64,7 @@ export default function SuperadminUsers({ users, leaders }: Props) {
     const openCreate = () => {
         setRole('superadmin');
         setLeaderIds([]);
+        setLeaderId('');
         setEditing(null);
         setDialogOpen(true);
     };
@@ -70,6 +72,7 @@ export default function SuperadminUsers({ users, leaders }: Props) {
     const openEdit = (user: ManagedUser) => {
         setRole(user.role);
         setLeaderIds(user.leader_ids);
+        setLeaderId(user.leader_id ? String(user.leader_id) : '');
         setEditing(user);
         setDialogOpen(true);
     };
@@ -254,7 +257,7 @@ export default function SuperadminUsers({ users, leaders }: Props) {
             </div>
 
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <DialogContent className="sm:max-w-md">
+                <DialogContent className="max-h-[90dvh] overflow-y-auto overscroll-contain sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle>
                             {editing ? 'Edit Pengguna' : 'Tambah Pengguna'}
@@ -281,6 +284,8 @@ export default function SuperadminUsers({ users, leaders }: Props) {
                                         leaders={leaders}
                                         leaderIds={leaderIds}
                                         onToggleLeader={toggleLeader}
+                                        leaderId={leaderId}
+                                        onLeaderChange={setLeaderId}
                                         passwordRequired={false}
                                         errors={errors}
                                     />
@@ -317,6 +322,8 @@ export default function SuperadminUsers({ users, leaders }: Props) {
                                         leaders={leaders}
                                         leaderIds={leaderIds}
                                         onToggleLeader={toggleLeader}
+                                        leaderId={leaderId}
+                                        onLeaderChange={setLeaderId}
                                         passwordRequired
                                         errors={errors}
                                     />
@@ -430,6 +437,8 @@ type FieldProps = {
     leaders: LeaderOption[];
     leaderIds: number[];
     onToggleLeader: (id: number) => void;
+    leaderId: string;
+    onLeaderChange: (value: string) => void;
     passwordRequired: boolean;
     errors: Record<string, string>;
 };
@@ -441,6 +450,8 @@ function UserFields({
     leaders,
     leaderIds,
     onToggleLeader,
+    leaderId,
+    onLeaderChange,
     passwordRequired,
     errors,
 }: FieldProps) {
@@ -518,6 +529,11 @@ function UserFields({
                                     />
                                     <span className="text-sm">
                                         {leader.name}
+                                        {leader.position ? (
+                                            <span className="text-muted-foreground block text-xs">
+                                                {leader.position}
+                                            </span>
+                                        ) : null}
                                     </span>
                                 </label>
                             ))
@@ -534,6 +550,50 @@ function UserFields({
                     <InputError
                         message={errors.leaders ?? errors['leaders.0']}
                     />
+                </div>
+            )}
+
+            {role === 'pimpinan' && (
+                <div className="grid gap-2">
+                    <Label>Tautan Data Pimpinan</Label>
+                    <p className="text-muted-foreground text-xs">
+                        Pilih data pimpinan yang agendanya boleh dilihat
+                        akun ini. Email akun disarankan sama dengan email
+                        data pimpinan agar mudah dikenali.
+                    </p>
+                    <Select value={leaderId} onValueChange={onLeaderChange}>
+                        <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Pilih pimpinan" />
+                        </SelectTrigger>
+                        <SelectContent className="max-w-[calc(100vw-2rem)]">
+                            {leaders.map((leader) => (
+                                <SelectItem
+                                    key={leader.id}
+                                    value={String(leader.id)}
+                                >
+                                    <span className="whitespace-normal break-words">
+                                        {leader.name}
+                                        {leader.position
+                                            ? ` · ${leader.position}`
+                                            : ''}
+                                    </span>
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <input type="hidden" name="leader_id" value={leaderId} />
+                    {(() => {
+                        const selected = leaders.find(
+                            (leader) => String(leader.id) === leaderId,
+                        );
+
+                        return selected?.email ? (
+                            <p className="text-muted-foreground text-xs">
+                                Email data pimpinan: {selected.email}
+                            </p>
+                        ) : null;
+                    })()}
+                    <InputError message={errors.leader_id} />
                 </div>
             )}
 

@@ -88,14 +88,8 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        $select = array_map(
-            fn (string $column): mixed => $column === 'role'
-                ? DB::raw("case when role = '{$from}' then '{$to}' else role end")
-                : $column,
-            $columns
-        );
-
-        DB::table('users_new')->insertUsing($columns, DB::table('users')->select($select));
+        DB::table('users_new')->insertUsing($columns, DB::table('users')->select($columns));
+        DB::table('users_new')->where('role', $from)->update(['role' => $to]);
 
         Schema::drop('users');
         Schema::rename('users_new', 'users');

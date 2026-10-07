@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Leader;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -67,22 +68,14 @@ class UserFactory extends Factory
     }
 
     /**
-     * Indicate that the user has the kajati role.
+     * Indicate that the user has the pimpinan role, linked to its own
+     * active leader record.
      */
-    public function kajati(): static
+    public function pimpinan(): static
     {
         return $this->state(fn (array $attributes) => [
-            'role' => 'kajati',
-        ]);
-    }
-
-    /**
-     * Indicate that the user has the wakajati role.
-     */
-    public function wakajati(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'role' => 'wakajati',
+            'role' => 'pimpinan',
+            'leader_id' => Leader::factory(),
         ]);
     }
 

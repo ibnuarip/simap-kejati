@@ -21,9 +21,9 @@ beforeEach(function () {
     });
 });
 
-function createSubscribedKajati(array $reminderHours = ['1']): User
+function createSubscribedPimpinan(array $reminderHours = ['1']): User
 {
-    $user = User::factory()->kajati()->create(['reminder_hours' => $reminderHours]);
+    $user = User::factory()->pimpinan()->create(['reminder_hours' => $reminderHours]);
 
     PushSubscription::factory()->create([
         'user_id' => $user->id,
@@ -32,10 +32,8 @@ function createSubscribedKajati(array $reminderHours = ['1']): User
     return $user;
 }
 
-function createKajatiEvent(CarbonInterface $startTime): Event
+function createLeaderEvent(Leader $leader, CarbonInterface $startTime): Event
 {
-    $leader = Leader::factory()->create(['position' => 'Kajati']);
-
     return Event::factory()->create([
         'leader_id' => $leader->id,
         'status' => 'scheduled',
@@ -47,9 +45,9 @@ function createKajatiEvent(CarbonInterface $startTime): Event
 test('reminder command queues a push job when due in the current minute', function () {
     Queue::fake();
 
-    $user = createSubscribedKajati(['1']);
+    $user = createSubscribedPimpinan(['1']);
     $start = now(config('app.timezone'))->startOfMinute()->addHour();
-    $event = createKajatiEvent($start);
+    $event = createLeaderEvent($user->leader, $start);
 
     $this->artisan('agenda:process-reminders')->assertOk();
 
@@ -65,9 +63,9 @@ test('reminder command queues a push job when due in the current minute', functi
 test('reminder command does not send twice for the same reminder', function () {
     Queue::fake();
 
-    createSubscribedKajati(['1']);
+    $user = createSubscribedPimpinan(['1']);
     $start = now(config('app.timezone'))->startOfMinute()->addHour();
-    createKajatiEvent($start);
+    createLeaderEvent($user->leader, $start);
 
     $this->artisan('agenda:process-reminders')->assertOk();
     $this->artisan('agenda:process-reminders')->assertOk();
@@ -79,9 +77,9 @@ test('reminder command catches up a missed window for a recently created agenda'
     Queue::fake();
 
     // Agenda dibuat H-30 menit dengan pengingat H-1: jendelanya sudah lewat.
-    $user = createSubscribedKajati(['1']);
+    $user = createSubscribedPimpinan(['1']);
     $start = now(config('app.timezone'))->addMinutes(30)->second(0);
-    $event = createKajatiEvent($start);
+    $event = createLeaderEvent($user->leader, $start);
     $event->forceFill([
         'created_at' => now(config('app.timezone'))->subMinutes(30),
         'updated_at' => now(config('app.timezone'))->subMinutes(30),
@@ -102,9 +100,9 @@ test('reminder command catches up a missed window for a recently created agenda'
 test('reminder command does not catch up agendas that already started', function () {
     Queue::fake();
 
-    createSubscribedKajati(['1']);
+    $user = createSubscribedPimpinan(['1']);
     $start = now(config('app.timezone'))->subMinutes(5);
-    createKajatiEvent($start);
+    createLeaderEvent($user->leader, $start);
 
     $this->artisan('agenda:process-reminders')->assertOk();
 
@@ -112,7 +110,7 @@ test('reminder command does not catch up agendas that already started', function
 });
 
 test('push job message adapts to the remaining time', function () {
-    $user = createSubscribedKajati(['1']);
+    $user = createSubscribedPimpinan(['1']);
     $bodies = [];
 
     $mock = $this->mock(WebPushService::class, function ($mock) use (&$bodies) {
@@ -142,7 +140,7 @@ test('push job message adapts to the remaining time', function () {
 });
 
 test('push job skips agendas that already started', function () {
-    $user = createSubscribedKajati(['1']);
+    $user = createSubscribedPimpinan(['1']);
 
     $mock = $this->mock(WebPushService::class, function ($mock) {
         $mock->makePartial();
@@ -163,8 +161,8 @@ test('push job skips agendas that already started', function () {
 });
 
 test('subscribing an existing endpoint transfers it to the current user', function () {
-    $owner = User::factory()->kajati()->create();
-    $newcomer = User::factory()->wakajati()->create();
+    $owner = User::factory()->pimpinan()->create();
+    $newcomer = User::factory()->pimpinan()->create();
     $endpoint = 'https://push.example.com/sub/shared-device';
 
     $this->actingAs($owner)
@@ -216,24 +214,24 @@ test('reminder command notifies protokol users for assigned agendas', function (
 test('reminder command skips users without push subscriptions', function () {
     Queue::fake();
 
-    User::factory()->kajati()->create(['reminder_hours' => ['1']]);
+    $user = User::factory()->pimpinan()->create(['reminder_hours' => ['1']]);
     $start = now(config('app.timezone'))->startOfMinute()->addHour();
-    createKajatiEvent($start);
+    createLeaderEvent($user->leader, $start);
 
     $this->artisan('agenda:process-reminders')->assertOk();
 
     Queue::assertNotPushed(SendAgendaPushNotification::class);
 });
 
-test('reminder command only notifies the matching leader position', function () {
+test('reminder command only notifies the linked leader', function () {
     Queue::fake();
 
-    $user = createSubscribedKajati(['1']);
-    $wakajatiLeader = Leader::factory()->create(['position' => 'Wakajati']);
+    $user = createSubscribedPimpinan(['1']);
+    $otherLeader = Leader::factory()->create();
     $start = now(config('app.timezone'))->startOfMinute()->addHour();
 
     Event::factory()->create([
-        'leader_id' => $wakajatiLeader->id,
+        'leader_id' => $otherLeader->id,
         'status' => 'scheduled',
         'start_time' => $start,
         'end_time' => $start->copy()->addHour(),
@@ -246,7 +244,7 @@ test('reminder command only notifies the matching leader position', function () 
 });
 
 test('leadership can subscribe and unsubscribe a push endpoint', function () {
-    $user = User::factory()->kajati()->create();
+    $user = User::factory()->pimpinan()->create();
     $endpoint = 'https://push.example.com/sub/browser-1';
 
     $this->actingAs($user)
@@ -276,9 +274,9 @@ test('reminder command skips everything when web push is not configured', functi
         $mock->shouldReceive('isConfigured')->andReturn(false);
     });
 
-    createSubscribedKajati(['1']);
+    $user = createSubscribedPimpinan(['1']);
     $start = now(config('app.timezone'))->startOfMinute()->addHour();
-    createKajatiEvent($start);
+    createLeaderEvent($user->leader, $start);
 
     $this->artisan('agenda:process-reminders')->assertOk();
 

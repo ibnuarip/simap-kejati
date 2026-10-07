@@ -24,6 +24,27 @@ class Leader extends Model
 {
     public const DEACTIVATED_MESSAGE = 'Akun Anda telah dinonaktifkan';
 
+    /**
+     * 12 jabatan struktural sesuai struktur organisasi Kejati.
+     * Urutan array = urutan tampil di seluruh aplikasi.
+     *
+     * @var list<string>
+     */
+    public const POSITIONS = [
+        'Kajati',
+        'Wakajati',
+        'Asisten Bidang Pembinaan',
+        'Asisten Bidang Intelijen',
+        'Asisten Bidang Tindak Pidana Umum',
+        'Asisten Bidang Tindak Pidana Khusus',
+        'Asisten Bidang Perdata dan Tata Usaha Negara',
+        'Asisten Bidang Pidana Militer',
+        'Asisten Bidang Pemulihan Aset',
+        'Asisten Bidang Pengawasan',
+        'Bagian Tata Usaha',
+        'Koordinator',
+    ];
+
     /** @use HasFactory<LeaderFactory> */
     use HasFactory;
 

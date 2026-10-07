@@ -103,8 +103,8 @@ Route::middleware(['auth', 'verified', 'role:protokol'])->prefix('protokol')->na
     Route::get('/push/vapid-key', [PushNotificationController::class, 'vapidKey'])->name('push.vapid-key');
 });
 
-// Ketua & Wakil Ketua (Leadership)
-Route::middleware(['auth', 'verified', 'role:kajati,wakajati'])->prefix('leadership')->name('leadership.')->group(function () {
+// Pimpinan (satu role generik, ditautkan ke data pimpinan via leader_id)
+Route::middleware(['auth', 'verified', 'role:pimpinan'])->prefix('leadership')->name('leadership.')->group(function () {
     Route::get('/', [LeadershipDashboardController::class, 'index'])->name('dashboard');
     Route::get('/calendar', [LeadershipCalendarController::class, 'index'])->name('calendar.index');
     Route::get('/notifications', [LeadershipNotificationController::class, 'index'])->name('notifications.index');

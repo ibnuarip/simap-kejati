@@ -48,7 +48,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Kepala Kejaksaan Tinggi',
                 'password' => Hash::make('password'),
-                'role' => 'kajati',
+                'role' => 'pimpinan',
                 'email_verified_at' => now(),
                 'reminder_hours' => ['24'],
             ]
@@ -59,15 +59,15 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Wakil Kepala Kejaksaan Tinggi',
                 'password' => Hash::make('password'),
-                'role' => 'wakajati',
+                'role' => 'pimpinan',
                 'email_verified_at' => now(),
                 'reminder_hours' => ['24'],
             ]
         );
 
-        // 2. Create Leaders
+        // 2. Create Leaders (12 jabatan struktural, idempotent by position)
         $leaderKajati = Leader::firstOrCreate(
-            ['position' => 'Kajati'],
+            ['position' => 'Kepala Kejaksaan Tinggi'],
             [
                 'name' => 'Dr. RD Mohammad Teguh Darmawan, S.H., M.H',
                 'nip' => '197001011995031001',
@@ -78,7 +78,7 @@ class DatabaseSeeder extends Seeder
         );
 
         $leaderWakajati = Leader::firstOrCreate(
-            ['position' => 'Wakajati'],
+            ['position' => 'Wakil Kepala Kejaksaan Tinggi'],
             [
                 'name' => 'Dr. Desy Meutia Firdaus, S.H., M.Hum',
                 'nip' => '197205121997031002',
@@ -87,6 +87,38 @@ class DatabaseSeeder extends Seeder
                 'is_active' => true,
             ]
         );
+
+        $extraPositions = [
+            'Asisten Bidang Pembinaan',
+            'Asisten Bidang Intelijen',
+            'Asisten Bidang Tindak Pidana Umum',
+            'Asisten Bidang Tindak Pidana Khusus',
+            'Asisten Bidang Perdata dan Tata Usaha Negara',
+            'Asisten Bidang Pidana Militer',
+            'Asisten Bidang Pemulihan Aset',
+            'Asisten Bidang Pengawasan',
+            'Bagian Tata Usaha',
+            'Koordinator',
+        ];
+
+        foreach ($extraPositions as $position) {
+            Leader::firstOrCreate(
+                ['position' => $position],
+                [
+                    'name' => fake()->name(),
+                    'nip' => fake()->numerify('##################'),
+                    'email' => fake()->unique()->safeEmail(),
+                    'phone' => '08'.fake()->numerify('##########'),
+                    'is_active' => true,
+                ]
+            );
+        }
+
+        // Tautkan akun pimpinan ke datanya dan beri protokol bawaan
+        // akses ke seluruh pimpinan (dapat dipersempit via Kelola Pengguna).
+        $kajati->forceFill(['leader_id' => $leaderKajati->id])->save();
+        $wakajati->forceFill(['leader_id' => $leaderWakajati->id])->save();
+        $protokol->leaders()->sync(Leader::query()->pluck('id')->all());
 
         // 3. Create Rooms (mencakup lantai 1-8, idempotent by name)
         $rooms = [

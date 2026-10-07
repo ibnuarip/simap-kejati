@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -30,7 +31,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'email', 'password', 'role', 'avatar', 'reminder_hours', 'email_verified_at'])]
+#[Fillable(['name', 'email', 'password', 'role', 'leader_id', 'avatar', 'reminder_hours', 'email_verified_at'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements PasskeyUser
 {
@@ -47,14 +48,29 @@ class User extends Authenticatable implements PasskeyUser
         return $this->role === 'protokol';
     }
 
-    public function isKajati(): bool
+    public function isPimpinan(): bool
     {
-        return $this->role === 'kajati';
+        return $this->role === 'pimpinan';
     }
 
-    public function isWakajati(): bool
+    /**
+     * Data pimpinan yang tautkan ke akun ini (khusus role pimpinan).
+     *
+     * @return BelongsTo<Leader, $this>
+     */
+    public function leader(): BelongsTo
     {
-        return $this->role === 'wakajati';
+        return $this->belongsTo(Leader::class);
+    }
+
+    /**
+     * Akun pimpinan dianggap aktif bila tertaut ke data pimpinan yang
+     * masih aktif. Akun tanpa tautan tidak dapat mengakses halaman
+     * pimpinan sehingga dianggap nonaktif.
+     */
+    public function hasActiveLeader(): bool
+    {
+        return $this->leader()->where('is_active', true)->exists();
     }
 
     /**
@@ -74,7 +90,13 @@ class User extends Authenticatable implements PasskeyUser
      */
     public function assignedLeaderIds(): array
     {
-        return $this->leaders()->pluck('leaders.id')->map(fn ($id): int => (int) $id)->all();
+        $ids = [];
+
+        foreach ($this->leaders()->pluck('leaders.id') as $id) {
+            $ids[] = (int) $id;
+        }
+
+        return $ids;
     }
 
     /**
@@ -83,17 +105,6 @@ class User extends Authenticatable implements PasskeyUser
     public function pushSubscriptions(): HasMany
     {
         return $this->hasMany(PushSubscription::class);
-    }
-
-    /**
-     * A leadership account is considered active unless a leader record with
-     * a matching email exists and has been deactivated.
-     */
-    public function isLeaderActive(): bool
-    {
-        $leader = Leader::query()->where('email', $this->email)->first();
-
-        return $leader ? (bool) $leader->is_active : true;
     }
 
     /**

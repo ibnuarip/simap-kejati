@@ -152,11 +152,29 @@ test('changing a protokol user to another role clears the assignment', function 
         ->put(route('users.update', $protokol), [
             'name' => $protokol->name,
             'email' => $protokol->email,
-            'role' => 'kajati',
+            'role' => 'pimpinan',
+            'leader_id' => $leader->id,
             'leaders' => [$leader->id],
         ])
         ->assertRedirect();
 
-    expect($protokol->refresh()->role)->toBe('kajati')
-        ->and($protokol->assignedLeaderIds())->toBe([]);
+    $protokol->refresh();
+
+    expect($protokol->role)->toBe('pimpinan')
+        ->and($protokol->assignedLeaderIds())->toBe([])
+        ->and($protokol->leader_id)->toBe($leader->id);
+});
+
+test('creating a pimpinan user requires a linked leader', function () {
+    $superadmin = User::factory()->superadmin()->create();
+    $this->actingAs($superadmin);
+
+    $this->post(route('users.store'), [
+        'name' => 'Pimpinan Tanpa Tautan',
+        'email' => 'tanpa.tautan@kejati.go.id',
+        'role' => 'pimpinan',
+        'password' => 'rahasia1234',
+    ])->assertSessionHasErrors('leader_id');
+
+    $this->assertDatabaseMissing('users', ['email' => 'tanpa.tautan@kejati.go.id']);
 });

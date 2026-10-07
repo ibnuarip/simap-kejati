@@ -135,8 +135,7 @@ function resolveSidebarConfig(role?: UserRole): SidebarConfig {
                     },
                 ],
             };
-        case 'kajati':
-        case 'wakajati':
+        case 'pimpinan':
             return {
                 label: 'Leadership',
                 home: leadershipDashboard().url,

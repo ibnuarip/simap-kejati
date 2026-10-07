@@ -100,20 +100,38 @@ test('leader phone must start with 08 and be 10 to 14 digits', function () {
         ->assertSessionHasNoErrors();
 });
 
-test('leader position other than kajati or wakajati is rejected', function () {
+test('leader accepts any of the 12 structural positions', function () {
     $superadmin = makeSuperadmin();
     $this->actingAs($superadmin);
 
     $this->post(route('master.leaders.store'), [
         'name' => 'Drs. H. Bambang',
-        'position' => 'Other',
+        'position' => 'Asisten Bidang Intelijen',
+        'nip' => '198001012010011001',
+        'email' => 'bambang@kejati.go.id',
+        'phone' => '081234567890',
+        'is_active' => '1',
+    ])->assertRedirect()->assertSessionHasNoErrors();
+
+    $this->assertDatabaseHas('leaders', [
+        'position' => 'Asisten Bidang Intelijen',
+    ]);
+});
+
+test('leader rejects a position outside the 12 structural positions', function () {
+    $superadmin = makeSuperadmin();
+    $this->actingAs($superadmin);
+
+    $this->post(route('master.leaders.store'), [
+        'name' => 'Drs. H. Bambang',
+        'position' => 'Direktur',
         'nip' => '198001012010011001',
         'email' => 'bambang@kejati.go.id',
         'phone' => '081234567890',
         'is_active' => '1',
     ])->assertSessionHasErrors('position');
 
-    expect(Leader::where('position', 'Other')->exists())->toBeFalse();
+    expect(Leader::where('position', 'Direktur')->exists())->toBeFalse();
 });
 
 test('creating a leader requires every field', function () {
@@ -153,6 +171,7 @@ test('a leader nip must be exactly 18 digits', function (string $nip) {
     $this->post(route('master.leaders.store'), [
         'name' => 'Drs. H. Bambang',
         'position' => 'Kajati',
+        'sort_order' => '0',
         'nip' => $nip,
         'email' => 'bambang@kejati.go.id',
         'phone' => '081234567890',
@@ -252,17 +271,20 @@ test('superadmins can create a user with a given role and password', function ()
 
     $superadmin = makeSuperadmin();
     $this->actingAs($superadmin);
+    $leader = Leader::factory()->create();
 
     $this->post(route('users.store'), [
         'name' => 'Budi Santoso',
         'email' => 'budi@kejati.go.id',
-        'role' => 'kajati',
+        'role' => 'pimpinan',
+        'leader_id' => $leader->id,
         'password' => 'rahasia1234',
     ])->assertRedirect();
 
     $this->assertDatabaseHas('users', [
         'email' => 'budi@kejati.go.id',
-        'role' => 'kajati',
+        'role' => 'pimpinan',
+        'leader_id' => $leader->id,
     ]);
 
     $user = User::where('email', 'budi@kejati.go.id')->firstOrFail();

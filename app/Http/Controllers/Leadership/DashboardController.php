@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Leadership;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\EventResource;
 use App\Models\Event;
+use App\Models\Leader;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -14,11 +15,14 @@ class DashboardController extends Controller
 {
     public function index(Request $request): Response
     {
-        $position = $this->positionForRole($request->user()->role);
+        $user = $request->user();
+        $leader = $user->leader;
+
+        abort_unless($leader instanceof Leader, 403, 'Akun Anda belum ditautkan ke data pimpinan.');
 
         $events = Event::query()
             ->with(['leader', 'room', 'category'])
-            ->whereHas('leader', fn ($query) => $query->where('position', $position))
+            ->where('leader_id', $leader->getKey())
             ->orderBy('start_time')
             ->get();
 
@@ -36,6 +40,10 @@ class DashboardController extends Controller
         $upcomingEvents = $events->filter($isUpcoming)->take(3)->values();
 
         return Inertia::render('leadership/dashboard', [
+            'leader' => [
+                'name' => $leader->name,
+                'position' => $leader->position,
+            ],
             'stats' => [
                 'today' => $todayEvents->count(),
                 'ongoing' => $events->filter(fn (Event $event) => $event->currentStatus() === 'ongoing')->count(),
@@ -45,10 +53,5 @@ class DashboardController extends Controller
             'todayEvents' => EventResource::list($todayEvents),
             'upcomingEvents' => EventResource::list($upcomingEvents),
         ]);
-    }
-
-    private function positionForRole(string $role): string
-    {
-        return $role === 'kajati' ? 'Kajati' : 'Wakajati';
     }
 }

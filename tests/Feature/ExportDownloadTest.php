@@ -122,9 +122,9 @@ test('download rejects an unsupported export format', function () {
 });
 
 test('non protokol roles cannot download exports', function () {
-    $kajati = User::factory()->kajati()->create();
+    $pimpinan = User::factory()->pimpinan()->create();
 
-    $this->actingAs($kajati)
+    $this->actingAs($pimpinan)
         ->get(route('protokol.exports.download', [
             'type' => 'daily',
             'date' => now()->format('Y-m-d'),
