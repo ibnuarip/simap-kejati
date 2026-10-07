@@ -371,14 +371,14 @@ function LeaderFields({
                 >
                     <SelectTrigger
                         id="position"
-                        className="h-auto min-h-9 w-full min-w-0 py-2 [&>span]:min-w-0 [&>span]:line-clamp-none [&>span]:whitespace-normal sm:[&>span]:line-clamp-1"
+                        className="h-auto min-h-9 w-full min-w-0 py-2 [&>span]:line-clamp-none [&>span]:min-w-0 [&>span]:whitespace-normal sm:[&>span]:line-clamp-1"
                     >
                         <SelectValue placeholder="Pilih jabatan" />
                     </SelectTrigger>
                     <SelectContent className="max-w-[calc(100vw-2rem)]">
                         {leaderPositions.map((value) => (
                             <SelectItem key={value} value={value}>
-                                <span className="block min-w-0 whitespace-normal break-words sm:truncate">
+                                <span className="block min-w-0 break-words whitespace-normal sm:truncate">
                                     {leaderPositionLabel[value] ?? value}
                                 </span>
                             </SelectItem>

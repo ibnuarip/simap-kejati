@@ -513,8 +513,8 @@ function UserFields({
                 <div className="grid gap-2">
                     <Label>Tugas Pimpinan</Label>
                     <p className="text-muted-foreground text-xs">
-                        Pilih pimpinan yang agendanya boleh dikelola
-                        akun ini. Kosongkan bila belum ada penugasan.
+                        Pilih pimpinan yang agendanya boleh dikelola akun ini.
+                        Kosongkan bila belum ada penugasan.
                     </p>
                     <div className="flex flex-col gap-1 rounded-lg border p-3">
                         {leaders.length === 0 ? (
@@ -571,15 +571,15 @@ function UserFields({
                 <div className="grid gap-2">
                     <Label>Tautan Data Pimpinan</Label>
                     <p className="text-muted-foreground text-xs">
-                        Pilih data pimpinan yang agendanya boleh dilihat
-                        akun ini. Email akun disarankan sama dengan email
-                        data pimpinan agar mudah dikenali.
+                        Pilih data pimpinan yang agendanya boleh dilihat akun
+                        ini. Email akun disarankan sama dengan email data
+                        pimpinan agar mudah dikenali.
                     </p>
                     {leaders.length === 0 ? (
                         <div className="flex flex-col items-start gap-2 rounded-lg border border-dashed p-4">
                             <p className="text-muted-foreground text-xs">
-                                Belum ada data pimpinan. Tambahkan dulu di
-                                Data Pimpinan sebelum membuat akun ini.
+                                Belum ada data pimpinan. Tambahkan dulu di Data
+                                Pimpinan sebelum membuat akun ini.
                             </p>
                             <a
                                 href={leadersIndex().url}
@@ -589,55 +589,55 @@ function UserFields({
                             </a>
                         </div>
                     ) : (
-                    <Select value={leaderId} onValueChange={onLeaderChange}>
-                        <SelectTrigger className="h-auto min-h-9 w-full min-w-0 justify-center py-2 text-center [&>span]:min-w-0 [&>span]:line-clamp-none [&>span]:whitespace-normal sm:[&>span]:line-clamp-1">
-                            <SelectValue placeholder="Pilih pimpinan">
-                                {(() => {
-                                    const selected = leaders.find(
-                                        (leader) =>
-                                            String(leader.id) === leaderId,
-                                    );
+                        <Select value={leaderId} onValueChange={onLeaderChange}>
+                            <SelectTrigger className="h-auto min-h-9 w-full min-w-0 justify-center py-2 text-center [&>span]:line-clamp-none [&>span]:min-w-0 [&>span]:whitespace-normal sm:[&>span]:line-clamp-1">
+                                <SelectValue placeholder="Pilih pimpinan">
+                                    {(() => {
+                                        const selected = leaders.find(
+                                            (leader) =>
+                                                String(leader.id) === leaderId,
+                                        );
 
-                                    if (!selected) {
-                                        return null;
-                                    }
+                                        if (!selected) {
+                                            return null;
+                                        }
 
-                                    return (
-                                        <span className="block min-w-0">
-                                            <span className="block truncate font-medium">
-                                                {selected.name}
+                                        return (
+                                            <span className="block min-w-0">
+                                                <span className="block truncate font-medium">
+                                                    {selected.name}
+                                                </span>
+                                                {selected.position ? (
+                                                    <span className="text-muted-foreground block truncate text-xs font-normal">
+                                                        {leaderPositionLabel[
+                                                            selected.position
+                                                        ] ?? selected.position}
+                                                    </span>
+                                                ) : null}
                                             </span>
-                                            {selected.position ? (
-                                                <span className="text-muted-foreground block truncate text-xs font-normal">
+                                        );
+                                    })()}
+                                </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent className="max-w-[calc(100vw-2rem)]">
+                                {leaders.map((leader) => (
+                                    <SelectItem
+                                        key={leader.id}
+                                        value={String(leader.id)}
+                                    >
+                                        <span className="flex min-w-0 flex-col items-start leading-snug">
+                                            <span className="w-full truncate font-medium">
+                                                {leader.name}
+                                            </span>
+                                            {leader.position ? (
+                                                <span className="text-muted-foreground w-full truncate text-xs font-normal">
                                                     {leaderPositionLabel[
-                                                        selected.position
-                                                    ] ?? selected.position}
+                                                        leader.position
+                                                    ] ?? leader.position}
                                                 </span>
                                             ) : null}
                                         </span>
-                                    );
-                                })()}
-                            </SelectValue>
-                        </SelectTrigger>
-                            <SelectContent className="max-w-[calc(100vw-2rem)]">
-                                {leaders.map((leader) => (
-                                <SelectItem
-                                    key={leader.id}
-                                    value={String(leader.id)}
-                                >
-                                    <span className="flex min-w-0 flex-col items-start leading-snug">
-                                        <span className="w-full truncate font-medium">
-                                            {leader.name}
-                                        </span>
-                                        {leader.position ? (
-                                            <span className="text-muted-foreground w-full truncate text-xs font-normal">
-                                                {leaderPositionLabel[
-                                                    leader.position
-                                                ] ?? leader.position}
-                                            </span>
-                                        ) : null}
-                                    </span>
-                                </SelectItem>
+                                    </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
@@ -693,8 +693,8 @@ function UserFields({
                 <InputError message={errors.password} />
                 {passwordRequired && (
                     <p className="text-muted-foreground text-xs">
-                        Email berisi kredensial akun (email & password)
-                        dikirim otomatis ke email pengguna setelah disimpan.
+                        Email berisi kredensial akun (email & password) dikirim
+                        otomatis ke email pengguna setelah disimpan.
                     </p>
                 )}
             </div>
