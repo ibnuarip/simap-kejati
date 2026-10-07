@@ -1,27 +1,14 @@
-# .dockerignore — Exclude files dari Docker build context
+# .dockerignore — Exclude files dari build context
 
-# File ini PENTING: tanpanya, seluruh project (vendor, node_modules, .git,
-# dll) dikirim ke Docker daemon setiap build — lambat dan berbahaya.
-
-# PRINSIP: Exclude apa yang:
-#   1. Sudah di-install di dalam image (vendor, node_modules)
-#   2. Berisi secret/ sensitif (.env)
-#   3. Tidak perlu di-image (.git, IDE, log, doc)
-
-# JANGAN exclude folder source code (app/, bootstrap/, config/, dll) karena
-# Dockerfile memerlukannya untuk `COPY . .` di setiap stage.
-
-
-# Git
 .git/
 .gitignore
 .gitattributes
 
-# Dependency yang sudah di-install di dalam image
+# Dependencies
 vendor/
 node_modules/
 
-# Environment & Secrets (JANGAN pernah masuk image)
+# Environment & Secrets
 .env
 .env.backup
 .env.production
@@ -40,7 +27,7 @@ node_modules/
 .DS_Store
 Thumbs.db
 
-# Log & Temp (runtime generated, bukan bagian source)
+# Log & Temp
 *.log
 !storage/logs/.gitkeep
 
@@ -51,6 +38,6 @@ phpunit.xml.dist
 coverage/
 .nyc_output/
 
-# Build artifacts & runtime di public/ (public/build/ sudah di-exclude di atas)
+# Build artifacts
 public/hot
 public/storage

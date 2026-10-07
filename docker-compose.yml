@@ -1,48 +1,27 @@
-# docker-compose.yml — Orkestrasi semua container SIMAP Kejati
-
-# File ini mendefinisikan SEMUA service yang dibutuhkan aplikasi:
-#   1. app    → PHP-FPM (Laravel)
-#   2. nginx  → Web server (menerima HTTP request, forward ke PHP-FPM)
-#   3. mysql  → Database server
-#   4. redis  → Cache, session, queue broker
-#
-# Cara pakai:
-#   docker compose up -d --build    → Build & jalankan semua, termasuk Vite
-#   docker compose down             → Stop semua
-#   docker compose logs -f app      → Lihat log aplikasi
-#
-# Port yang dipublish ke host (bisa diubah lewat shell env, contoh:
-# $env:SIMAP_HTTP_PORT="9000"; docker compose up -d):
-#   8080 → Nginx (buka http://localhost:8080)
-#   3307 → MySQL (Herd sudah pakai 3306, jadi digeser ke 3307)
-#   6380 → Redis (Herd sudah pakai 6379, jadi digeser ke 6380)
+# docker-compose.yml — Orkestrasi SIMAP Kejati
 
 services:
-    # SERVICE: app (PHP-FPM + Laravel)
-    # Container utama yang menjalankan kode PHP Laravel.
-    # PHP-FPM TIDAK melayani HTTP langsung — Nginx yang meneruskan request.
+    # app: PHP-FPM + Laravel
     app:
         image: simap-app
         build:
-            context: . # Build dari root project
-            dockerfile: Dockerfile # Pakai Dockerfile di root
-        container_name: simap-app # Nama container (mudah di-identify)
-        restart: unless-stopped # Auto-restart kecuali di-stop manual
+            context: .
+            dockerfile: Dockerfile
+        container_name: simap-app
+        restart: unless-stopped
         env_file:
-            - .env.docker # Load environment variables dari file terpisah
+            - .env.docker
         volumes:
-            # Storage persistent — supaya uploaded files tidak hilang saat rebuild
             - app-storage:/var/www/html/storage/app
         networks:
-            - simap-network # Gabung ke network internal
+            - simap-network
         depends_on:
             mysql:
-                condition: service_healthy # Tunggu MySQL benar-benar siap
+                condition: service_healthy
             redis:
-                condition: service_started # Tunggu Redis jalan
+                condition: service_started
 
-    # SERVICE: node (Vite Development Server)
-    # Vite berjalan sebagai bagian dari stack Docker development.
+    # node: Vite Development Server
     node:
         image: node:24-alpine
         container_name: simap-node
@@ -50,14 +29,9 @@ services:
         working_dir: /app
         environment:
             NODE_ENV: development
-            # Polling agar Vite HMR selalu mendeteksi perubahan file dari
-            # bind-mount Windows tanpa perlu restart container.
             VITE_WATCH_POLLING: 'true'
             VITE_APP_NAME: ${VITE_APP_NAME:-SIMAP}
             VITE_HMR_HOST: ${VITE_HMR_HOST:-localhost}
-            # WAJIB: dibaca laravel-vite-plugin untuk CORS dev-server + halaman
-            # info :5173. Tanpa ini APP_URL tampil "undefined" dan origin
-            # aplikasi tidak masuk daftar CORS yang diizinkan.
             APP_URL: 'http://localhost:${SIMAP_HTTP_PORT:-8080}'
             WAYFINDER_COMMAND: 'true'
         ports:
@@ -77,92 +51,62 @@ services:
             - simap-network
         command: sh -c "npm install -g --allow-scripts=pnpm pnpm@10 && npm ci --no-audit --no-fund && npm run dev -- --host 0.0.0.0"
 
-    # SERVICE: nginx (Web Server)
-    # Nginx menerima HTTP request dari browser, lalu:
-    #   - File statis (CSS, JS, gambar) → langsung dilayani Nginx
-    #   - Request PHP → diteruskan ke PHP-FPM (app) via FastCGI port 9000
+    # nginx: Web Server
     nginx:
-        image: nginx:1.27-alpine # Image ringan (~5MB)
+        image: nginx:1.27-alpine
         container_name: simap-nginx
         restart: unless-stopped
         ports:
-            - '${SIMAP_HTTP_PORT:-8080}:80' # Host port → container port 80
+            - '${SIMAP_HTTP_PORT:-8080}:80'
         volumes:
-            # Config Nginx custom
             - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
-            # Share folder public supaya Nginx bisa serve file statis
             - ./public:/var/www/html/public:ro
-            # Share volume storage dengan container "app" supaya file hasil
-            # upload user bisa dilayani Nginx (URL /storage/...)
             - app-storage:/var/www/html/storage/app:ro
         networks:
             - simap-network
         depends_on:
-            - app # Tunggu PHP-FPM jalan dulu
+            - app
 
-    # SERVICE: mysql (Database)
-    # MySQL 8.0 untuk menyimpan semua data aplikasi.
-    # Data disimpan di named volume supaya TIDAK HILANG saat container dihapus.
-    #
-    # PENTING: konfigurasi diambil dari .env.docker lewat env_file (bukan ${...}).
-    # Kalau pakai ${DB_DATABASE} dsb, Docker Compose akan membaca file `.env`
-    # di root project (untuk Herd: DB_USERNAME=root) dan container MySQL akan
-    # menolak start dengan error "MYSQL_USER=root cannot be used for the root
-    # user", sementara aplikasi tetap terhubung ke database yang tidak ada.
+    # mysql: Database Server
     mysql:
-        image: mysql:8.4 # MySQL 8.4 (sudah ter-cache di lokal, tidak perlu pull lagi)
+        image: mysql:8.4
         container_name: simap-mysql
         restart: unless-stopped
         env_file:
-            - .env.docker # MYSQL_DATABASE, MYSQL_USER, MYSQL_PASSWORD, MYSQL_ROOT_PASSWORD, TZ
+            - .env.docker
         ports:
-            - '${SIMAP_MYSQL_PORT:-3307}:3306' # Expose ke host (untuk HeidiSQL)
+            - '${SIMAP_MYSQL_PORT:-3307}:3306'
         volumes:
-            # Named volume — data MySQL persistent (tidak hilang saat docker compose down)
             - mysql-data:/var/lib/mysql
         networks:
             - simap-network
-        # Health check — pastikan MySQL benar-benar siap menerima koneksi.
-        # $$MYSQL_ROOT_PASSWORD di-expand oleh SHELL DI DALAM container, jadi
-        # selalu mengikuti password yang benar-benar dipakai container ini.
         healthcheck:
             test:
                 [
                     'CMD-SHELL',
                     'mysqladmin ping -h localhost -uroot -p"$$MYSQL_ROOT_PASSWORD" --silent',
                 ]
-            interval: 10s # Cek setiap 10 detik
-            timeout: 5s # Timeout 5 detik per check
-            retries: 5 # Coba 5x sebelum dianggap unhealthy
-            start_period: 30s # Tunggu 30 detik sebelum mulai check
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 30s
 
-    # SERVICE: redis (Cache & Queue)
-    # Redis dipakai untuk:
-    #   - Cache (lebih cepat dari database)
-    #   - Session storage
-    #   - Queue broker (antrian job background)
+    # redis: Cache & Queue Broker
     redis:
-        image: redis:7-alpine # Redis 7, image ringan (~12MB)
+        image: redis:7-alpine
         container_name: simap-redis
         restart: unless-stopped
         ports:
             - '${SIMAP_REDIS_PORT:-6380}:6379'
         volumes:
-            # Persistent Redis data (opsional, tapi bagus untuk queue yang belum selesai)
             - redis-data:/data
         networks:
             - simap-network
-        # Jalankan dengan append-only mode (data lebih aman)
         command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
 
-# VOLUMES — Penyimpanan persistent
-# Named volumes dikelola Docker. Data TIDAK hilang saat:
-#   - docker compose down
-#   - docker compose up --build
-# Data HANYA hilang jika: docker volume rm <nama_volume>
 volumes:
     mysql-data:
-        driver: local # Disimpan di disk host
+        driver: local
     redis-data:
         driver: local
     app-storage:
@@ -170,11 +114,6 @@ volumes:
     node_modules:
         driver: local
 
-# NETWORKS — Jaringan internal antar container
-# Semua service terhubung via network ini.
-# Container bisa saling akses menggunakan NAMA SERVICE sebagai hostname:
-#   - app bisa akses MySQL via hostname "mysql" (bukan 127.0.0.1)
-#   - Nginx bisa akses PHP-FPM via hostname "app"
 networks:
     simap-network:
-        driver: bridge # Default network driver
+        driver: bridge
