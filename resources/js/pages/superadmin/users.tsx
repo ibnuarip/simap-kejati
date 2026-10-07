@@ -489,33 +489,6 @@ function UserFields({
     return (
         <>
             <div className="grid gap-2">
-                <Label htmlFor="name">Nama Lengkap</Label>
-                <Input
-                    id="name"
-                    name="name"
-                    required
-                    value={name}
-                    onChange={(event) => onNameChange(event.target.value)}
-                    placeholder="Nama pengguna"
-                />
-                <InputError message={errors.name} />
-            </div>
-
-            <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                    id="email"
-                    type="email"
-                    name="email"
-                    required
-                    value={email}
-                    onChange={(event) => onEmailChange(event.target.value)}
-                    placeholder="email@kejati.go.id"
-                />
-                <InputError message={errors.email} />
-            </div>
-
-            <div className="grid gap-2">
                 <Label htmlFor="role">Peran (Role)</Label>
                 <Select
                     value={role}
@@ -673,6 +646,33 @@ function UserFields({
                     <InputError message={errors.leader_id} />
                 </div>
             )}
+
+            <div className="grid gap-2">
+                <Label htmlFor="name">Nama Lengkap</Label>
+                <Input
+                    id="name"
+                    name="name"
+                    required
+                    value={name}
+                    onChange={(event) => onNameChange(event.target.value)}
+                    placeholder="Nama pengguna"
+                />
+                <InputError message={errors.name} />
+            </div>
+
+            <div className="grid gap-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                    id="email"
+                    type="email"
+                    name="email"
+                    required
+                    value={email}
+                    onChange={(event) => onEmailChange(event.target.value)}
+                    placeholder="email@kejati.go.id"
+                />
+                <InputError message={errors.email} />
+            </div>
 
             <div className="grid gap-2">
                 <Label htmlFor="password">
