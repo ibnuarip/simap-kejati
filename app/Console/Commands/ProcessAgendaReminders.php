@@ -58,12 +58,16 @@ class ProcessAgendaReminders extends Command
             }
 
             // Pimpinan hanya diingatkan agenda pimpinannya; tim protokol
-            // mengelola seluruh agenda sehingga menerima semuanya.
+            // hanya diingatkan agenda milik pimpinan yang ditugaskan.
             $agendas = Event::query()
                 ->with('leader')
                 ->when(
                     $user->role !== 'protokol',
                     fn ($query) => $query->whereHas('leader', fn ($leader) => $leader->where('position', $this->positionForRole($user->role)))
+                )
+                ->when(
+                    $user->role === 'protokol',
+                    fn ($query) => $query->whereAssignedTo($user)
                 )
                 ->where('status', 'scheduled')
                 ->where('start_time', '>', $now)

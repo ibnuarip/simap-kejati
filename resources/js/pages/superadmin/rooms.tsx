@@ -1,7 +1,7 @@
 import { Form, Head } from '@inertiajs/react';
 import { useState } from 'react';
 import { Pencil, Plus, X } from 'lucide-react';
-import RoomController from '@/actions/App/Http/Controllers/Operator/RoomController';
+import RoomController from '@/actions/App/Http/Controllers/Superadmin/RoomController';
 import { ActiveToggle } from '@/components/active-toggle';
 import ConfirmDelete from '@/components/confirm-delete';
 import InputError from '@/components/input-error';
@@ -26,7 +26,7 @@ type Props = {
     rooms: Room[];
 };
 
-export default function OperatorRooms({ rooms }: Props) {
+export default function SuperadminRooms({ rooms }: Props) {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editing, setEditing] = useState<Room | null>(null);
     const [isActive, setIsActive] = useState(true);
@@ -297,7 +297,7 @@ function RoomFields({
     );
 }
 
-OperatorRooms.layout = {
+SuperadminRooms.layout = {
     breadcrumbs: [
         { title: 'Dashboard', href: dashboard().url },
         { title: 'Data Ruangan & Tempat', href: roomsIndex().url },

@@ -10,7 +10,7 @@ import {
     Search,
     X,
 } from 'lucide-react';
-import LeaderController from '@/actions/App/Http/Controllers/Operator/LeaderController';
+import LeaderController from '@/actions/App/Http/Controllers/Superadmin/LeaderController';
 import { ActiveToggle } from '@/components/active-toggle';
 import ConfirmDelete from '@/components/confirm-delete';
 import InputError from '@/components/input-error';
@@ -50,7 +50,7 @@ const positionBadgeVariant: Record<LeaderPosition, 'ketua' | 'wakil'> = {
     Wakajati: 'wakil',
 };
 
-export default function OperatorLeaders({ leaders }: Props) {
+export default function SuperadminLeaders({ leaders }: Props) {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editing, setEditing] = useState<Leader | null>(null);
     const [position, setPosition] = useState<LeaderPosition>('Kajati');
@@ -447,7 +447,7 @@ function LeaderFields({
     );
 }
 
-OperatorLeaders.layout = {
+SuperadminLeaders.layout = {
     breadcrumbs: [
         { title: 'Dashboard', href: dashboard().url },
         { title: 'Data Pimpinan', href: leadersIndex().url },

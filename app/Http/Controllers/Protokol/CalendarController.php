@@ -14,6 +14,7 @@ class CalendarController extends Controller
     public function index(Request $request): Response
     {
         $events = Event::query()
+            ->whereAssignedTo($request->user())
             ->with(['leader', 'room', 'category'])
             ->orderBy('start_time')
             ->get();

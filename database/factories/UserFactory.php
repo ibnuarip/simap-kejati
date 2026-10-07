@@ -47,12 +47,12 @@ class UserFactory extends Factory
     }
 
     /**
-     * Indicate that the user has the operator role.
+     * Indicate that the user has the superadmin role.
      */
-    public function operator(): static
+    public function superadmin(): static
     {
         return $this->state(fn (array $attributes) => [
-            'role' => 'operator',
+            'role' => 'superadmin',
         ]);
     }
 

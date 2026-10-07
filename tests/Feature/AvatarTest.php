@@ -14,9 +14,9 @@ function avatarFile(): UploadedFile
     return UploadedFile::fake()->image('foto.jpg', 200, 200);
 }
 
-test('operator can create a user with an avatar', function () {
-    $operator = User::factory()->operator()->create();
-    $this->actingAs($operator);
+test('superadmin can create a user with an avatar', function () {
+    $superadmin = User::factory()->superadmin()->create();
+    $this->actingAs($superadmin);
 
     $this->post(route('users.store'), [
         'name' => 'Petugas Baru',
@@ -32,10 +32,10 @@ test('operator can create a user with an avatar', function () {
     Storage::disk(AvatarService::DISK)->assertExists($user->avatar);
 });
 
-test('operator updating avatar replaces the old file', function () {
-    $operator = User::factory()->operator()->create();
+test('superadmin updating avatar replaces the old file', function () {
+    $superadmin = User::factory()->superadmin()->create();
     $user = User::factory()->protokol()->create();
-    $this->actingAs($operator);
+    $this->actingAs($superadmin);
 
     $this->patch(route('users.update', $user), [
         'name' => $user->name,
@@ -57,10 +57,10 @@ test('operator updating avatar replaces the old file', function () {
     Storage::disk(AvatarService::DISK)->assertMissing($first);
 });
 
-test('operator can remove an avatar', function () {
-    $operator = User::factory()->operator()->create();
+test('superadmin can remove an avatar', function () {
+    $superadmin = User::factory()->superadmin()->create();
     $user = User::factory()->protokol()->create();
-    $this->actingAs($operator);
+    $this->actingAs($superadmin);
 
     $this->patch(route('users.update', $user), [
         'name' => $user->name,
@@ -84,8 +84,8 @@ test('operator can remove an avatar', function () {
 });
 
 test('avatar upload rejects non image files in indonesian', function () {
-    $operator = User::factory()->operator()->create();
-    $this->actingAs($operator);
+    $superadmin = User::factory()->superadmin()->create();
+    $this->actingAs($superadmin);
 
     $this->post(route('users.store'), [
         'name' => 'Petugas Baru',
@@ -130,9 +130,9 @@ test('avatar file is only accessible by its owner', function () {
 });
 
 test('deleting a user removes its avatar file', function () {
-    $operator = User::factory()->operator()->create();
+    $superadmin = User::factory()->superadmin()->create();
     $user = User::factory()->protokol()->create();
-    $this->actingAs($operator);
+    $this->actingAs($superadmin);
 
     $this->patch(route('users.update', $user), [
         'name' => $user->name,

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Operator;
+namespace App\Http\Controllers\Superadmin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CategoryRequest;
@@ -18,7 +18,7 @@ class CategoryController extends Controller
             ->orderBy('name')
             ->get();
 
-        return Inertia::render('operator/categories', [
+        return Inertia::render('superadmin/categories', [
             'categories' => $categories->map(fn (Category $category): array => [
                 'id' => $category->id,
                 'name' => $category->name,

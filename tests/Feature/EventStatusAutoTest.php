@@ -43,11 +43,11 @@ test('cancelled events keep their cancelled status regardless of time', function
     expect($event->currentStatus())->toBe('cancelled');
 });
 
-test('operator can cancel an event and it is stored as cancelled', function () {
-    $operator = User::factory()->operator()->create();
+test('superadmin can cancel an event and it is stored as cancelled', function () {
+    $superadmin = User::factory()->superadmin()->create();
     $event = Event::factory()->create();
 
-    $this->actingAs($operator)
+    $this->actingAs($superadmin)
         ->post(route('events.cancel', $event))
         ->assertRedirect();
 
@@ -60,6 +60,7 @@ test('operator can cancel an event and it is stored as cancelled', function () {
 test('protokol can cancel an event and it is stored as cancelled', function () {
     $protokol = User::factory()->protokol()->create();
     $event = Event::factory()->create();
+    $protokol->leaders()->attach($event->leader_id);
 
     $this->actingAs($protokol)
         ->post(route('protokol.events.cancel', $event))
@@ -71,14 +72,14 @@ test('protokol can cancel an event and it is stored as cancelled', function () {
     ]);
 });
 
-test('operator cannot cancel an event that has already started', function () {
-    $operator = User::factory()->operator()->create();
+test('superadmin cannot cancel an event that has already started', function () {
+    $superadmin = User::factory()->superadmin()->create();
     $event = Event::factory()->create([
         'start_time' => now()->subMinutes(30),
         'end_time' => now()->addMinutes(30),
     ]);
 
-    $this->actingAs($operator)
+    $this->actingAs($superadmin)
         ->post(route('events.cancel', $event))
         ->assertSessionHasErrors('event');
 
@@ -88,14 +89,14 @@ test('operator cannot cancel an event that has already started', function () {
     ]);
 });
 
-test('operator cannot cancel an event that has already finished', function () {
-    $operator = User::factory()->operator()->create();
+test('superadmin cannot cancel an event that has already finished', function () {
+    $superadmin = User::factory()->superadmin()->create();
     $event = Event::factory()->create([
         'start_time' => now()->subHours(2),
         'end_time' => now()->subHour(),
     ]);
 
-    $this->actingAs($operator)
+    $this->actingAs($superadmin)
         ->post(route('events.cancel', $event))
         ->assertSessionHasErrors('event');
 
@@ -111,6 +112,7 @@ test('protokol cannot cancel an event that has already finished', function () {
         'start_time' => now()->subHours(2),
         'end_time' => now()->subHour(),
     ]);
+    $protokol->leaders()->attach($event->leader_id);
 
     $this->actingAs($protokol)
         ->post(route('protokol.events.cancel', $event))

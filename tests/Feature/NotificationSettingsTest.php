@@ -38,9 +38,9 @@ test('notification timings must contain at least one supported value', function 
 });
 
 test('non leadership roles are forbidden from notification settings', function () {
-    $operator = User::factory()->operator()->create();
+    $superadmin = User::factory()->superadmin()->create();
 
-    $this->actingAs($operator)
+    $this->actingAs($superadmin)
         ->post(route('leadership.notifications.update'), ['timings' => ['24']])
         ->assertForbidden();
 });
@@ -69,10 +69,10 @@ test('protokol notification settings page shows the saved reminder timings', fun
             ->where('reminderTimings', ['3', '48']));
 });
 
-test('operator is forbidden from protokol notification settings', function () {
-    $operator = User::factory()->operator()->create();
+test('superadmin is forbidden from protokol notification settings', function () {
+    $superadmin = User::factory()->superadmin()->create();
 
-    $this->actingAs($operator)
+    $this->actingAs($superadmin)
         ->post(route('protokol.notifications.update'), ['timings' => ['24']])
         ->assertForbidden();
 });

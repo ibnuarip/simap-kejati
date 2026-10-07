@@ -33,7 +33,7 @@ class FortifyServiceProvider extends ServiceProvider
         $this->app->singleton(LoginResponseContract::class, LoginResponse::class);
         // Login 2FA memakai kontrak respons tersendiri: tanpa binding ini
         // Fortify memakai respons bawaan yang selalu mengarah ke /dashboard
-        // sehingga user non-operator (protokol/kajati/wakajati) terkena 403.
+        // sehingga user non-superadmin (protokol/kajati/wakajati) terkena 403.
         $this->app->singleton(TwoFactorLoginResponseContract::class, LoginResponse::class);
         $this->app->singleton(VerifyEmailResponseContract::class, VerifyEmailResponse::class);
     }

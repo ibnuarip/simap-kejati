@@ -133,11 +133,11 @@ test('non protokol roles cannot download exports', function () {
         ->assertForbidden();
 });
 
-test('operator can open the exports page and download reports', function () {
-    $operator = User::factory()->operator()->create();
+test('superadmin can open the exports page and download reports', function () {
+    $superadmin = User::factory()->superadmin()->create();
     Event::factory()->create();
 
-    $this->actingAs($operator);
+    $this->actingAs($superadmin);
 
     $this->get(route('exports.index'))
         ->assertOk()
@@ -161,6 +161,6 @@ test('operator can open the exports page and download reports', function () {
         ->assertDownload('rekap-bulanan-'.now()->format('Y-m').'.xlsx');
 });
 
-test('guest cannot open operator exports', function () {
+test('guest cannot open superadmin exports', function () {
     $this->get(route('exports.index'))->assertRedirect(route('login'));
 });

@@ -1,7 +1,7 @@
 import { Form, Head } from '@inertiajs/react';
 import { useState } from 'react';
 import { Pencil, Plus, X } from 'lucide-react';
-import CategoryController from '@/actions/App/Http/Controllers/Operator/CategoryController';
+import CategoryController from '@/actions/App/Http/Controllers/Superadmin/CategoryController';
 import ConfirmDelete from '@/components/confirm-delete';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -26,7 +26,7 @@ type Props = {
     categories: Category[];
 };
 
-export default function OperatorCategories({ categories }: Props) {
+export default function SuperadminCategories({ categories }: Props) {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editing, setEditing] = useState<Category | null>(null);
 
@@ -266,7 +266,7 @@ function CategoryFields({ defaultValue, errors }: FieldProps) {
     );
 }
 
-OperatorCategories.layout = {
+SuperadminCategories.layout = {
     breadcrumbs: [
         { title: 'Dashboard', href: dashboard().url },
         { title: 'Kategori Kegiatan', href: categoriesIndex().url },

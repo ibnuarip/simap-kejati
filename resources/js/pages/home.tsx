@@ -178,7 +178,7 @@ export default function Home({
 
                                     <p className="text-muted-foreground text-center text-sm">
                                         Belum memiliki akun? Akun dibuat oleh
-                                        operator silahkan hubungi tim SIMAP.
+                                        superadmin silahkan hubungi tim SIMAP.
                                     </p>
                                 </>
                             )}

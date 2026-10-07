@@ -21,7 +21,9 @@ class UserRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($this->route('user'))],
-            'role' => ['required', 'in:operator,protokol,kajati,wakajati'],
+            'role' => ['required', 'in:superadmin,protokol,kajati,wakajati'],
+            'leaders' => ['nullable', 'array'],
+            'leaders.*' => ['integer', Rule::exists('leaders', 'id')],
             'password' => [$this->isMethod('post') ? 'required' : 'nullable', 'string', 'min:8'],
             'avatar' => AvatarService::rules(),
             'remove_avatar' => ['nullable', 'boolean'],

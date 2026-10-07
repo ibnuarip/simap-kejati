@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -36,9 +37,9 @@ class User extends Authenticatable implements PasskeyUser
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
 
-    public function isOperator(): bool
+    public function isSuperadmin(): bool
     {
-        return $this->role === 'operator';
+        return $this->role === 'superadmin';
     }
 
     public function isProtokol(): bool
@@ -54,6 +55,26 @@ class User extends Authenticatable implements PasskeyUser
     public function isWakajati(): bool
     {
         return $this->role === 'wakajati';
+    }
+
+    /**
+     * Pimpinan yang ditugaskan ke akun protokol (pivot leader_user).
+     *
+     * @return BelongsToMany<Leader, $this>
+     */
+    public function leaders(): BelongsToMany
+    {
+        return $this->belongsToMany(Leader::class)->withTimestamps();
+    }
+
+    /**
+     * ID pimpinan yang boleh diakses akun protokol ini.
+     *
+     * @return list<int>
+     */
+    public function assignedLeaderIds(): array
+    {
+        return $this->leaders()->pluck('leaders.id')->map(fn ($id): int => (int) $id)->all();
     }
 
     /**

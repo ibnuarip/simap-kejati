@@ -7,7 +7,7 @@ test('guests cannot ping the session', function () {
 });
 
 test('authenticated users can ping the session', function () {
-    $user = User::factory()->operator()->create();
+    $user = User::factory()->superadmin()->create();
     $this->actingAs($user);
 
     $this->getJson(route('session.ping'))

@@ -88,6 +88,17 @@ class Event extends Model
     }
 
     /**
+     * Batasi query ke agenda milik pimpinan yang ditugaskan ke user.
+     * User tanpa penugasan (daftar kosong) tidak melihat agenda apa pun.
+     *
+     * @param  Builder<self>  $query
+     */
+    public function scopeWhereAssignedTo(Builder $query, User $user): void
+    {
+        $query->whereIn('leader_id', $user->assignedLeaderIds());
+    }
+
+    /**
      * Agenda lain yang waktunya tumpang tindih (tanggal yang sama).
      * Agenda batal dikecualikan karena tidak lagi memakai jadwal.
      *

@@ -21,12 +21,20 @@ class EventController extends Controller
 {
     public function index(Request $request): Response
     {
+        $assignedIds = $request->user()->assignedLeaderIds();
+
+        // Protokol hanya melihat agenda milik pimpinan yang ditugaskan.
         $events = Event::query()
+            ->whereAssignedTo($request->user())
             ->with(['leader', 'room', 'category'])
             ->orderByDesc('start_time')
             ->get();
 
-        $leaders = Leader::query()->where('is_active', true)->orderBy('name')->get();
+        $leaders = Leader::query()
+            ->whereIn('id', $assignedIds)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
         $rooms = Room::query()->where('is_active', true)->orderBy('name')->get();
         $categories = Category::query()->orderBy('name')->get();
 
@@ -68,6 +76,8 @@ class EventController extends Controller
 
     public function update(EventRequest $request, Event $event): RedirectResponse
     {
+        $this->authorizeAssignedEvent($request, $event);
+
         $event->update($request->safe()->except('force_save'));
 
         return back();
@@ -99,6 +109,7 @@ class EventController extends Controller
         $exceptId = isset($validated['except_id']) ? (int) $validated['except_id'] : null;
 
         $conflicts = Event::query()
+            ->whereAssignedTo($request->user())
             ->with(['leader', 'room', 'category'])
             ->overlapping($start, $end, $exceptId)
             ->orderBy('start_time')
@@ -106,20 +117,36 @@ class EventController extends Controller
             ->get();
 
         return response()->json([
-            'count' => Event::overlapping($start, $end, $exceptId)->count(),
+            'count' => Event::whereAssignedTo($request->user())->overlapping($start, $end, $exceptId)->count(),
             'events' => EventResource::list($conflicts),
         ]);
     }
 
-    public function destroy(Event $event): RedirectResponse
+    /**
+     * Pastikan agenda milik pimpinan yang ditugaskan ke protokol ini.
+     */
+    protected function authorizeAssignedEvent(Request $request, Event $event): void
     {
+        abort_unless(
+            in_array($event->leader_id, $request->user()->assignedLeaderIds(), true),
+            403,
+            'Agenda tersebut bukan kewenangan Anda.'
+        );
+    }
+
+    public function destroy(Request $request, Event $event): RedirectResponse
+    {
+        $this->authorizeAssignedEvent($request, $event);
+
         $event->delete();
 
         return back();
     }
 
-    public function cancel(Event $event): RedirectResponse
+    public function cancel(Request $request, Event $event): RedirectResponse
     {
+        $this->authorizeAssignedEvent($request, $event);
+
         if (! $event->canBeCancelled()) {
             return back()->withErrors([
                 'event' => 'Agenda sudah berlangsung atau selesai dan tidak dapat dibatalkan.',

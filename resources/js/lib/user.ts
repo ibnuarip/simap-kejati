@@ -1,7 +1,7 @@
 import type { LeaderPosition, UserRole } from '@/types';
 
 export const userRoleLabel: Record<UserRole, string> = {
-    operator: 'Operator',
+    superadmin: 'Superadmin',
     protokol: 'Tim Protokol',
     kajati: 'Kajati',
     wakajati: 'Wakajati',

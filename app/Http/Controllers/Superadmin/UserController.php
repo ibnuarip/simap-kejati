@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Operator;
+namespace App\Http\Controllers\Superadmin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserRequest;
 use App\Mail\Auth\AccountCredentialsMail;
+use App\Models\Leader;
 use App\Models\User;
 use App\Services\AvatarService;
 use Illuminate\Http\RedirectResponse;
@@ -20,6 +21,7 @@ class UserController extends Controller
     public function index(): Response
     {
         $users = User::query()
+            ->with('leaders:id')
             ->orderBy('role')
             ->orderBy('name')
             ->get()
@@ -29,22 +31,35 @@ class UserController extends Controller
                 'email' => $user->email,
                 'role' => $user->role,
                 'avatar' => $user->avatar,
+                'leader_ids' => $user->leaders->map(fn (Leader $leader): int => $leader->id)->all(),
                 'email_verified_at' => $user->email_verified_at?->toDateTimeString(),
                 'created_at' => $user->created_at?->toDateTimeString(),
             ]);
 
-        return Inertia::render('operator/users', [
+        $leaders = Leader::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get()
+            ->map(fn (Leader $leader): array => [
+                'id' => $leader->id,
+                'name' => $leader->name,
+            ]);
+
+        return Inertia::render('superadmin/users', [
             'users' => $users,
+            'leaders' => $leaders,
         ]);
     }
 
     public function store(UserRequest $request, AvatarService $avatars): RedirectResponse
     {
-        $validated = $request->safe()->except(['avatar', 'remove_avatar']);
+        $validated = $request->safe()->except(['avatar', 'remove_avatar', 'leaders']);
 
         $user = User::create($validated);
 
         $avatars->syncFromRequest($user, $request);
+
+        $this->syncAssignedLeaders($user, $request->validated('leaders'));
 
         $this->notifyAccountCreated($user, $validated['password']);
 
@@ -78,7 +93,20 @@ class UserController extends Controller
 
         $avatars->syncFromRequest($user, $request);
 
+        $this->syncAssignedLeaders($user, $request->validated('leaders'));
+
         return back();
+    }
+
+    /**
+     * Sinkronkan penugasan pimpinan. Hanya berlaku untuk role protokol;
+     * role lain tidak memiliki penugasan sehingga relasinya dikosongkan.
+     *
+     * @param  list<int>|null  $leaderIds
+     */
+    protected function syncAssignedLeaders(User $user, ?array $leaderIds): void
+    {
+        $user->leaders()->sync($user->isProtokol() ? array_map(intval(...), $leaderIds ?? []) : []);
     }
 
     public function destroy(Request $request, User $user, AvatarService $avatars): RedirectResponse

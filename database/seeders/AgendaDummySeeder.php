@@ -66,12 +66,12 @@ class AgendaDummySeeder extends Seeder
         $leaderIds = Leader::query()->where('is_active', true)->pluck('id')->all();
         $roomIds = Room::query()->where('is_active', true)->pluck('id')->all();
         $categoryIds = Category::query()->pluck('id')->all();
-        // Sesuai aturan sistem, agenda hanya diinput operator/protokol —
+        // Sesuai aturan sistem, agenda hanya diinput superadmin/protokol —
         // akun pimpinan (kajati/wakajati) tidak pernah menjadi penginput.
-        $inputterIds = User::query()->whereIn('role', ['operator', 'protokol'])->pluck('id')->all();
+        $inputterIds = User::query()->whereIn('role', ['superadmin', 'protokol'])->pluck('id')->all();
 
         if ($leaderIds === [] || $roomIds === [] || $categoryIds === [] || $inputterIds === []) {
-            $this->command->error('Seeder dibatalkan: tabel leaders/rooms/categories kosong atau belum ada user operator/protokol. Jalankan DatabaseSeeder terlebih dahulu.');
+            $this->command->error('Seeder dibatalkan: tabel leaders/rooms/categories kosong atau belum ada user superadmin/protokol. Jalankan DatabaseSeeder terlebih dahulu.');
 
             return;
         }

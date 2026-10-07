@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Operator;
+namespace App\Http\Controllers\Superadmin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LeaderRequest;
@@ -19,7 +19,7 @@ class LeaderController extends Controller
             ->orderBy('name')
             ->get();
 
-        return Inertia::render('operator/leaders', [
+        return Inertia::render('superadmin/leaders', [
             'leaders' => $leaders->map(fn (Leader $leader): array => [
                 'id' => $leader->id,
                 'name' => $leader->name,

@@ -19,7 +19,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { agendaStatusLabel, agendaStatusVariant } from '@/lib/agenda';
-import { dashboard as operatorDashboard } from '@/routes';
+import { dashboard as superadminDashboard } from '@/routes';
 import type {
     AgendaItem,
     CategoryDistribution,
@@ -433,7 +433,7 @@ Dashboard.layout = {
     breadcrumbs: [
         {
             title: 'Dashboard',
-            href: operatorDashboard().url,
+            href: superadminDashboard().url,
         },
     ],
 };

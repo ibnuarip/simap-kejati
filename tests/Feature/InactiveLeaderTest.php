@@ -62,11 +62,11 @@ test('an active leadership session is revoked once the leader is deactivated', f
 });
 
 test('a leader that still has agenda history cannot be deleted', function () {
-    $operator = User::factory()->operator()->create();
+    $superadmin = User::factory()->superadmin()->create();
     $leader = Leader::factory()->create();
     Event::factory()->create(['leader_id' => $leader->id]);
 
-    $this->actingAs($operator);
+    $this->actingAs($superadmin);
 
     $this->delete(route('master.leaders.destroy', $leader))
         ->assertRedirect()
@@ -76,10 +76,10 @@ test('a leader that still has agenda history cannot be deleted', function () {
 });
 
 test('a leader without agenda history can still be deleted', function () {
-    $operator = User::factory()->operator()->create();
+    $superadmin = User::factory()->superadmin()->create();
     $leader = Leader::factory()->create();
 
-    $this->actingAs($operator);
+    $this->actingAs($superadmin);
 
     $this->delete(route('master.leaders.destroy', $leader))->assertRedirect();
 
@@ -87,31 +87,31 @@ test('a leader without agenda history can still be deleted', function () {
 });
 
 test('the agenda form only offers active leaders', function () {
-    $operator = User::factory()->operator()->create();
+    $superadmin = User::factory()->superadmin()->create();
     $active = Leader::factory()->create(['is_active' => true]);
     Leader::factory()->create(['is_active' => false]);
 
-    $this->actingAs($operator);
+    $this->actingAs($superadmin);
 
     $this->get(route('events.index'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('operator/events')
+            ->component('superadmin/events')
             ->has('leaders', 1)
             ->where('leaders.0.id', $active->id));
 });
 
 test('agenda history keeps showing the name of a deactivated leader', function () {
-    $operator = User::factory()->operator()->create();
+    $superadmin = User::factory()->superadmin()->create();
     $leader = Leader::factory()->create(['is_active' => false]);
     $event = Event::factory()->create(['leader_id' => $leader->id]);
 
-    $this->actingAs($operator);
+    $this->actingAs($superadmin);
 
     $this->get(route('events.index'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('operator/events')
+            ->component('superadmin/events')
             ->where('events.0.id', $event->id)
             ->where('events.0.leader.id', $leader->id)
             ->where('events.0.leader.name', $leader->name));

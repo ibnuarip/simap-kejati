@@ -37,6 +37,7 @@ export type ManagedUser = {
     email: string;
     role: UserRole;
     avatar: string | null;
+    leader_ids: number[];
     email_verified_at: string | null;
     created_at: string | null;
 };

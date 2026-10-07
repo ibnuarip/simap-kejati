@@ -10,7 +10,7 @@ import {
     User,
     X,
 } from 'lucide-react';
-import EventController from '@/actions/App/Http/Controllers/Operator/EventController';
+import EventController from '@/actions/App/Http/Controllers/Superadmin/EventController';
 import CancelAgenda from '@/components/cancel-agenda';
 import ConfirmDelete from '@/components/confirm-delete';
 import { DatetimeLocalField } from '@/components/datetime-local-field';
@@ -88,7 +88,7 @@ function eventLocation(event: AgendaItem): string {
     return event.room?.name ?? event.custom_location ?? '-';
 }
 
-export default function OperatorEvents({
+export default function SuperadminEvents({
     events,
     leaders,
     rooms,
@@ -798,7 +798,7 @@ function EventFields({
     );
 }
 
-OperatorEvents.layout = {
+SuperadminEvents.layout = {
     breadcrumbs: [
         { title: 'Dashboard', href: dashboard().url },
         { title: 'Kelola Agenda', href: eventsIndex().url },

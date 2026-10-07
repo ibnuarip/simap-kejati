@@ -67,7 +67,7 @@ test('users are redirected to their role dashboard after completing two factor c
     $this->assertAuthenticatedAs($user);
     $this->get($dashboard)->assertOk();
 })->with([
-    'operator' => ['operator', '/dashboard'],
+    'superadmin' => ['superadmin', '/dashboard'],
     'protokol' => ['protokol', '/protokol'],
     'kajati' => ['kajati', '/leadership'],
     'wakajati' => ['wakajati', '/leadership'],

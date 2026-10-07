@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Operator;
+namespace App\Http\Controllers\Superadmin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\EventRequest;
@@ -32,7 +32,7 @@ class EventController extends Controller
 
         $statusCounts = $events->countBy(fn (Event $event): string => $event->currentStatus());
 
-        return Inertia::render('operator/events', [
+        return Inertia::render('superadmin/events', [
             'events' => EventResource::list($events),
             'leaders' => $leaders->map(fn (Leader $leader): array => [
                 'id' => $leader->id,

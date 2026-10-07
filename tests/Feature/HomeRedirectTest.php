@@ -3,8 +3,8 @@
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
 
-it('redirects an authenticated operator to the operator dashboard', function () {
-    $this->actingAs(User::factory()->create(['role' => 'operator']))
+it('redirects an authenticated superadmin to the superadmin dashboard', function () {
+    $this->actingAs(User::factory()->create(['role' => 'superadmin']))
         ->get(route('home'))
         ->assertRedirect('/dashboard');
 });

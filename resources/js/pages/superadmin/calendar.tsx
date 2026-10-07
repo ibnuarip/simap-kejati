@@ -8,7 +8,7 @@ type Props = {
     events: AgendaItem[];
 };
 
-export default function OperatorCalendar({ events }: Props) {
+export default function SuperadminCalendar({ events }: Props) {
     return (
         <>
             <Head title="Kalender Agenda" />
@@ -30,7 +30,7 @@ export default function OperatorCalendar({ events }: Props) {
     );
 }
 
-OperatorCalendar.layout = {
+SuperadminCalendar.layout = {
     breadcrumbs: [
         { title: 'Dashboard', href: dashboard().url },
         { title: 'Kalender Agenda', href: calendarIndex().url },

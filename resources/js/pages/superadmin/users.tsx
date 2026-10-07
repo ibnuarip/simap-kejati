@@ -1,13 +1,14 @@
 import { Form, Head, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { Pencil, Plus, X } from 'lucide-react';
-import UserController from '@/actions/App/Http/Controllers/Operator/UserController';
+import UserController from '@/actions/App/Http/Controllers/Superadmin/UserController';
 import ConfirmDelete from '@/components/confirm-delete';
 import InputError from '@/components/input-error';
 import { UserAvatar } from '@/components/user-avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
     Dialog,
     DialogContent,
@@ -28,21 +29,31 @@ import {
 import { userRoleLabel } from '@/lib/user';
 import { dashboard } from '@/routes';
 import { index as usersIndex } from '@/routes/users';
-import type { ManagedUser, UserRole } from '@/types';
+import type { LeaderOption, ManagedUser, UserRole } from '@/types';
 
 type Props = {
     users: ManagedUser[];
+    leaders: LeaderOption[];
 };
 
-const ROLE_OPTIONS: UserRole[] = ['operator', 'protokol', 'kajati', 'wakajati'];
+const ROLE_OPTIONS: UserRole[] = ['superadmin', 'protokol', 'kajati', 'wakajati'];
 
-export default function OperatorUsers({ users }: Props) {
+export default function SuperadminUsers({ users, leaders }: Props) {
     const { auth } = usePage().props;
     const currentUserId = auth.user.id;
 
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editing, setEditing] = useState<ManagedUser | null>(null);
-    const [role, setRole] = useState<UserRole>('operator');
+    const [role, setRole] = useState<UserRole>('superadmin');
+    const [leaderIds, setLeaderIds] = useState<number[]>([]);
+
+    const toggleLeader = (id: number) => {
+        setLeaderIds((current) =>
+            current.includes(id)
+                ? current.filter((leaderId) => leaderId !== id)
+                : [...current, id],
+        );
+    };
 
     const closeDialog = () => {
         setDialogOpen(false);
@@ -50,13 +61,15 @@ export default function OperatorUsers({ users }: Props) {
     };
 
     const openCreate = () => {
-        setRole('operator');
+        setRole('superadmin');
+        setLeaderIds([]);
         setEditing(null);
         setDialogOpen(true);
     };
 
     const openEdit = (user: ManagedUser) => {
         setRole(user.role);
+        setLeaderIds(user.leader_ids);
         setEditing(user);
         setDialogOpen(true);
     };
@@ -265,6 +278,9 @@ export default function OperatorUsers({ users }: Props) {
                                         defaultValue={editing}
                                         role={role}
                                         onRoleChange={setRole}
+                                        leaders={leaders}
+                                        leaderIds={leaderIds}
+                                        onToggleLeader={toggleLeader}
                                         passwordRequired={false}
                                         errors={errors}
                                     />
@@ -298,6 +314,9 @@ export default function OperatorUsers({ users }: Props) {
                                         defaultValue={null}
                                         role={role}
                                         onRoleChange={setRole}
+                                        leaders={leaders}
+                                        leaderIds={leaderIds}
+                                        onToggleLeader={toggleLeader}
                                         passwordRequired
                                         errors={errors}
                                     />
@@ -408,6 +427,9 @@ type FieldProps = {
     defaultValue: ManagedUser | null;
     role: UserRole;
     onRoleChange: (value: UserRole) => void;
+    leaders: LeaderOption[];
+    leaderIds: number[];
+    onToggleLeader: (id: number) => void;
     passwordRequired: boolean;
     errors: Record<string, string>;
 };
@@ -416,6 +438,9 @@ function UserFields({
     defaultValue,
     role,
     onRoleChange,
+    leaders,
+    leaderIds,
+    onToggleLeader,
     passwordRequired,
     errors,
 }: FieldProps) {
@@ -467,6 +492,51 @@ function UserFields({
                 <InputError message={errors.role} />
             </div>
 
+            {role === 'protokol' && (
+                <div className="grid gap-2">
+                    <Label>Tugas Pimpinan</Label>
+                    <p className="text-muted-foreground text-xs">
+                        Pilih pimpinan yang agendanya boleh dikelola
+                        akun ini. Kosongkan bila belum ada penugasan.
+                    </p>
+                    <div className="flex flex-col gap-1 rounded-lg border p-3">
+                        {leaders.length === 0 ? (
+                            <p className="text-muted-foreground text-xs">
+                                Belum ada data pimpinan aktif.
+                            </p>
+                        ) : (
+                            leaders.map((leader) => (
+                                <label
+                                    key={leader.id}
+                                    className="flex cursor-pointer items-center gap-3 py-1.5"
+                                >
+                                    <Checkbox
+                                        checked={leaderIds.includes(leader.id)}
+                                        onCheckedChange={() =>
+                                            onToggleLeader(leader.id)
+                                        }
+                                    />
+                                    <span className="text-sm">
+                                        {leader.name}
+                                    </span>
+                                </label>
+                            ))
+                        )}
+                    </div>
+                    {leaderIds.map((id) => (
+                        <input
+                            key={id}
+                            type="hidden"
+                            name="leaders[]"
+                            value={id}
+                        />
+                    ))}
+                    <InputError
+                        message={errors.leaders ?? errors['leaders.0']}
+                    />
+                </div>
+            )}
+
             <div className="grid gap-2">
                 <Label htmlFor="password">
                     Password {passwordRequired ? '' : '(opsional)'}
@@ -486,9 +556,8 @@ function UserFields({
                 <InputError message={errors.password} />
                 {passwordRequired && (
                     <p className="text-muted-foreground text-xs">
-                        Email selamat datang & kredensial akun (email &
-                        password) dikirim otomatis ke email pengguna setelah
-                        disimpan.
+                        Email berisi kredensial akun (email & password)
+                        dikirim otomatis ke email pengguna setelah disimpan.
                     </p>
                 )}
             </div>
@@ -496,7 +565,7 @@ function UserFields({
     );
 }
 
-OperatorUsers.layout = {
+SuperadminUsers.layout = {
     breadcrumbs: [
         { title: 'Dashboard', href: dashboard().url },
         { title: 'Kelola Pengguna', href: usersIndex().url },

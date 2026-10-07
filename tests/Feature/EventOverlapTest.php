@@ -36,6 +36,7 @@ function overlapPayload(Leader $leader, Category $category, string $day, string 
 test('storing an overlapping agenda is rejected in indonesian', function () {
     $protokol = User::factory()->protokol()->create();
     [$leader, $category, $day] = createOverlapScenario();
+    $protokol->leaders()->attach($leader->id);
 
     $response = $this->actingAs($protokol)->post(
         route('protokol.events.store'),
@@ -50,6 +51,7 @@ test('storing an overlapping agenda is rejected in indonesian', function () {
 test('storing an overlapping agenda is allowed with force save', function () {
     $protokol = User::factory()->protokol()->create();
     [$leader, $category, $day] = createOverlapScenario();
+    $protokol->leaders()->attach($leader->id);
 
     $this->actingAs($protokol)->post(
         route('protokol.events.store'),
@@ -62,6 +64,7 @@ test('storing an overlapping agenda is allowed with force save', function () {
 test('adjacent agendas do not count as overlapping', function () {
     $protokol = User::factory()->protokol()->create();
     [$leader, $category, $day] = createOverlapScenario();
+    $protokol->leaders()->attach($leader->id);
 
     $this->actingAs($protokol)->post(
         route('protokol.events.store'),
@@ -74,6 +77,7 @@ test('adjacent agendas do not count as overlapping', function () {
 test('cancelled agendas do not block a new schedule', function () {
     $protokol = User::factory()->protokol()->create();
     [$leader, $category, $day, $existing] = createOverlapScenario();
+    $protokol->leaders()->attach($leader->id);
     $existing->update(['status' => 'cancelled']);
 
     $this->actingAs($protokol)->post(
@@ -87,6 +91,7 @@ test('cancelled agendas do not block a new schedule', function () {
 test('updating an agenda ignores itself when checking overlaps', function () {
     $protokol = User::factory()->protokol()->create();
     [$leader, $category, $day, $existing] = createOverlapScenario();
+    $protokol->leaders()->attach($leader->id);
 
     $this->actingAs($protokol)->put(
         route('protokol.events.update', $existing),
@@ -99,6 +104,7 @@ test('updating an agenda ignores itself when checking overlaps', function () {
 test('conflicts endpoint lists overlapping agendas as json', function () {
     $protokol = User::factory()->protokol()->create();
     [$leader, $category, $day, $existing] = createOverlapScenario();
+    $protokol->leaders()->attach($leader->id);
 
     $response = $this->actingAs($protokol)->getJson(
         route('protokol.events.conflicts', ['start' => "{$day} 11:00:00", 'end' => "{$day} 13:00:00"])

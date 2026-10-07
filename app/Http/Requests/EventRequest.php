@@ -20,10 +20,16 @@ class EventRequest extends FormRequest
      */
     public function rules(): array
     {
+        // Akun protokol hanya boleh menginput agenda milik pimpinan yang
+        // ditugaskan kepadanya; superadmin bebas memilih pimpinan mana pun.
+        $leaderRule = $this->user()?->isProtokol()
+            ? Rule::in($this->user()->assignedLeaderIds())
+            : Rule::exists('leaders', 'id');
+
         return [
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'leader_id' => ['required', 'integer', Rule::exists('leaders', 'id')],
+            'leader_id' => ['required', 'integer', $leaderRule],
             'room_id' => ['nullable', 'integer', Rule::exists('rooms', 'id')],
             'custom_location' => ['nullable', 'string', 'max:255'],
             'category_id' => ['nullable', 'integer', Rule::exists('categories', 'id')],
@@ -32,6 +38,16 @@ class EventRequest extends FormRequest
             'dress_code' => ['nullable', 'string', 'max:255'],
             'participants' => ['nullable', 'string'],
             'force_save' => ['nullable', 'boolean'],
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'leader_id.in' => 'Pimpinan tersebut bukan kewenangan Anda.',
         ];
     }
 
@@ -52,7 +68,14 @@ class EventRequest extends FormRequest
             $routeEvent = $this->route('event');
             $exceptId = $routeEvent instanceof Event ? $routeEvent->getKey() : null;
 
-            $count = Event::overlapping($start, $end, $exceptId)->count();
+            // Protokol hanya dicek bentrok terhadap agenda pimpinannya
+            // sendiri agar tidak bocor info agenda pimpinan lain.
+            $count = Event::overlapping($start, $end, $exceptId)
+                ->when(
+                    $this->user()?->isProtokol(),
+                    fn ($query) => $query->whereAssignedTo($this->user())
+                )
+                ->count();
 
             if ($count > 0) {
                 $validator->errors()->add(

@@ -32,7 +32,7 @@ test('non leadership roles are forbidden from leadership routes', function (stri
     $this->actingAs($user);
 
     $this->get(route('leadership.dashboard'))->assertForbidden();
-})->with(['operator', 'protokol']);
+})->with(['superadmin', 'protokol']);
 
 test('leadership is redirected to their dashboard after login', function (string $role) {
     $user = User::factory()->create(['role' => $role]);

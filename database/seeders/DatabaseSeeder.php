@@ -22,12 +22,12 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // 1. Create 4 Role Users
-        $operator = User::updateOrCreate(
+        $superadmin = User::updateOrCreate(
             ['email' => 'daskrimti.kejatijabar@gmail.com'],
             [
                 'name' => 'Super Admin',
                 'password' => Hash::make('password'),
-                'role' => 'operator',
+                'role' => 'superadmin',
                 'email_verified_at' => now(),
             ]
         );
