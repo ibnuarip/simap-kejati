@@ -1,7 +1,6 @@
 <?php
 
 use App\Mail\Auth\AccountCredentialsMail;
-use App\Mail\Auth\WelcomeMail;
 use App\Models\Category;
 use App\Models\Event;
 use App\Models\Leader;
@@ -271,10 +270,10 @@ test('operators can create a user with a given role and password', function () {
     expect(Hash::check('rahasia1234', $user->password))->toBeTrue();
     expect($user->email_verified_at)->toBeNull();
 
-    Mail::assertSent(WelcomeMail::class, fn (WelcomeMail $mail) => $mail->hasTo('budi@kejati.go.id'));
     Mail::assertSent(AccountCredentialsMail::class, function (AccountCredentialsMail $mail) {
         return $mail->hasTo('budi@kejati.go.id') && $mail->password === 'rahasia1234';
     });
+    Mail::assertSentCount(1);
 });
 
 test('a newly created account becomes verified after its first successful login', function () {

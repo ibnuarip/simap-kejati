@@ -28,7 +28,7 @@ class AccountCredentialsMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Kredensial Akun Anda — '.config('app.name'),
+            subject: 'Selamat Datang — Kredensial Akun Anda — '.config('app.name'),
         );
     }
 

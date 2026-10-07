@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Operator;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserRequest;
 use App\Mail\Auth\AccountCredentialsMail;
-use App\Mail\Auth\WelcomeMail;
 use App\Models\User;
 use App\Services\AvatarService;
 use Illuminate\Http\RedirectResponse;
@@ -53,12 +52,11 @@ class UserController extends Controller
     }
 
     /**
-     * Send the welcome and account credentials emails to a newly created user.
+     * Send the single account-created email (welcome + credentials) to a newly created user.
      */
     protected function notifyAccountCreated(User $user, string $password): void
     {
         try {
-            Mail::to($user)->send(new WelcomeMail($user));
             Mail::to($user)->send(new AccountCredentialsMail($user, $password));
         } catch (Throwable $e) {
             Log::error('Gagal mengirim email kredensial akun baru.', [

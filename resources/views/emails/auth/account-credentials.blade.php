@@ -1,11 +1,15 @@
 @extends('emails.layouts.brand')
 
-@section('subject', 'Kredensial Akun Anda')
+@section('subject', 'Selamat Datang — Kredensial Akun Anda')
 
 @section('content')
     <p style="margin:0 0 16px;">
         Halo <strong>{{ $user->name }}</strong>,<br>
-        Berikut adalah kredensial untuk masuk ke akun <strong>{{ config('app.name') }}</strong> Anda:
+        Selamat datang di <strong>{{ config('app.name') }}</strong> — Sistem Informasi Manajemen Agenda Pimpinan Kejaksaan Tinggi.
+    </p>
+
+    <p style="margin:0 0 16px;">
+        Akun Anda telah berhasil dibuat. Berikut adalah kredensial untuk masuk ke akun Anda:
     </p>
 
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
