@@ -86,7 +86,7 @@ Aplikasi kini dapat diakses melalui peramban pada alamat: **`http://localhost:80
 
 ## Development Workflow
 
-Proyek ini menggunakan *Hot Module Replacement* (HMR) untuk efisiensi penulisan kode antar-muka. Untuk mengaktifkan sinkronisasi otomatis, jalankan *development server*:
+Proyek ini menggunakan _Hot Module Replacement_ (HMR) untuk efisiensi penulisan kode antar-muka. Untuk mengaktifkan sinkronisasi otomatis, jalankan _development server_:
 
 ```bash
 make npm-dev
@@ -96,15 +96,15 @@ make npm-dev
 
 Gunakan pintasan berikut untuk berinteraksi dengan layanan Docker tanpa mengetik instruksi panjang:
 
-| Command | Description |
-|---|---|
-| `make up` / `make down` | Menyalakan / mematikan layanan aplikasi |
-| `make bash` | Mengakses *shell* pada container Laravel (PHP) |
-| `make bash-node` | Mengakses *shell* pada container Node (Vite/Frontend) |
-| `make bash-db` | Mengakses terminal sesi MySQL |
-| `make artisan cmd="..."`| Menjalankan perintah artisan, misal `make artisan cmd="make:model User"` |
-| `make tinker` | Membuka antarmuka interaktif Laravel Tinker |
-| `make clear` / `make cache`| Membersihkan atau menyusun ulang *cache* aplikasi |
+| Command                     | Description                                                              |
+| --------------------------- | ------------------------------------------------------------------------ |
+| `make up` / `make down`     | Menyalakan / mematikan layanan aplikasi                                  |
+| `make bash`                 | Mengakses _shell_ pada container Laravel (PHP)                           |
+| `make bash-node`            | Mengakses _shell_ pada container Node (Vite/Frontend)                    |
+| `make bash-db`              | Mengakses terminal sesi MySQL                                            |
+| `make artisan cmd="..."`    | Menjalankan perintah artisan, misal `make artisan cmd="make:model User"` |
+| `make tinker`               | Membuka antarmuka interaktif Laravel Tinker                              |
+| `make clear` / `make cache` | Membersihkan atau menyusun ulang _cache_ aplikasi                        |
 
 ---
 
@@ -132,4 +132,4 @@ Disarankan untuk menjalankan pengujian di atas pada lokal komputer Anda sebelum 
 
 ## Security
 
-Repositori ini secara ketat dimonitor oleh **Dependabot** guna memastikan keamanan seluruh dependensi paket. Apabila Anda menemukan kelemahan keamanan (*security vulnerability*), harap melaporkannya langsung kepada pengelola repositori dan tidak melalui isu publik (*public tracker*).
+Repositori ini secara ketat dimonitor oleh **Dependabot** guna memastikan keamanan seluruh dependensi paket. Apabila Anda menemukan kelemahan keamanan (_security vulnerability_), harap melaporkannya langsung kepada pengelola repositori dan tidak melalui isu publik (_public tracker_).
