@@ -1,5 +1,6 @@
-# DOCKER
-
+# ==========================================
+# DOCKER COMMANDS
+# ==========================================
 up:
 	docker compose up -d
 
@@ -15,22 +16,30 @@ build:
 logs:
 	docker compose logs -f
 
+logs-app:
+	docker compose logs -f app
+
 ps:
 	docker compose ps
 
-# MASUK CONTAINER
-
+# ==========================================
+# MASUK CONTAINER (SHELL)
+# ==========================================
 bash:
-	docker compose exec app bash
+	docker compose exec app sh
 
 bash-node:
 	docker compose exec node sh
 
 bash-db:
-	bash-db:
-	docker compose exec mysql mysql -u root -p$$(grep MYSQL_ROOT_PASSWORD .env.docker | cut -d '=' -f2)
+	docker compose exec mysql sh -c 'mysql -u root -p$$(grep MYSQL_ROOT_PASSWORD .env.docker | cut -d "=" -f2)'
 
-# ARTISAN
+# ==========================================
+# ARTISAN & DATABASE
+# ==========================================
+artisan:
+	docker compose exec app php artisan $(cmd)
+
 migrate:
 	docker compose exec app php artisan migrate
 
@@ -55,19 +64,28 @@ storage:
 routes:
 	docker compose exec app php artisan route:list
 
-# CACHE
+wayfinder:
+	docker compose exec app php artisan wayfinder:generate --with-form
+
+# ==========================================
+# CACHE MANAGEMENT
+# ==========================================
 clear:
 	docker compose exec app php artisan cache:clear
 	docker compose exec app php artisan config:clear
 	docker compose exec app php artisan route:clear
 	docker compose exec app php artisan view:clear
+	docker compose exec app php artisan event:clear
 
 cache:
 	docker compose exec app php artisan config:cache
 	docker compose exec app php artisan route:cache
 	docker compose exec app php artisan view:cache
+	docker compose exec app php artisan event:cache
 
-# COMPOSER
+# ==========================================
+# COMPOSER (BACKEND)
+# ==========================================
 composer-install:
 	docker compose exec app composer install
 
@@ -77,19 +95,41 @@ composer-update:
 composer-dump:
 	docker compose exec app composer dump-autoload
 
-# NODE / REACT
-npm-install:
-	docker compose exec node npm ci --no-audit --no-fund
+# ==========================================
+# QUALITY & TESTING (PHP)
+# ==========================================
+lint:
+	docker compose exec app composer lint:check
 
-dev:
-	docker compose exec node npm run dev -- --host 0.0.0.0
+format:
+	docker compose exec app composer lint:fix
 
-build-assets:
-	docker compose exec node npm run build
+types:
+	docker compose exec app composer types:check
 
-# TEST
 test:
 	docker compose exec app php artisan test
 
 test-filter:
 	docker compose exec app php artisan test --filter=$(filter)
+
+test-pest:
+	docker compose exec app ./vendor/bin/pest
+
+# ==========================================
+# NODE / REACT / FRONTEND
+# ==========================================
+npm-install:
+	docker compose exec node npm ci --no-audit --no-fund
+
+npm-dev:
+	docker compose exec node npm run dev
+
+npm-build:
+	docker compose exec node npm run build
+
+npm-check:
+	docker compose exec node npm run check
+
+npm-types:
+	docker compose exec node npm run types:check

@@ -1,58 +1,135 @@
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+# SIMAP Kejaksaan Tinggi Jawa Barat
 
-## About Laravel
+![CI Status](https://github.com/ibnuarip/simap-kejati/actions/workflows/ci.yml/badge.svg)
+![PHP Version](https://img.shields.io/badge/PHP-8.4-777BB4.svg?logo=php)
+![Laravel](https://img.shields.io/badge/Laravel-FF2D20.svg?logo=laravel&logoColor=white)
+![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)
+![Docker](https://img.shields.io/badge/Docker-2496ED.svg?logo=docker&logoColor=white)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Sistem Informasi Manajemen Terpadu untuk Kejaksaan Tinggi (Kejati) Jawa Barat. Aplikasi ini dibangun dengan standar teknologi modern menggunakan arsitektur Monolith berbasis Inertia.js.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Tech Stack
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Backend:** Laravel (PHP 8.4)
+- **Frontend:** React, Inertia.js, TypeScript
+- **Styling:** Tailwind CSS, Radix UI
+- **Database:** MySQL 8.4
+- **Cache & Queue:** Redis 7
+- **Testing & Quality:** Pest, PHPStan, Laravel Pint
+- **Infrastructure:** Docker & Docker Compose (Nginx, PHP-FPM)
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Prerequisites
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Proyek ini sepenuhnya beroperasi menggunakan lingkungan terisolasi (Docker). Pastikan sistem Anda telah memiliki perangkat lunak berikut:
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+1. [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows/Mac) atau Docker Engine (Linux).
+2. [Git](https://git-scm.com/).
+3. Akses ke terminal `make` (tersedia via Git Bash, Chocolatey, atau Scoop pada sistem operasi Windows).
 
-## Agentic Development
+---
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Installation
+
+Ikuti langkah-langkah di bawah ini untuk menjalankan aplikasi pada lingkungan lokal Anda:
+
+### 1. Clone Repository
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+git clone https://github.com/ibnuarip/simap-kejati.git
+cd simap-kejati
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### 2. Environment Configuration
 
-## Contributing
+Gandakan file konfigurasi `.env` dan sesuaikan kredensial di dalamnya apabila diperlukan.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+cp .env.example .env
+cp .env.docker.example .env.docker
+```
 
-## Code of Conduct
+### 3. Start Container
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Aplikasi menggunakan `Makefile` untuk manajemen Docker yang efisien. Jalankan perintah berikut untuk menginisialisasi server:
 
-## Security Vulnerabilities
+```bash
+make build
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 4. Setup Dependencies & Database
 
-## License
+Setelah container aktif, jalankan serangkaian perintah berikut untuk menyiapkan inti aplikasi:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+# Instalasi dependensi backend
+make composer-install
+
+# Konfigurasi aplikasi
+make key
+make storage
+
+# Migrasi dan inisialisasi basis data
+make fresh
+
+# Instalasi dan kompilasi dependensi frontend
+make npm-install
+make npm-build
+```
+
+Aplikasi kini dapat diakses melalui peramban pada alamat: **`http://localhost:8080`**
+
+---
+
+## Development Workflow
+
+Proyek ini menggunakan *Hot Module Replacement* (HMR) untuk efisiensi penulisan kode antar-muka. Untuk mengaktifkan sinkronisasi otomatis, jalankan *development server*:
+
+```bash
+make npm-dev
+```
+
+### Command Reference (Makefile)
+
+Gunakan pintasan berikut untuk berinteraksi dengan layanan Docker tanpa mengetik instruksi panjang:
+
+| Command | Description |
+|---|---|
+| `make up` / `make down` | Menyalakan / mematikan layanan aplikasi |
+| `make bash` | Mengakses *shell* pada container Laravel (PHP) |
+| `make bash-node` | Mengakses *shell* pada container Node (Vite/Frontend) |
+| `make bash-db` | Mengakses terminal sesi MySQL |
+| `make artisan cmd="..."`| Menjalankan perintah artisan, misal `make artisan cmd="make:model User"` |
+| `make tinker` | Membuka antarmuka interaktif Laravel Tinker |
+| `make clear` / `make cache`| Membersihkan atau menyusun ulang *cache* aplikasi |
+
+---
+
+## Code Quality & Testing
+
+Seluruh kontribusi kode diwajibkan untuk melewati standar validasi. GitHub Actions akan otomatis menolak integrasi kode apabila terjadi kegagalan pada pengujian berikut:
+
+```bash
+# Merapikan gaya penulisan kode PHP (Pint)
+make format
+
+# Analisis statis logika PHP (PHPStan)
+make types
+
+# Eksekusi unit test dan feature test (Pest)
+make test-pest
+
+# Validasi kompilasi TypeScript
+make npm-types
+```
+
+Disarankan untuk menjalankan pengujian di atas pada lokal komputer Anda sebelum melakukan `git push`.
+
+---
+
+## Security
+
+Repositori ini secara ketat dimonitor oleh **Dependabot** guna memastikan keamanan seluruh dependensi paket. Apabila Anda menemukan kelemahan keamanan (*security vulnerability*), harap melaporkannya langsung kepada pengelola repositori dan tidak melalui isu publik (*public tracker*).
