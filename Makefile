@@ -1,6 +1,5 @@
-# ================================
 # DOCKER
-# ================================
+
 up:
 	docker compose up -d
 
@@ -19,9 +18,8 @@ logs:
 ps:
 	docker compose ps
 
-# ================================
 # MASUK CONTAINER
-# ================================
+
 bash:
 	docker compose exec app bash
 
@@ -32,9 +30,7 @@ bash-db:
 	bash-db:
 	docker compose exec mysql mysql -u root -p$$(grep MYSQL_ROOT_PASSWORD .env.docker | cut -d '=' -f2)
 
-# ================================
 # ARTISAN
-# ================================
 migrate:
 	docker compose exec app php artisan migrate
 
@@ -59,9 +55,7 @@ storage:
 routes:
 	docker compose exec app php artisan route:list
 
-# ================================
 # CACHE
-# ================================
 clear:
 	docker compose exec app php artisan cache:clear
 	docker compose exec app php artisan config:clear
@@ -73,9 +67,7 @@ cache:
 	docker compose exec app php artisan route:cache
 	docker compose exec app php artisan view:cache
 
-# ================================
 # COMPOSER
-# ================================
 composer-install:
 	docker compose exec app composer install
 
@@ -85,9 +77,7 @@ composer-update:
 composer-dump:
 	docker compose exec app composer dump-autoload
 
-# ================================
 # NODE / REACT
-# ================================
 npm-install:
 	docker compose exec node npm ci --no-audit --no-fund
 
@@ -97,9 +87,7 @@ dev:
 build-assets:
 	docker compose exec node npm run build
 
-# ================================
 # TEST
-# ================================
 test:
 	docker compose exec app php artisan test
 
