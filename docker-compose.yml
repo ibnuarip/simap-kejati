@@ -37,8 +37,8 @@ services:
         ports:
             - '${SIMAP_VITE_PORT:-5173}:5173'
         volumes:
-            - ./resources:/app/resources:cached
-            - ./public:/app/public:cached
+            - ./resources:/app/resources
+            - ./public:/app/public
             - ./routes:/app/routes:cached
             - ./package.json:/app/package.json:cached
             - ./package-lock.json:/app/package-lock.json:cached

@@ -133,3 +133,9 @@ npm-check:
 
 npm-types:
 	docker compose exec node npm run types:check
+
+# ==========================================
+# TEST MOBILE
+# ==========================================
+share:
+	cloudflared tunnel --protocol http2 --url http://localhost:8080
