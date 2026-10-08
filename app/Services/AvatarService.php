@@ -9,12 +9,6 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use RuntimeException;
 
-/**
- * Penyimpanan foto profil pada disk "avatars".
- *
- * Seluruh baca-tulis lewat disk ini sehingga pindah penyimpanan
- * (local -> S3/R2) cukup via environment, tanpa mengubah kode.
- */
 class AvatarService
 {
     public const DISK = 'avatars';
@@ -31,10 +25,26 @@ class AvatarService
 
     /**
      * Simpan file baru dan hapus file lama. Mengembalikan path relatif.
+     * Pastikan folder target ada dan permission benar.
      */
     public function store(User $user, UploadedFile $file): string
     {
         $this->delete($user);
+
+        // Pastikan folder avatar ada dan permission write
+        $disk = Storage::disk(self::DISK);
+        $root = $disk->root();
+
+        if (! is_dir($root)) {
+            @mkdir($root, 0755, true);
+            @chmod($root, 0755);
+        }
+
+        // Set permission folder induk
+        $parent = dirname($root);
+        if (is_dir($parent)) {
+            @chmod($parent, 0755);
+        }
 
         $path = $file->storeAs(
             '',
@@ -44,6 +54,12 @@ class AvatarService
 
         if ($path === false) {
             throw new RuntimeException('Gagal menyimpan foto profil.');
+        }
+
+        // Pastikan file berhasil ditulis
+        $fullPath = $disk->path($path);
+        if ($fullPath && file_exists($fullPath)) {
+            @chmod($fullPath, 0644);
         }
 
         $user->forceFill(['avatar' => $path])->save();
