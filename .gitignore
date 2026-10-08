@@ -51,7 +51,4 @@ Design.md
 .env.docker
 docker-compose.override.yml
 
-# Dokumentasi otomatis
-/screenshots/
-/docs/
-/scripts/auth/*.json
+
