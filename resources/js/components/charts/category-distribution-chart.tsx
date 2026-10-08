@@ -5,12 +5,7 @@ type Props = {
     data: CategoryDistribution[];
 };
 
-type DonutTooltipProps = {
-    active?: boolean;
-    payload?: { payload?: CategoryDistribution }[];
-};
-
-function DonutTooltip({ active, payload }: DonutTooltipProps) {
+function DonutTooltip({ active, payload }: { active?: boolean; payload?: { payload?: CategoryDistribution }[] }) {
     const entry = payload?.[0]?.payload;
 
     if (!active || !entry) {
@@ -18,7 +13,17 @@ function DonutTooltip({ active, payload }: DonutTooltipProps) {
     }
 
     return (
-        <div className="bg-card min-w-32 rounded-xl border px-3.5 py-2.5 text-xs shadow-lg">
+        <div
+            className="bg-card min-w-32 rounded-xl border px-3.5 py-2.5 text-xs shadow-lg"
+            style={{
+                position: 'absolute',
+                top: 0,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                marginTop: -40,
+                zIndex: 100,
+            }}
+        >
             <p className="mb-1 flex items-center gap-1.5 font-medium">
                 <span
                     className="size-2 shrink-0 rounded-full"
