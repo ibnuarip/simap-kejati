@@ -158,7 +158,7 @@ export default function Dashboard({
                     {statCards.map((stat, index) => (
                         <Card
                             key={stat.title}
-                            className={`transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${index === statCards.length - 1 ? 'max-sm:col-span-2' : ''}`}
+                            className={`transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${index === statCards.length - 1 ? 'max-sm:col-span-2' : ''} ${index === 3 ? 'order-1' : ''} ${index === 4 ? 'order-2' : ''}`}
                         >
                             <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-1">
                                 <CardDescription className="font-medium">
