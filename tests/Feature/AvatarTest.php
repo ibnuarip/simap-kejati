@@ -96,6 +96,30 @@ test('avatar upload rejects non image files in indonesian', function () {
     ])->assertSessionHasErrors('avatar');
 });
 
+test('avatar upload accepts up to the size limit and rejects anything over it', function () {
+    $user = User::factory()->protokol()->create();
+    $this->actingAs($user);
+
+    // Tepat di batas: diterima.
+    $this->patch(route('profile.update'), [
+        'name' => $user->name,
+        'email' => $user->email,
+        'avatar' => avatarFile()->size(AvatarService::MAX_KILOBYTES),
+    ])->assertSessionHasNoErrors();
+
+    expect($user->fresh()->avatar)->not->toBeNull();
+
+    // Lebih dari batas: ditolak dengan pesan berbahasa Indonesia.
+    $this->patch(route('profile.update'), [
+        'name' => $user->name,
+        'email' => $user->email,
+        'avatar' => avatarFile()->size(AvatarService::MAX_KILOBYTES + 1),
+    ])->assertSessionHasErrors('avatar');
+
+    expect(session('errors')->first('avatar'))
+        ->toBe('Ukuran foto maksimal '.ceil(AvatarService::MAX_KILOBYTES / 1024).' MB.');
+});
+
 test('user can update their own avatar from profile settings', function () {
     $user = User::factory()->protokol()->create();
     $this->actingAs($user);

@@ -40,7 +40,7 @@ class UserRequest extends FormRequest
             'leader_id.required' => 'Akun pimpinan wajib ditautkan ke data pimpinan.',
             'avatar.image' => 'Berkas harus berupa gambar.',
             'avatar.mimes' => 'Foto harus berformat JPG, JPEG, atau PNG.',
-            'avatar.max' => 'Ukuran foto maksimal 2 MB.',
+            'avatar.max' => 'Ukuran foto maksimal '.ceil(AvatarService::MAX_KILOBYTES / 1024).' MB.',
         ];
     }
 }

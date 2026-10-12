@@ -13,7 +13,7 @@ class AvatarService
 {
     public const DISK = 'avatars';
 
-    public const MAX_KILOBYTES = 2048;
+    public const MAX_KILOBYTES = 5120;
 
     /**
      * @return list<string>

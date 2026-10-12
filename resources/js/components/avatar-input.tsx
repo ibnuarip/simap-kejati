@@ -70,7 +70,7 @@ export function AvatarInput({ userId, userName, currentAvatar, error }: Props) {
                         }}
                     />
                     <p className="text-muted-foreground text-xs">
-                        JPG, JPEG, atau PNG, maksimal 2 MB.
+                        JPG, JPEG, atau PNG, maksimal 5 MB.
                     </p>
                 </div>
             </div>
