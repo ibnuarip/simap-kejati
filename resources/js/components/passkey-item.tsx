@@ -1,5 +1,8 @@
 import { KeyRound, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import InlineConfirmPassword, {
+    isPasswordConfirmed,
+} from '@/components/inline-confirm-password';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -19,10 +22,40 @@ type Props = {
 
 export default function PasskeyItem({ passkey, onDelete }: Props) {
     const [isDeleting, setIsDeleting] = useState(false);
+    const [needConfirm, setNeedConfirm] = useState(false);
+    const [checking, setChecking] = useState(false);
 
-    const handleDelete = () => {
+    const runDelete = () => {
         setIsDeleting(true);
-        onDelete(passkey.id, () => setIsDeleting(false));
+        onDelete(passkey.id, () => {
+            setIsDeleting(false);
+            setNeedConfirm(false);
+        });
+    };
+
+    const handleDelete = async () => {
+        if (isDeleting || checking) {
+            return;
+        }
+
+        // Sama seperti registrasi: route hapus passkey dijaga middleware
+        // `password.confirm`, jadi cek dulu agar tidak mentok di error.
+        setChecking(true);
+        const confirmed = await isPasswordConfirmed();
+        setChecking(false);
+
+        if (!confirmed) {
+            setNeedConfirm(true);
+
+            return;
+        }
+
+        runDelete();
+    };
+
+    const handleConfirmed = () => {
+        setNeedConfirm(false);
+        runDelete();
     };
 
     return (
@@ -68,24 +101,39 @@ export default function PasskeyItem({ passkey, onDelete }: Props) {
                     </Button>
                 </DialogTrigger>
                 <DialogContent>
-                    <DialogTitle>Remove passkey</DialogTitle>
+                    <DialogTitle>
+                        {needConfirm ? 'Konfirmasi password' : 'Remove passkey'}
+                    </DialogTitle>
                     <DialogDescription>
-                        Are you sure you want to remove the "{passkey.name}"
-                        passkey? You will no longer be able to use it to sign
-                        in.
+                        {needConfirm
+                            ? 'Masukkan password Anda untuk menghapus passkey ini.'
+                            : `Are you sure you want to remove the "${passkey.name}" passkey? You will no longer be able to use it to sign in.`}
                     </DialogDescription>
-                    <DialogFooter className="gap-2">
-                        <DialogClose asChild>
-                            <Button variant="secondary">Cancel</Button>
-                        </DialogClose>
-                        <Button
-                            variant="destructive"
-                            onClick={handleDelete}
-                            disabled={isDeleting}
-                        >
-                            {isDeleting ? 'Removing...' : 'Remove passkey'}
-                        </Button>
-                    </DialogFooter>
+
+                    {needConfirm ? (
+                        <InlineConfirmPassword
+                            submitLabel="Hapus passkey"
+                            onCancel={() => setNeedConfirm(false)}
+                            onConfirmed={handleConfirmed}
+                        />
+                    ) : (
+                        <DialogFooter className="gap-2">
+                            <DialogClose asChild>
+                                <Button variant="secondary">Cancel</Button>
+                            </DialogClose>
+                            <Button
+                                variant="destructive"
+                                onClick={handleDelete}
+                                disabled={isDeleting || checking}
+                            >
+                                {isDeleting
+                                    ? 'Removing...'
+                                    : checking
+                                      ? 'Memeriksa...'
+                                      : 'Remove passkey'}
+                            </Button>
+                        </DialogFooter>
+                    )}
                 </DialogContent>
             </Dialog>
         </div>

@@ -1,5 +1,8 @@
 import { usePasskeyRegister } from '@laravel/passkeys/react';
 import { useState } from 'react';
+import InlineConfirmPassword, {
+    isPasswordConfirmed,
+} from '@/components/inline-confirm-password';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,10 +36,13 @@ export default function PasskeyRegistration({ onSuccess }: Props) {
     });
 
     const [showForm, setShowForm] = useState(false);
+    const [needConfirm, setNeedConfirm] = useState(false);
+    const [checking, setChecking] = useState(false);
     const { register, isLoading, error, isSupported } = usePasskeyRegister({
         onSuccess: () => {
             setName('');
             setShowForm(false);
+            setNeedConfirm(false);
             onSuccess();
         },
     });
@@ -44,15 +50,34 @@ export default function PasskeyRegistration({ onSuccess }: Props) {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!name.trim()) {
+        if (!name.trim() || isLoading || checking) {
+            return;
+        }
+
+        // Route registrasi passkey dijaga middleware `password.confirm`.
+        // Kalau sesi belum konfirmasi, minta password dulu — kalau tidak,
+        // request options-nya balik 423 dan user mentok di error.
+        setChecking(true);
+        const confirmed = await isPasswordConfirmed();
+        setChecking(false);
+
+        if (!confirmed) {
+            setNeedConfirm(true);
+
             return;
         }
 
         await register(name);
     };
 
+    const handleConfirmed = async () => {
+        setNeedConfirm(false);
+        await register(name);
+    };
+
     const handleCancel = () => {
         setShowForm(false);
+        setNeedConfirm(false);
         setName('');
     };
 
@@ -69,6 +94,17 @@ export default function PasskeyRegistration({ onSuccess }: Props) {
             <Button variant="outline" onClick={() => setShowForm(true)}>
                 Add passkey
             </Button>
+        );
+    }
+
+    if (needConfirm) {
+        return (
+            <InlineConfirmPassword
+                description="Masukkan password Anda untuk melanjutkan pendaftaran passkey."
+                submitLabel="Lanjutkan"
+                onCancel={() => setNeedConfirm(false)}
+                onConfirmed={handleConfirmed}
+            />
         );
     }
 
@@ -96,8 +132,15 @@ export default function PasskeyRegistration({ onSuccess }: Props) {
             {error && <InputError message={error} />}
 
             <div className="flex gap-2">
-                <Button type="submit" disabled={isLoading || !name.trim()}>
-                    {isLoading ? 'Registering...' : 'Register passkey'}
+                <Button
+                    type="submit"
+                    disabled={isLoading || checking || !name.trim()}
+                >
+                    {checking
+                        ? 'Memeriksa...'
+                        : isLoading
+                          ? 'Registering...'
+                          : 'Register passkey'}
                 </Button>
                 <Button type="button" variant="ghost" onClick={handleCancel}>
                     Cancel
