@@ -120,7 +120,7 @@ export default function SuperadminRooms({ rooms }: Props) {
                                                 agenda terkait
                                             </p>
                                         </div>
-                                        <div className="flex shrink-0 items-center gap-2">
+                                        <div className="flex w-full shrink-0 items-center justify-between gap-2 sm:w-auto">
                                             <Button
                                                 size="sm"
                                                 variant="outline"
