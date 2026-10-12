@@ -25,41 +25,23 @@ class AvatarService
 
     /**
      * Simpan file baru dan hapus file lama. Mengembalikan path relatif.
-     * Pastikan folder target ada dan permission benar.
+     *
+     * Folder target dibuat otomatis oleh Flysystem; filesystem disk memakai
+     * opsi "throw" sehingga kegagalan tulis langsung menggelembung sebagai
+     * exception, bukan diam-diam menghasilkan kolom avatar yang kosong.
      */
     public function store(User $user, UploadedFile $file): string
     {
         $this->delete($user);
 
-        // Pastikan folder avatar ada dan permission write
-        $disk = Storage::disk(self::DISK);
-        $root = $disk->root();
-
-        if (! is_dir($root)) {
-            @mkdir($root, 0755, true);
-            @chmod($root, 0755);
-        }
-
-        // Set permission folder induk
-        $parent = dirname($root);
-        if (is_dir($parent)) {
-            @chmod($parent, 0755);
-        }
-
         $path = $file->storeAs(
             '',
-            Str::uuid()->toString().'.'.$file->getClientOriginalExtension(),
+            Str::uuid()->toString().'.'.strtolower($file->extension() ?: 'jpg'),
             ['disk' => self::DISK]
         );
 
-        if ($path === false) {
+        if (! is_string($path)) {
             throw new RuntimeException('Gagal menyimpan foto profil.');
-        }
-
-        // Pastikan file berhasil ditulis
-        $fullPath = $disk->path($path);
-        if ($fullPath && file_exists($fullPath)) {
-            @chmod($fullPath, 0644);
         }
 
         $user->forceFill(['avatar' => $path])->save();

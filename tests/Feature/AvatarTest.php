@@ -129,6 +129,30 @@ test('avatar file is only accessible by its owner', function () {
     $this->actingAs($other)->get(route('avatar.show', $other))->assertNotFound();
 });
 
+test('owner is served the real image bytes without browser caching', function () {
+    $user = User::factory()->protokol()->create();
+
+    $path = UploadedFile::fake()->image('foto.jpg', 200, 200)
+        ->storeAs('', 'avatar-tampil.jpg', ['disk' => AvatarService::DISK]);
+    $user->forceFill(['avatar' => $path])->save();
+
+    $response = $this->actingAs($user)->get(route('avatar.show', $user).'?v='.urlencode($path));
+
+    $response->assertOk();
+    expect($response->streamedContent())->not->toBeEmpty();
+    expect($response->headers->get('Content-Type'))->toContain('image');
+    expect($response->headers->get('Cache-Control'))->toContain('no-cache');
+});
+
+test('a stored avatar keeps a safe image extension', function () {
+    $user = User::factory()->protokol()->create();
+
+    $path = app(AvatarService::class)->store($user, avatarFile());
+
+    expect($path)->toMatch('/^[0-9a-f-]{36}\.jpg$/');
+    Storage::disk(AvatarService::DISK)->assertExists($path);
+});
+
 test('deleting a user removes its avatar file', function () {
     $superadmin = User::factory()->superadmin()->create();
     $user = User::factory()->protokol()->create();

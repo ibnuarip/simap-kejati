@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import InputError from '@/components/input-error';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -14,39 +14,53 @@ type Props = {
 };
 
 /**
- * Pilih/hapus foto profil. Pratinjau lokal, responsif penuh.
+ * Pilih/hapus foto profil. Pratinjau lokal berbentuk lingkaran, berukuran
+ * besar dan responsif (mobile/tablet/desktop).
  * Form Inertia mengirim multipart otomatis bila ada File.
  */
 export function AvatarInput({ userId, userName, currentAvatar, error }: Props) {
     const [preview, setPreview] = useState<string | null>(null);
     const [removeChecked, setRemoveChecked] = useState(false);
 
+    // Lepaskan object URL lama agar tidak menumpuk di memori browser.
+    useEffect(() => {
+        if (!preview) {
+            return;
+        }
+
+        return () => URL.revokeObjectURL(preview);
+    }, [preview]);
+
     return (
         <div className="grid min-w-0 gap-2">
             <Label htmlFor="avatar">Foto Profil</Label>
-            <div className="flex min-w-0 flex-wrap items-center gap-3 sm:gap-4">
+            <div className="flex min-w-0 flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
                 {preview ? (
                     <img
                         src={preview}
                         alt="Pratinjau foto profil"
-                        className="size-16 shrink-0 rounded-full object-cover sm:size-20"
+                        className="border-border aspect-square size-28 shrink-0 rounded-full border object-cover object-center sm:size-32"
                     />
                 ) : (
                     <UserAvatar
                         user={{
                             id: userId ?? -1,
                             name: userName || 'Pengguna',
-                            avatar: currentAvatar ?? null,
+                            // Saat "Hapus foto" dicentang, langsung tampilkan
+                            // avatar bawaan sebagai pratinjau hasil akhirnya.
+                            avatar: removeChecked
+                                ? null
+                                : (currentAvatar ?? null),
                         }}
-                        className="size-16 shrink-0 overflow-hidden rounded-full sm:size-20"
+                        className="border-border size-28 shrink-0 overflow-hidden rounded-full border sm:size-32"
                     />
                 )}
-                <div className="flex min-w-0 flex-1 flex-col gap-2">
+                <div className="flex w-full min-w-0 flex-1 flex-col gap-2">
                     <Input
                         id="avatar"
                         name="avatar"
                         type="file"
-                        accept="image/jpeg,image/png"
+                        accept="image/jpeg,image/png,.jpg,.jpeg,.png"
                         className="file:border-input file:bg-muted hover:file:bg-accent cursor-pointer file:-mt-px file:mr-3 file:-ml-1 file:cursor-pointer file:rounded-md file:border file:px-4 file:py-2 file:text-sm file:font-medium"
                         onChange={(event) => {
                             const file = event.target.files?.[0] ?? null;

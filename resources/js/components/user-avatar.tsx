@@ -26,16 +26,19 @@ export function UserAvatar({
 
     const canView = !!user.avatar && auth.user?.id === user.id;
 
+    // "v" berisi nama berkas (UUID baru setiap unggahan) sehingga URL selalu
+    // berubah saat foto diganti — browser tidak menyajikan foto lama yang
+    // masih tersimpan di cache.
+    const src = canView
+        ? avatarShow(
+              { user: user.id },
+              { query: { v: user.avatar ?? undefined } },
+          ).url
+        : '/images/avatar-default.svg';
+
     return (
         <Avatar className={className ?? 'h-8 w-8 overflow-hidden rounded-full'}>
-            <AvatarImage
-                src={
-                    canView
-                        ? avatarShow({ user: user.id }).url
-                        : '/images/avatar-default.svg'
-                }
-                alt={user.name}
-            />
+            <AvatarImage src={src} alt={user.name} />
             <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
                 {getInitials(user.name)}
             </AvatarFallback>
