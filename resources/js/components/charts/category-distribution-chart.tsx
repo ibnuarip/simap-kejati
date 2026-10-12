@@ -5,7 +5,13 @@ type Props = {
     data: CategoryDistribution[];
 };
 
-function DonutTooltip({ active, payload }: { active?: boolean; payload?: { payload?: CategoryDistribution }[] }) {
+function DonutTooltip({
+    active,
+    payload,
+}: {
+    active?: boolean;
+    payload?: { payload?: CategoryDistribution }[];
+}) {
     const entry = payload?.[0]?.payload;
 
     if (!active || !entry) {
