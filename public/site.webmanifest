@@ -1,6 +1,11 @@
 {
     "name": "SIMAP KEJATI",
     "short_name": "SIMAP",
+    "id": "http://localhost:8080",
+    "start_url": ".",
+    "display": "standalone",
+    "theme_color": "#ffffff",
+    "background_color": "#ffffff",
     "icons": [
         {
             "src": "/android-chrome-192x192.png",
@@ -12,8 +17,5 @@
             "sizes": "512x512",
             "type": "image/png"
         }
-    ],
-    "theme_color": "#ffffff",
-    "background_color": "#ffffff",
-    "display": "standalone"
+    ]
 }
