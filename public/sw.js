@@ -1,9 +1,4 @@
-/* sw.js — Service Worker untuk Web Push Notification SIMAP Kejati.
- *
- * File ini WAJIB ada di root public/ agar scope-nya mencakup seluruh aplikasi.
- * Didaftarkan dari halaman Pengaturan Notifikasi setelah user mengaktifkan toggle.
- * Menerima payload JSON: { title, body, icon, badge, vibrate, data: { url } }.
- */
+/* sw.js — Service Worker untuk Web Push Notification SIMAP Kejati.*/
 
 self.addEventListener('push', (event) => {
     let data = {};
