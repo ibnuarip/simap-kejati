@@ -1,7 +1,6 @@
 {
     "name": "SIMAP KEJATI",
     "short_name": "SIMAP",
-    "id": "http://localhost:8080",
     "start_url": ".",
     "display": "standalone",
     "theme_color": "#ffffff",
