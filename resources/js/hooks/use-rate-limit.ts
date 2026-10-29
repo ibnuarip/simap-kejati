@@ -1,5 +1,4 @@
 import { useSyncExternalStore } from 'react';
-import { toast } from 'sonner';
 
 type RateLimitState = {
     secondsLeft: number;
@@ -47,15 +46,12 @@ export function clearRateLimit(): void {
 
 export function notifyRateLimited(
     retryAfterSeconds?: number,
-    customMessage?: string,
+    _customMessage?: string,
 ): void {
     const seconds = Math.max(
         1,
         Number.isFinite(retryAfterSeconds) ? Math.ceil(retryAfterSeconds!) : 60,
     );
-    const toastMessage = customMessage?.trim() || formatMessage(seconds);
-
-    toast.error(toastMessage);
 
     clearTimer();
 

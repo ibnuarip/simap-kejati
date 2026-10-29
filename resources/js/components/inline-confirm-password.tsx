@@ -118,13 +118,9 @@ export default function InlineConfirmPassword({
                 .catch(() => null)) as ConfirmResponse | null;
 
             if (response.status === 429) {
-                const retryAfter =
-                    data?.retry_after ??
-                    Number(response.headers.get('retry-after'));
-                notifyRateLimited(retryAfter, data?.message);
                 setError(
                     data?.message ??
-                        'Silakan tunggu beberapa saat sebelum mencoba kembali.',
+                        'Terlalu banyak permintaan. Silakan tunggu beberapa saat sebelum mencoba kembali.',
                 );
 
                 return;

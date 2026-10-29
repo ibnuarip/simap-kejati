@@ -12,7 +12,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import { notifyRateLimited } from '@/hooks/use-rate-limit';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 
@@ -43,18 +42,8 @@ export default function Home({
                 window.location.href = response.redirect;
             }
         },
-        onError: (err) => {
-            const rateLimitMatch = err.message.match(/tunggu\s+(\d+)\s+detik/i);
-
-            if (rateLimitMatch) {
-                notifyRateLimited(Number(rateLimitMatch[1]), err.message);
-
-                return;
-            }
-
-            if (/too many|429/i.test(err.message)) {
-                notifyRateLimited(60);
-            }
+        onError: () => {
+            // Error ditampilkan langsung melalui state `error` di bawah tombol passkey.
         },
     });
 
@@ -231,10 +220,7 @@ export default function Home({
                                             </span>
                                         )}
                                     </Button>
-                                    {error &&
-                                    !/cancel|tunggu\s+\d+\s+detik|too many|429/i.test(
-                                        error,
-                                    ) ? (
+                                    {error && !/cancel/i.test(error) ? (
                                         <p
                                             data-test="passkey-login-error"
                                             className="text-destructive mt-2 text-center text-sm"

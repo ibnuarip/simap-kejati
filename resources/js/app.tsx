@@ -13,6 +13,7 @@ void createInertiaApp({
     layout: (name) => {
         switch (true) {
             case name === 'home':
+            case name === 'error':
                 return null;
             case name.startsWith('print/'):
                 return null;

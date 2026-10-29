@@ -11,6 +11,8 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
+use Inertia\ExceptionResponse;
+use Inertia\Inertia;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -58,5 +60,19 @@ return Application::configure(basePath: dirname(__DIR__))
             }
 
             return null;
+        });
+
+        Inertia::handleExceptionsUsing(function (ExceptionResponse $response) {
+            if ($response->request->expectsJson() && ! $response->request->header('X-Inertia')) {
+                return $response;
+            }
+
+            if (in_array($response->statusCode(), [403, 404, 500, 503], true)) {
+                return $response->render('error', [
+                    'status' => $response->statusCode(),
+                ]);
+            }
+
+            return $response;
         });
     })->create();

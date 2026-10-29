@@ -6,7 +6,6 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
-import { notifyRateLimited } from '@/hooks/use-rate-limit';
 
 type Props = {
     routes?: {
@@ -34,19 +33,6 @@ export default function PasskeyVerify({
         onSuccess: (response) => {
             router.visit(response.redirect ?? '/dashboard');
         },
-        onError: (err) => {
-            const rateLimitMatch = err.message.match(/tunggu\s+(\d+)\s+detik/i);
-
-            if (rateLimitMatch) {
-                notifyRateLimited(Number(rateLimitMatch[1]), err.message);
-
-                return;
-            }
-
-            if (/too many|429/i.test(err.message)) {
-                notifyRateLimited(60);
-            }
-        },
     });
 
     if (!isSupported) {
@@ -68,10 +54,9 @@ export default function PasskeyVerify({
                         ? (loadingLabel ?? 'Authenticating...')
                         : (label ?? 'Sign in with a passkey')}
                 </Button>
-                {error &&
-                    !/cancel|tunggu\s+\d+\s+detik|too many|429/i.test(
-                        error,
-                    ) && <InputError message={error} className="text-center" />}
+                {error && !/cancel/i.test(error) && (
+                    <InputError message={error} className="text-center" />
+                )}
             </div>
 
             <div className="relative my-6">
