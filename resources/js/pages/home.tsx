@@ -1,4 +1,4 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { usePasskeyVerify } from '@laravel/passkeys/react';
 import { Building2, KeyRound } from 'lucide-react';
@@ -39,11 +39,8 @@ export default function Home({
     const { verify, isLoading, error, isSupported } = usePasskeyVerify({
         onSuccess: (response) => {
             if (response.redirect) {
-                window.location.href = response.redirect;
+                router.visit(response.redirect);
             }
-        },
-        onError: () => {
-            // Error ditampilkan langsung melalui state `error` di bawah tombol passkey.
         },
     });
 
@@ -55,7 +52,7 @@ export default function Home({
                 <div className="relative h-[34vh] min-h-60 w-full overflow-hidden sm:h-[38vh] lg:h-auto lg:min-h-dvh">
                     <div
                         aria-hidden
-                        className="from-primary via-primary/90 to-primary/70 absolute inset-0 bg-gradient-to-br"
+                        className="from-primary via-primary/90 to-primary/70 absolute inset-0 bg-linear-to-br"
                     />
                     {imageOk && (
                         <img
