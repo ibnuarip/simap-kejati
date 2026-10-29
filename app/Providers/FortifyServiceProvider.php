@@ -18,10 +18,13 @@ use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
+use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\Contracts\TwoFactorLoginResponse as TwoFactorLoginResponseContract;
 use Laravel\Fortify\Contracts\VerifyEmailResponse as VerifyEmailResponseContract;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
+use Laravel\Passkeys\Contracts\PasskeyLoginResponse as PasskeyLoginResponseContract;
+use Laravel\Passkeys\Passkeys;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -31,10 +34,11 @@ class FortifyServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(LoginResponseContract::class, LoginResponse::class);
-        // Login 2FA memakai kontrak respons tersendiri: tanpa binding ini
-        // Fortify memakai respons bawaan yang selalu mengarah ke /dashboard
-        // sehingga user non-superadmin (protokol/pimpinan) terkena 403.
+        // Login 2FA & Passkey memakai kontrak respons tersendiri: tanpa binding
+        // ini respons bawaan selalu mengarah ke /dashboard sehingga user
+        // non-superadmin (protokol/pimpinan) terkena 403.
         $this->app->singleton(TwoFactorLoginResponseContract::class, LoginResponse::class);
+        $this->app->singleton(PasskeyLoginResponseContract::class, LoginResponse::class);
         $this->app->singleton(VerifyEmailResponseContract::class, VerifyEmailResponse::class);
     }
 
@@ -56,6 +60,16 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::createUsersUsing(CreateNewUser::class);
         Fortify::authenticateUsing($this->authenticate(...));
+
+        Passkeys::authorizeLoginUsing(function (Request $request, PasskeyUser $user): bool {
+            if ($user instanceof User && $user->isPimpinan() && ! $user->hasActiveLeader()) {
+                throw ValidationException::withMessages([
+                    'credential' => Leader::DEACTIVATED_MESSAGE,
+                ]);
+            }
+
+            return true;
+        });
     }
 
     /**

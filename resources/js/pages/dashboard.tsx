@@ -154,25 +154,25 @@ export default function Dashboard({
                     </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-5">
-                    {statCards.map((stat, index) => (
+                <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+                    {statCards.map((stat) => (
                         <Card
                             key={stat.title}
-                            className={`transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${index === statCards.length - 1 ? 'max-sm:col-span-2' : ''} ${index === 3 ? '!important order-1' : ''} ${index === 4 ? '!important order-2' : ''}`}
+                            className="justify-between gap-3 py-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md max-lg:last:col-span-2"
                         >
-                            <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-1">
-                                <CardDescription className="font-medium">
+                            <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0 px-4 pb-0">
+                                <CardDescription className="line-clamp-2 leading-snug font-medium">
                                     {stat.title}
                                 </CardDescription>
                                 <span className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg">
                                     <stat.icon className="size-4" />
                                 </span>
                             </CardHeader>
-                            <CardContent className="flex flex-col gap-0.5">
+                            <CardContent className="flex flex-col gap-0.5 px-4">
                                 <p className="text-primary text-2xl font-bold tabular-nums md:text-3xl">
                                     {stat.value}
                                 </p>
-                                <p className="text-muted-foreground text-xs">
+                                <p className="text-muted-foreground line-clamp-1 text-xs">
                                     {stat.description}
                                 </p>
                             </CardContent>

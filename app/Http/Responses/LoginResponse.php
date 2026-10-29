@@ -7,8 +7,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Redirect;
 use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
+use Laravel\Fortify\Contracts\TwoFactorLoginResponse as TwoFactorLoginResponseContract;
+use Laravel\Passkeys\Contracts\PasskeyLoginResponse as PasskeyLoginResponseContract;
 
-class LoginResponse implements LoginResponseContract
+class LoginResponse implements LoginResponseContract, PasskeyLoginResponseContract, TwoFactorLoginResponseContract
 {
     /**
      * Redirect the authenticated user to the home page matching their role.
@@ -27,10 +29,14 @@ class LoginResponse implements LoginResponseContract
         /** @var User|null $user */
         $user = $request->user();
 
-        if (! $user) {
-            return Redirect::to('/');
+        $target = $user ? self::homeForRole($user) : '/';
+
+        if ($request->wantsJson()) {
+            return new JsonResponse([
+                'redirect' => url($target),
+            ], 200);
         }
 
-        return Redirect::to(self::homeForRole($user));
+        return Redirect::to($target);
     }
 }
