@@ -18,12 +18,13 @@ use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
-use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\Contracts\TwoFactorLoginResponse as TwoFactorLoginResponseContract;
 use Laravel\Fortify\Contracts\VerifyEmailResponse as VerifyEmailResponseContract;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
 use Laravel\Passkeys\Contracts\PasskeyLoginResponse as PasskeyLoginResponseContract;
+use Laravel\Passkeys\Contracts\PasskeyUser;
+use Laravel\Passkeys\Passkey;
 use Laravel\Passkeys\Passkeys;
 
 class FortifyServiceProvider extends ServiceProvider
@@ -61,7 +62,7 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::createUsersUsing(CreateNewUser::class);
         Fortify::authenticateUsing($this->authenticate(...));
 
-        Passkeys::authorizeLoginUsing(function (Request $request, PasskeyUser $user): bool {
+        Passkeys::authorizeLoginUsing(function (Request $request, PasskeyUser $user, Passkey $passkey): bool {
             if ($user instanceof User && $user->isPimpinan() && ! $user->hasActiveLeader()) {
                 throw ValidationException::withMessages([
                     'credential' => Leader::DEACTIVATED_MESSAGE,
