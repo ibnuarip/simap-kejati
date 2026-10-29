@@ -8,6 +8,7 @@ use App\Http\Responses\LoginResponse;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
 
@@ -44,4 +45,18 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        $exceptions->render(function (ThrottleRequestsException $e, Request $request) {
+            $retryAfter = max(1, (int) ($e->getHeaders()['Retry-After'] ?? 60));
+            $message = "Terlalu banyak permintaan. Silakan tunggu {$retryAfter} detik sebelum mencoba kembali.";
+
+            if ($request->expectsJson() || $request->header('X-Inertia')) {
+                return response()->json([
+                    'message' => $message,
+                    'retry_after' => $retryAfter,
+                ], 429, $e->getHeaders());
+            }
+
+            return null;
+        });
     })->create();

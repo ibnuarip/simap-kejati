@@ -5,12 +5,14 @@ import { Building2, KeyRound } from 'lucide-react';
 import AppLogoIcon from '@/components/app-logo-icon';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
+import RateLimitAlert from '@/components/rate-limit-alert';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { notifyRateLimited } from '@/hooks/use-rate-limit';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 
@@ -41,9 +43,18 @@ export default function Home({
                 window.location.href = response.redirect;
             }
         },
-        onError: () => {
-            // User cancelled the passkey dialog — no action needed.
-            // User can retry or use the password form.
+        onError: (err) => {
+            const rateLimitMatch = err.message.match(/tunggu\s+(\d+)\s+detik/i);
+
+            if (rateLimitMatch) {
+                notifyRateLimited(Number(rateLimitMatch[1]), err.message);
+
+                return;
+            }
+
+            if (/too many|429/i.test(err.message)) {
+                notifyRateLimited(60);
+            }
         },
     });
 
@@ -97,6 +108,8 @@ export default function Home({
                                 </p>
                             </div>
                         </div>
+
+                        <RateLimitAlert className="mb-6" />
 
                         <Form
                             {...store.form()}
@@ -218,7 +231,10 @@ export default function Home({
                                             </span>
                                         )}
                                     </Button>
-                                    {error && !/cancel/i.test(error) ? (
+                                    {error &&
+                                    !/cancel|tunggu\s+\d+\s+detik|too many|429/i.test(
+                                        error,
+                                    ) ? (
                                         <p
                                             data-test="passkey-login-error"
                                             className="text-destructive mt-2 text-center text-sm"

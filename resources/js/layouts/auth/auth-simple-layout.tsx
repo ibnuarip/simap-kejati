@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import AppLogoIcon from '@/components/app-logo-icon';
+import RateLimitAlert from '@/components/rate-limit-alert';
 import { home } from '@/routes';
 import type { AuthLayoutProps } from '@/types';
 
@@ -30,6 +31,7 @@ export default function AuthSimpleLayout({
                             </p>
                         </div>
                     </div>
+                    <RateLimitAlert />
                     {children}
                 </div>
             </div>

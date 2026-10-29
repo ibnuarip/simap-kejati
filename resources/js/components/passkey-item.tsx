@@ -15,21 +15,34 @@ import {
 } from '@/components/ui/dialog';
 import type { Passkey } from '@/types/auth';
 
+export type DeletePasskeyCallbacks = {
+    onSuccess?: () => void;
+    onError?: () => void;
+};
+
 type Props = {
     passkey: Passkey;
-    onDelete: (id: number, onError: () => void) => void;
+    onDelete: (id: number, callbacks?: DeletePasskeyCallbacks) => void;
 };
 
 export default function PasskeyItem({ passkey, onDelete }: Props) {
+    const [open, setOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [needConfirm, setNeedConfirm] = useState(false);
     const [checking, setChecking] = useState(false);
 
     const runDelete = () => {
         setIsDeleting(true);
-        onDelete(passkey.id, () => {
-            setIsDeleting(false);
-            setNeedConfirm(false);
+        onDelete(passkey.id, {
+            onSuccess: () => {
+                setIsDeleting(false);
+                setNeedConfirm(false);
+                setOpen(false);
+            },
+            onError: () => {
+                setIsDeleting(false);
+                setNeedConfirm(false);
+            },
         });
     };
 
@@ -41,10 +54,14 @@ export default function PasskeyItem({ passkey, onDelete }: Props) {
         // Sama seperti registrasi: route hapus passkey dijaga middleware
         // `password.confirm`, jadi cek dulu agar tidak mentok di error.
         setChecking(true);
-        const confirmed = await isPasswordConfirmed();
+        const result = await isPasswordConfirmed();
         setChecking(false);
 
-        if (!confirmed) {
+        if (result === 'rate-limited') {
+            return;
+        }
+
+        if (!result) {
             setNeedConfirm(true);
 
             return;
@@ -56,6 +73,18 @@ export default function PasskeyItem({ passkey, onDelete }: Props) {
     const handleConfirmed = () => {
         setNeedConfirm(false);
         runDelete();
+    };
+
+    const handleOpenChange = (nextOpen: boolean) => {
+        if (isDeleting || checking) {
+            return;
+        }
+
+        setOpen(nextOpen);
+
+        if (!nextOpen) {
+            setNeedConfirm(false);
+        }
     };
 
     return (
@@ -89,7 +118,7 @@ export default function PasskeyItem({ passkey, onDelete }: Props) {
                 </div>
             </div>
 
-            <Dialog>
+            <Dialog open={open} onOpenChange={handleOpenChange}>
                 <DialogTrigger asChild>
                     <Button
                         variant="ghost"

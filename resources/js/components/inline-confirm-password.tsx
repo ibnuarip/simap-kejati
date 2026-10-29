@@ -4,11 +4,13 @@ import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { Label } from '@/components/ui/label';
+import { notifyRateLimited } from '@/hooks/use-rate-limit';
 import { confirmation } from '@/routes/password';
 import { store as confirmStore } from '@/routes/password/confirm';
 
 type ConfirmResponse = {
     message?: string;
+    retry_after?: number;
     errors?: { password?: string[] };
 };
 
@@ -26,12 +28,24 @@ function getXsrfToken(): string | null {
  * `password.confirm`, jadi status ini dicek dulu sebelum memulai
  * ceremoni WebAuthn agar user tidak mentok di error 423.
  */
-export async function isPasswordConfirmed(): Promise<boolean> {
+export async function isPasswordConfirmed(): Promise<boolean | 'rate-limited'> {
     try {
         const response = await fetch(confirmation.url(), {
             headers: { Accept: 'application/json' },
             credentials: 'same-origin',
         });
+
+        if (response.status === 429) {
+            const data = (await response
+                .json()
+                .catch(() => null)) as ConfirmResponse | null;
+            const retryAfter =
+                data?.retry_after ??
+                Number(response.headers.get('retry-after'));
+            notifyRateLimited(retryAfter, data?.message);
+
+            return 'rate-limited';
+        }
 
         if (!response.ok) {
             return false;
@@ -102,6 +116,19 @@ export default function InlineConfirmPassword({
             const data = (await response
                 .json()
                 .catch(() => null)) as ConfirmResponse | null;
+
+            if (response.status === 429) {
+                const retryAfter =
+                    data?.retry_after ??
+                    Number(response.headers.get('retry-after'));
+                notifyRateLimited(retryAfter, data?.message);
+                setError(
+                    data?.message ??
+                        'Silakan tunggu beberapa saat sebelum mencoba kembali.',
+                );
+
+                return;
+            }
 
             setError(
                 data?.errors?.password?.[0] ??

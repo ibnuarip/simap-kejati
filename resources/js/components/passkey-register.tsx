@@ -1,5 +1,6 @@
 import { usePasskeyRegister } from '@laravel/passkeys/react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import InlineConfirmPassword, {
     isPasswordConfirmed,
 } from '@/components/inline-confirm-password';
@@ -7,6 +8,7 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { notifyRateLimited } from '@/hooks/use-rate-limit';
 
 type Props = {
     onSuccess: () => void;
@@ -43,7 +45,32 @@ export default function PasskeyRegistration({ onSuccess }: Props) {
             setName('');
             setShowForm(false);
             setNeedConfirm(false);
+            toast.success('Passkey berhasil ditambahkan.');
             onSuccess();
+        },
+        onError: (err) => {
+            if (
+                err.name === 'UserCancelledError' ||
+                /cancel/i.test(err.message)
+            ) {
+                return;
+            }
+
+            const rateLimitMatch = err.message.match(/tunggu\s+(\d+)\s+detik/i);
+
+            if (rateLimitMatch) {
+                notifyRateLimited(Number(rateLimitMatch[1]), err.message);
+
+                return;
+            }
+
+            if (/too many|429/i.test(err.message)) {
+                notifyRateLimited(60);
+
+                return;
+            }
+
+            toast.error(err.message || 'Gagal menambahkan passkey.');
         },
     });
 
@@ -58,10 +85,14 @@ export default function PasskeyRegistration({ onSuccess }: Props) {
         // Kalau sesi belum konfirmasi, minta password dulu — kalau tidak,
         // request options-nya balik 423 dan user mentok di error.
         setChecking(true);
-        const confirmed = await isPasswordConfirmed();
+        const result = await isPasswordConfirmed();
         setChecking(false);
 
-        if (!confirmed) {
+        if (result === 'rate-limited') {
+            return;
+        }
+
+        if (!result) {
             setNeedConfirm(true);
 
             return;

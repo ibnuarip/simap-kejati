@@ -3,6 +3,7 @@ import { REGEXP_ONLY_DIGITS } from 'input-otp';
 import { ShieldAlert } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import InputError from '@/components/input-error';
+import RateLimitAlert from '@/components/rate-limit-alert';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -51,6 +52,8 @@ export default function TwoFactorDisableModal({ isOpen, onClose }: Props) {
                         memverifikasi sebelum fitur dinonaktifkan.
                     </DialogDescription>
                 </DialogHeader>
+
+                <RateLimitAlert />
 
                 <Form
                     {...disable.form()}

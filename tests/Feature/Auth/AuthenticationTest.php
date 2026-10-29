@@ -117,6 +117,42 @@ test('users are rate limited', function () {
     $response->assertTooManyRequests();
 });
 
+test('rate limited inertia login returns localized 429 json payload with retry_after', function () {
+    $user = User::factory()->create();
+
+    RateLimiter::increment(md5('login'.implode('|', [$user->email, '127.0.0.1'])), amount: 5);
+
+    $response = $this->withHeaders(['X-Inertia' => 'true'])
+        ->post(route('login.store'), [
+            'email' => $user->email,
+            'password' => 'wrong-password',
+        ]);
+
+    $response->assertTooManyRequests()
+        ->assertJsonStructure(['message', 'retry_after'])
+        ->assertHeader('Retry-After');
+
+    expect($response->json('message'))->toContain('Terlalu banyak permintaan');
+    expect($response->json('retry_after'))->toBeGreaterThan(0);
+});
+
+test('rate limited passkey login returns localized 429 json payload', function () {
+    $this->skipUnlessFortifyHas(Features::passkeys());
+
+    RateLimiter::increment(md5('passkeys'.implode('|', ['cred-123', '127.0.0.1'])), amount: 10);
+
+    $response = $this->postJson(route('passkey.login'), [
+        'credential' => ['id' => 'cred-123'],
+    ]);
+
+    $response->assertTooManyRequests()
+        ->assertJsonStructure(['message', 'retry_after'])
+        ->assertHeader('Retry-After');
+
+    expect($response->json('message'))->toContain('Terlalu banyak permintaan');
+    expect($response->json('retry_after'))->toBeGreaterThan(0);
+});
+
 /**
  * @return array{0: array<string, mixed>, 1: string}
  */

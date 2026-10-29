@@ -1,8 +1,11 @@
 import { router } from '@inertiajs/react';
 import { KeyRound } from 'lucide-react';
+import { toast } from 'sonner';
 import { destroy } from '@/actions/Laravel/Passkeys/Http/Controllers/PasskeyRegistrationController';
 import Heading from '@/components/heading';
-import PasskeyItem from '@/components/passkey-item';
+import PasskeyItem, {
+    type DeletePasskeyCallbacks,
+} from '@/components/passkey-item';
 import PasskeyRegistration from '@/components/passkey-register';
 import type { Passkey } from '@/types/auth';
 
@@ -28,10 +31,32 @@ const EmptyState = () => {
 export default function ManagePasskeys(props: Props) {
     const passkeys = props.passkeys ?? [];
 
-    const handleDelete = (id: number, onError: () => void) => {
+    const handleDelete = (id: number, callbacks?: DeletePasskeyCallbacks) => {
         router.delete(destroy.url(id), {
             preserveScroll: true,
-            onError,
+            onSuccess: () => {
+                toast.success('Passkey berhasil dihapus.');
+                callbacks?.onSuccess?.();
+            },
+            onError: (errors) => {
+                const message = Object.values(errors)[0];
+
+                toast.error(
+                    message ? String(message) : 'Gagal menghapus passkey.',
+                );
+                callbacks?.onError?.();
+            },
+            onHttpException: (response) => {
+                callbacks?.onError?.();
+
+                if (response.status === 419 || response.status === 429) {
+                    return;
+                }
+
+                toast.error('Gagal menghapus passkey.');
+
+                return false;
+            },
         });
     };
 

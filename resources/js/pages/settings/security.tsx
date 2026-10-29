@@ -4,6 +4,7 @@ import SecurityController from '@/actions/App/Http/Controllers/Settings/Security
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
+import RateLimitAlert from '@/components/rate-limit-alert';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { edit } from '@/routes/security';
@@ -27,6 +28,8 @@ export default function Security(props: Props) {
             <Head title="Security settings" />
 
             <h1 className="sr-only">Security settings</h1>
+
+            <RateLimitAlert />
 
             <div className="space-y-6">
                 <Heading

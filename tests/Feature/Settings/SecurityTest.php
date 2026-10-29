@@ -190,3 +190,79 @@ test('two factor cannot be disabled when not enabled', function () {
         ->post(route('settings.two-factor.disable'), ['code' => '000000'])
         ->assertNotFound();
 });
+
+test('user can delete their own passkey', function () {
+    $this->skipUnlessFortifyHas(Features::passkeys());
+
+    $user = User::factory()->create();
+
+    $passkey = $user->passkeys()->create([
+        'name' => 'Chrome on Windows',
+        'credential_id' => 'cred-own-123',
+        'credential' => json_encode(['id' => 'cred-own-123']),
+    ]);
+
+    $response = $this->actingAs($user)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->from(route('security.edit'))
+        ->delete(route('passkey.destroy', $passkey));
+
+    $response->assertRedirect(route('security.edit'));
+
+    $this->assertDatabaseMissing('passkeys', [
+        'id' => $passkey->id,
+    ]);
+});
+
+test('user cannot delete another users passkey', function () {
+    $this->skipUnlessFortifyHas(Features::passkeys());
+
+    $owner = User::factory()->create();
+    $otherUser = User::factory()->create();
+
+    $passkey = $owner->passkeys()->create([
+        'name' => 'Owner Passkey',
+        'credential_id' => 'cred-owner-123',
+        'credential' => json_encode(['id' => 'cred-owner-123']),
+    ]);
+
+    $response = $this->actingAs($otherUser)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->from(route('security.edit'))
+        ->delete(route('passkey.destroy', $passkey));
+
+    $response->assertForbidden();
+
+    $this->assertDatabaseHas('passkeys', [
+        'id' => $passkey->id,
+    ]);
+});
+
+test('password update returns localized 429 json payload when rate limited via inertia', function () {
+    $user = User::factory()->create();
+
+    for ($i = 0; $i < 6; $i++) {
+        $this->actingAs($user)
+            ->from(route('security.edit'))
+            ->put(route('user-password.update'), [
+                'current_password' => 'wrong-password',
+                'password' => 'new-password',
+                'password_confirmation' => 'new-password',
+            ]);
+    }
+
+    $response = $this->actingAs($user)
+        ->withHeaders(['X-Inertia' => 'true'])
+        ->put(route('user-password.update'), [
+            'current_password' => 'wrong-password',
+            'password' => 'new-password',
+            'password_confirmation' => 'new-password',
+        ]);
+
+    $response->assertTooManyRequests()
+        ->assertJsonStructure(['message', 'retry_after'])
+        ->assertHeader('Retry-After');
+
+    expect($response->json('message'))->toContain('Terlalu banyak permintaan');
+    expect($response->json('retry_after'))->toBeGreaterThan(0);
+});
