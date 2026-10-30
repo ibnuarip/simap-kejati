@@ -37,9 +37,11 @@ class DashboardController extends Controller
 
         $agendaCountsByMonth = Event::query()
             ->whereNotNull('created_at')
-            ->where('created_at', '>=', $now->startOfYear())
-            ->pluck('created_at')
-            ->countBy(fn ($createdAt): string => $createdAt->format('Y-m'));
+            ->where('created_at', '>=', $now->startOfYear()->toDateTimeString())
+            ->selectRaw('SUBSTR(created_at, 1, 7) as month_key, COUNT(*) as total')
+            ->groupByRaw('SUBSTR(created_at, 1, 7)')
+            ->pluck('total', 'month_key')
+            ->map(fn (mixed $total): int => (int) $total);
 
         $eventsTrend = collect(range(1, 12))->map(function (int $monthNumber) use ($agendaCountsByMonth, $year): array {
             $key = sprintf('%s-%02d', $year, $monthNumber);

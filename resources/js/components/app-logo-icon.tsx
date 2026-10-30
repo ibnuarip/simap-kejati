@@ -6,6 +6,9 @@ export default function AppLogoIcon({
 }: ImgHTMLAttributes<HTMLImageElement>) {
     return (
         <img
+            width={24}
+            height={24}
+            decoding="async"
             {...props}
             src="/images/logo-kejati.png"
             alt={props.alt ?? 'Logo Kejati'}
