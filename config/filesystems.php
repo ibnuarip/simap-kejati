@@ -66,10 +66,10 @@ return [
         |--------------------------------------------------------------------------
         |
         | Foto profil disimpan di sini dan HANYA dilayani lewat route
-        | terotentikasi (pemilik akun), bukan URL publik. Lokal memakai
-        | driver "local" (storage/app/avatars). Saat production, cukup ubah
-        | environment berikut tanpa menyentuh kode:
-        |   AVATAR_DISK_DRIVER=s3 (+ kredensial AWS_* yang sudah ada).
+        | terotentikasi (pemilik akun), bukan URL publik. Default memakai
+        | driver "local" (storage/app/avatars) untuk lokal maupun server
+        | fisik/VPS produksi. Bila memakai object storage eksternal, ubah:
+        |   AVATAR_DISK_DRIVER=s3 (+ kredensial AWS_* yang sesuai).
         |
         */
 
