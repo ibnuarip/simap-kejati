@@ -50,6 +50,7 @@ export default function Profile({
                     {({ processing, errors }) => (
                         <>
                             <AvatarInput
+                                key={auth.user.avatar ?? 'no-avatar'}
                                 userId={auth.user.id}
                                 userName={auth.user.name}
                                 currentAvatar={auth.user.avatar ?? null}
