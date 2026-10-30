@@ -145,66 +145,69 @@ export default function SuperadminLeaders({ leaders }: Props) {
                                 </p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
                                 {filteredLeaders.map((leader) => (
                                     <div
                                         key={leader.id}
-                                        className="flex flex-col gap-4 rounded-xl border p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                                        className="flex flex-col gap-3 rounded-lg border p-3.5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm"
                                     >
-                                        <div className="flex items-start gap-3">
-                                            <Avatar className="bg-primary/10 text-primary size-12 shrink-0 rounded-lg">
-                                                <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                                                    {getInitials(leader.name)}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            <div className="flex min-w-0 flex-1 flex-col items-start gap-1.5">
-                                                <p className="w-full truncate font-semibold">
-                                                    {leader.name}
-                                                </p>
-                                                <div className="flex flex-wrap items-center gap-2">
-                                                    <p className="text-muted-foreground w-full text-xs">
+                                        <div className="flex items-start justify-between gap-2.5">
+                                            <div className="flex min-w-0 items-center gap-2.5">
+                                                <Avatar className="bg-primary/10 text-primary size-9 shrink-0 rounded-md">
+                                                    <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
+                                                        {getInitials(
+                                                            leader.name,
+                                                        )}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <div className="flex min-w-0 flex-1 flex-col">
+                                                    <p className="truncate text-sm leading-snug font-semibold">
+                                                        {leader.name}
+                                                    </p>
+                                                    <p className="text-muted-foreground truncate text-xs">
                                                         {leader.position}
                                                     </p>
-                                                    <Badge
-                                                        variant={
-                                                            leader.is_active
-                                                                ? 'ketua'
-                                                                : 'secondary'
-                                                        }
-                                                    >
-                                                        {leader.is_active
-                                                            ? 'Aktif'
-                                                            : 'Nonaktif'}
-                                                    </Badge>
                                                 </div>
                                             </div>
+                                            <Badge
+                                                variant={
+                                                    leader.is_active
+                                                        ? 'ketua'
+                                                        : 'secondary'
+                                                }
+                                                className="shrink-0 text-[10px]"
+                                            >
+                                                {leader.is_active
+                                                    ? 'Aktif'
+                                                    : 'Nonaktif'}
+                                            </Badge>
                                         </div>
 
-                                        <div className="border-t pt-4">
-                                            <div className="flex flex-col gap-2.5 text-sm">
+                                        <div className="border-t pt-2.5">
+                                            <div className="flex flex-col gap-1.5 text-xs">
                                                 <span className="text-muted-foreground flex items-center gap-2">
-                                                    <Mail className="size-4 shrink-0" />
+                                                    <Mail className="size-3.5 shrink-0" />
                                                     <span className="min-w-0 truncate">
                                                         {leader.email ??
                                                             'Tanpa email'}
                                                     </span>
                                                 </span>
                                                 <span className="text-muted-foreground flex items-center gap-2">
-                                                    <Phone className="size-4 shrink-0" />
+                                                    <Phone className="size-3.5 shrink-0" />
                                                     <span className="min-w-0 truncate">
                                                         {leader.phone ??
                                                             'Tanpa telepon'}
                                                     </span>
                                                 </span>
                                                 <span className="text-muted-foreground flex items-center gap-2">
-                                                    <IdCard className="size-4 shrink-0" />
+                                                    <IdCard className="size-3.5 shrink-0" />
                                                     <span className="min-w-0 truncate">
                                                         {leader.nip ??
                                                             'Tanpa NIP'}
                                                     </span>
                                                 </span>
                                                 <span className="text-muted-foreground flex items-center gap-2">
-                                                    <Activity className="size-4 shrink-0" />
+                                                    <Activity className="size-3.5 shrink-0" />
                                                     <span className="min-w-0 truncate tabular-nums">
                                                         {leader.events_count}{' '}
                                                         agenda terkait
@@ -213,18 +216,18 @@ export default function SuperadminLeaders({ leaders }: Props) {
                                             </div>
                                         </div>
 
-                                        <div className="mt-auto flex items-center gap-2">
+                                        <div className="mt-auto flex items-center gap-2 pt-0.5">
                                             <Button
                                                 size="sm"
                                                 variant="outline"
-                                                className="flex-1"
+                                                className="h-7 flex-1 text-xs"
                                                 onClick={() => openEdit(leader)}
                                             >
-                                                <Pencil />
+                                                <Pencil className="size-3.5" />
                                                 Edit
                                             </Button>
                                             <ConfirmDelete
-                                                className="flex-1"
+                                                className="h-7 flex-1 text-xs"
                                                 url={LeaderController.destroy.url(
                                                     leader.id,
                                                 )}
@@ -375,7 +378,7 @@ function LeaderFields({
                     <SelectContent className="max-w-[calc(100vw-2rem)]">
                         {leaderPositions.map((value) => (
                             <SelectItem key={value} value={value}>
-                                <span className="block min-w-0 break-words whitespace-normal sm:truncate">
+                                <span className="block min-w-0 wrap-break-word whitespace-normal sm:truncate">
                                     {value}
                                 </span>
                             </SelectItem>
