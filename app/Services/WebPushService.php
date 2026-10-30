@@ -21,11 +21,28 @@ class WebPushService
 
         $this->webPush = new WebPush([
             'VAPID' => [
-                'subject' => config('services.webpush.subject'),
+                'subject' => $this->resolveVapidSubject(),
                 'publicKey' => config('services.webpush.public_key'),
                 'privateKey' => config('services.webpush.private_key'),
             ],
         ]);
+    }
+
+    private function resolveVapidSubject(): string
+    {
+        $subject = trim((string) config('services.webpush.subject', ''));
+
+        // RFC 8292 mewajibkan klaim `sub` berupa URI https: atau mailto: dengan domain valid.
+        // Layanan push (FCM/Autopush) menolak domain @localhost atau http://localhost.
+        if (
+            $subject === ''
+            || preg_match('/@localhost$/i', $subject)
+            || preg_match('/^https?:\/\/(localhost|127\.0\.0\.1)/i', $subject)
+        ) {
+            return 'mailto:admin@simap-kejati.go.id';
+        }
+
+        return $subject;
     }
 
     public function isConfigured(): bool
@@ -106,11 +123,13 @@ class WebPushService
         }
 
         $sent = 0;
+        $successfulEndpoints = [];
 
         try {
             foreach ($this->webPush->flush() as $report) {
                 if ($report->isSuccess()) {
                     $sent++;
+                    $successfulEndpoints[] = $report->getEndpoint();
 
                     continue;
                 }
@@ -130,10 +149,10 @@ class WebPushService
             return $sent;
         }
 
-        PushSubscription::whereIn(
-            'endpoint',
-            collect($subscriptions)->map(fn ($sub) => $sub instanceof PushSubscription ? $sub->endpoint : $sub['endpoint'])->all()
-        )->update(['last_used_at' => now()]);
+        if (! empty($successfulEndpoints)) {
+            PushSubscription::whereIn('endpoint', $successfulEndpoints)
+                ->update(['last_used_at' => now()]);
+        }
 
         return $sent;
     }

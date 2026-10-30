@@ -42,10 +42,14 @@ class SendAgendaPushNotification implements ShouldQueue
             return;
         }
 
+        $calendarUrl = $user->role === 'protokol'
+            ? '/protokol/calendar'
+            : '/leadership/calendar';
+
         $payload = $webPush->generatePayload(
             'Pengingat Agenda',
             "{$this->agenda['title']} dimulai {$this->remainingText($now, $start)} lagi (pukul {$this->agenda['start_time']} WIB)",
-            '/leadership/calendar'
+            $calendarUrl
         );
 
         $webPush->sendToUser($user, $payload);

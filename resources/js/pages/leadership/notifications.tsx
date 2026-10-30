@@ -112,45 +112,63 @@ export default function LeadershipNotifications({ reminderTimings }: Props) {
                                 <div className="bg-muted h-9 w-44 animate-pulse rounded-lg" />
                             </div>
                         ) : (
-                            <div className="flex flex-wrap items-center justify-between gap-4">
-                                <p className="flex items-center gap-2 text-sm">
-                                    {push.subscribed ? (
-                                        <>
-                                            <Bell className="size-4 text-green-600" />
-                                            <span className="font-medium">
-                                                Notifikasi aktif di perangkat
-                                                ini.
-                                            </span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <BellOff className="text-muted-foreground size-4" />
-                                            <span className="text-muted-foreground">
-                                                {push.permission === 'denied'
-                                                    ? 'Izin notifikasi diblokir browser. Aktifkan lewat pengaturan situs browser.'
-                                                    : 'Notifikasi belum aktif di perangkat ini.'}
-                                            </span>
-                                        </>
-                                    )}
-                                </p>
-                                <Button
-                                    variant={
-                                        push.subscribed ? 'outline' : 'default'
-                                    }
-                                    onClick={() =>
-                                        push.subscribed
-                                            ? push.disable()
-                                            : push.enable()
-                                    }
-                                    disabled={push.isLoading}
-                                >
-                                    {push.isLoading ? (
-                                        <LoaderCircle className="animate-spin" />
-                                    ) : null}
-                                    {push.subscribed
-                                        ? 'Nonaktifkan'
-                                        : 'Aktifkan Notifikasi'}
-                                </Button>
+                            <div className="flex flex-col gap-3">
+                                <div className="flex flex-wrap items-center justify-between gap-4">
+                                    <p className="flex items-center gap-2 text-sm">
+                                        {push.subscribed ? (
+                                            <>
+                                                <Bell className="size-4 text-green-600" />
+                                                <span className="font-medium">
+                                                    Notifikasi aktif di
+                                                    perangkat ini.
+                                                </span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <BellOff className="text-muted-foreground size-4" />
+                                                <span className="text-muted-foreground">
+                                                    {push.permission ===
+                                                    'denied'
+                                                        ? 'Izin notifikasi diblokir browser. Aktifkan lewat pengaturan situs browser.'
+                                                        : 'Notifikasi belum aktif di perangkat ini.'}
+                                                </span>
+                                            </>
+                                        )}
+                                    </p>
+                                    <Button
+                                        variant={
+                                            push.subscribed
+                                                ? 'outline'
+                                                : 'default'
+                                        }
+                                        onClick={() =>
+                                            push.subscribed
+                                                ? push.disable()
+                                                : push.enable()
+                                        }
+                                        disabled={push.isLoading}
+                                    >
+                                        {push.isLoading ? (
+                                            <LoaderCircle className="animate-spin" />
+                                        ) : null}
+                                        {push.subscribed
+                                            ? 'Nonaktifkan'
+                                            : 'Aktifkan Notifikasi'}
+                                    </Button>
+                                </div>
+                                {push.isBrave && !push.subscribed && (
+                                    <p className="text-muted-foreground text-xs">
+                                        Di Brave, aktifkan{' '}
+                                        <strong>
+                                            Google services for push messaging
+                                        </strong>{' '}
+                                        pada{' '}
+                                        <code className="bg-muted rounded px-1 py-0.5">
+                                            brave://settings/privacy
+                                        </code>
+                                        .
+                                    </p>
+                                )}
                             </div>
                         )}
                     </CardContent>

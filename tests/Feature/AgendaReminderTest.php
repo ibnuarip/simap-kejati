@@ -267,6 +267,54 @@ test('leadership can subscribe and unsubscribe a push endpoint', function () {
     expect(PushSubscription::where('endpoint', $endpoint)->exists())->toBeFalse();
 });
 
+test('push subscribe accepts long endpoints exceeding 255 characters', function () {
+    $user = User::factory()->pimpinan()->create();
+    $longEndpoint = 'https://wns2-pn1p.notify.windows.com/w/?token='.str_repeat('a', 360);
+
+    $this->actingAs($user)
+        ->postJson(route('leadership.push.subscribe'), [
+            'endpoint' => $longEndpoint,
+            'public_key' => 'BGnXTrR1-5BYGb59XhZ7wdk13cGcttsSfz3kmllaiADsnR5Zy3pC6CCBJ5ZbHeoy7EUFKmWViWQY0qo10ypMOJA',
+            'auth_secret' => '5M_S5ctIwkfFigVbKwC_Xw',
+            'name' => 'Perangkat Desktop',
+        ])
+        ->assertOk()
+        ->assertJson(['success' => true]);
+
+    expect(PushSubscription::where('endpoint', $longEndpoint)->where('user_id', $user->id)->exists())->toBeTrue();
+});
+
+test('push job directs protokol user to protokol calendar url', function () {
+    $protokol = User::factory()->protokol()->create();
+    PushSubscription::factory()->create(['user_id' => $protokol->id]);
+    $payloads = [];
+
+    $mock = $this->mock(WebPushService::class, function ($mock) use (&$payloads) {
+        $mock->makePartial();
+        $mock->shouldReceive('sendToUser')->once()->andReturnUsing(
+            function ($user, array $payload) use (&$payloads): int {
+                $payloads[] = $payload;
+
+                return 1;
+            }
+        );
+    });
+
+    $job = new SendAgendaPushNotification(
+        $protokol->id,
+        [
+            'title' => 'Rapat Koordinasi',
+            'start_time' => now(config('app.timezone'))->addMinutes(45)->format('H:i'),
+            'start_at' => now(config('app.timezone'))->addMinutes(45)->format('Y-m-d H:i:s'),
+        ],
+        1,
+    );
+
+    $job->handle($mock);
+
+    expect($payloads[0]['data']['url'])->toBe('/protokol/calendar');
+});
+
 test('reminder command skips everything when web push is not configured', function () {
     Queue::fake();
 
