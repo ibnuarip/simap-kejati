@@ -88,10 +88,10 @@ class ExportController extends Controller
         foreach ($report['events'] as $event) {
             $sheet->setCellValue("A{$row}", $row - $headerRow);
             $sheet->setCellValue("B{$row}", $event->start_time->format('d/m/Y H:i'));
-            $sheet->setCellValue("C{$row}", $event->title);
-            $sheet->setCellValue("D{$row}", $event->leader->name ?? '');
-            $sheet->setCellValue("E{$row}", $event->room->name ?? $event->custom_location ?? '');
-            $sheet->setCellValue("F{$row}", $event->category->name ?? '');
+            $sheet->setCellValue("C{$row}", $this->escapeFormula((string) $event->title));
+            $sheet->setCellValue("D{$row}", $this->escapeFormula((string) ($event->leader->name ?? '')));
+            $sheet->setCellValue("E{$row}", $this->escapeFormula((string) ($event->room->name ?? $event->custom_location ?? '')));
+            $sheet->setCellValue("F{$row}", $this->escapeFormula((string) ($event->category->name ?? '')));
             $sheet->setCellValue("G{$row}", $this->statusLabel($event->currentStatus()));
             $row++;
         }
@@ -304,5 +304,17 @@ class ExportController extends Controller
             'cancelled' => 'Dibatalkan',
             default => $status,
         };
+    }
+
+    /**
+     * Cegah CSV/Spreadsheet Formula Injection bila teks diawali karakter rumus.
+     */
+    private function escapeFormula(string $value): string
+    {
+        if ($value !== '' && in_array($value[0], ['=', '+', '-', '@', "\t", "\r"], true)) {
+            return "'".$value;
+        }
+
+        return $value;
     }
 }

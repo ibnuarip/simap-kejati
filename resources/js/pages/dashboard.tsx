@@ -1,5 +1,5 @@
 import { Head, usePage } from '@inertiajs/react';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import {
     Building2,
     CalendarCheck,
@@ -90,6 +90,13 @@ export default function Dashboard({
     categoryDistribution,
 }: Props) {
     const { auth } = usePage().props;
+    const [chartsReady, setChartsReady] = useState(false);
+
+    useEffect(() => {
+        const frame = requestAnimationFrame(() => setChartsReady(true));
+
+        return () => cancelAnimationFrame(frame);
+    }, []);
 
     const trendTotal = eventsTrend.reduce((sum, point) => sum + point.total, 0);
 
@@ -205,9 +212,13 @@ export default function Dashboard({
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <Suspense fallback={<ChartFallback />}>
-                                <AgendaTrendChart data={eventsTrend} />
-                            </Suspense>
+                            {chartsReady ? (
+                                <Suspense fallback={<ChartFallback />}>
+                                    <AgendaTrendChart data={eventsTrend} />
+                                </Suspense>
+                            ) : (
+                                <ChartFallback />
+                            )}
                         </CardContent>
                     </Card>
 
@@ -222,11 +233,15 @@ export default function Dashboard({
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <Suspense fallback={<ChartFallback />}>
-                                <CategoryDistributionChart
-                                    data={categoryDistribution}
-                                />
-                            </Suspense>
+                            {chartsReady ? (
+                                <Suspense fallback={<ChartFallback />}>
+                                    <CategoryDistributionChart
+                                        data={categoryDistribution}
+                                    />
+                                </Suspense>
+                            ) : (
+                                <ChartFallback />
+                            )}
                         </CardContent>
                     </Card>
                 </div>

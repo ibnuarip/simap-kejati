@@ -17,17 +17,27 @@ class DashboardController extends Controller
 
     public function index(): Response
     {
-        $allEvents = Event::query()->get(['id', 'status', 'start_time', 'end_time']);
+        $now = now()->setTimezone(config('app.timezone'));
+        $nowString = $now->toDateTimeString();
 
-        $eventsByStatus = $allEvents
-            ->countBy(fn (Event $event): string => $event->currentStatus())
-            ->map(fn (int $total): int => $total);
+        /** @var object{total: int|string|null, cancelled: int|string|null, completed: int|string|null, ongoing: int|string|null, scheduled: int|string|null}|null $eventSummary */
+        $eventSummary = Event::query()
+            ->selectRaw(
+                "COUNT(*) as total,
+                SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled,
+                SUM(CASE WHEN status != 'cancelled' AND end_time < ? THEN 1 ELSE 0 END) as completed,
+                SUM(CASE WHEN status != 'cancelled' AND end_time >= ? AND start_time <= ? THEN 1 ELSE 0 END) as ongoing,
+                SUM(CASE WHEN status != 'cancelled' AND start_time > ? THEN 1 ELSE 0 END) as scheduled",
+                [$nowString, $nowString, $nowString, $nowString]
+            )
+            ->toBase()
+            ->first();
 
-        $year = now()->format('Y');
+        $year = $now->format('Y');
 
         $agendaCountsByMonth = Event::query()
             ->whereNotNull('created_at')
-            ->where('created_at', '>=', now()->startOfYear())
+            ->where('created_at', '>=', $now->startOfYear())
             ->pluck('created_at')
             ->countBy(fn ($createdAt): string => $createdAt->format('Y-m'));
 
@@ -48,8 +58,9 @@ class DashboardController extends Controller
             ->pluck('total', 'category_id')
             ->map(fn (mixed $total): int => (int) $total);
 
-        $categoryDistribution = Category::query()
-            ->get()
+        $categories = Category::query()->get(['id', 'name', 'color']);
+
+        $categoryDistribution = $categories
             ->map(fn (Category $category): array => [
                 'name' => $category->name,
                 'color' => $category->color ?? '#94A3B8',
@@ -61,8 +72,8 @@ class DashboardController extends Controller
             ->values();
 
         $upcomingEvents = Event::query()
-            ->with(['leader', 'room', 'category'])
-            ->where('start_time', '>=', now()->setTimezone(config('app.timezone')))
+            ->with(['leader:id,name,position', 'room:id,name', 'category:id,name'])
+            ->where('start_time', '>=', $now)
             ->where('status', '!=', 'completed')
             ->where('status', '!=', 'cancelled')
             ->orderBy('start_time')
@@ -111,13 +122,13 @@ class DashboardController extends Controller
                 'users' => User::count(),
                 'leaders' => Leader::count(),
                 'rooms' => Room::count(),
-                'categories' => Category::count(),
-                'events' => Event::count(),
+                'categories' => $categories->count(),
+                'events' => (int) ($eventSummary->total ?? 0),
                 'eventsByStatus' => [
-                    'scheduled' => $eventsByStatus->get('scheduled', 0),
-                    'ongoing' => $eventsByStatus->get('ongoing', 0),
-                    'completed' => $eventsByStatus->get('completed', 0),
-                    'cancelled' => $eventsByStatus->get('cancelled', 0),
+                    'scheduled' => (int) ($eventSummary->scheduled ?? 0),
+                    'ongoing' => (int) ($eventSummary->ongoing ?? 0),
+                    'completed' => (int) ($eventSummary->completed ?? 0),
+                    'cancelled' => (int) ($eventSummary->cancelled ?? 0),
                 ],
             ],
             'upcomingEvents' => $upcomingEvents->values(),

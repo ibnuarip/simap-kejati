@@ -28,7 +28,7 @@ class EventRequest extends FormRequest
 
         return [
             'title' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
+            'description' => ['nullable', 'string', 'max:5000'],
             'leader_id' => ['required', 'integer', $leaderRule],
             'room_id' => ['nullable', 'integer', Rule::exists('rooms', 'id')],
             'custom_location' => ['nullable', 'string', 'max:255'],
@@ -36,7 +36,7 @@ class EventRequest extends FormRequest
             'start_time' => ['required', 'date'],
             'end_time' => ['required', 'date', 'after:start_time'],
             'dress_code' => ['nullable', 'string', 'max:255'],
-            'participants' => ['nullable', 'string'],
+            'participants' => ['nullable', 'string', 'max:5000'],
             'force_save' => ['nullable', 'boolean'],
         ];
     }

@@ -4,6 +4,7 @@ use App\Http\Middleware\EnsureLeaderActive;
 use App\Http\Middleware\EnsureRole;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\SecurityHeaders;
 use App\Http\Responses\LoginResponse;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -21,10 +22,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Percayai header X-Forwarded-* dari reverse proxy / TLS terminator
-        // (cloudflared tunnel, load balancer production). Tanpa ini, URL asset
-        // dan deteksi HTTPS selalu memakai skema http origin.
-        $middleware->trustProxies(at: '*');
+        // Percayai header X-Forwarded-* hanya dari reverse proxy lokal server
+        // agar rate limiter login tidak bisa ditembus dengan X-Forwarded-For palsu.
+        $middleware->trustProxies(at: ['127.0.0.1', '::1']);
 
         $middleware->alias([
             'role' => EnsureRole::class,
@@ -37,6 +37,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
         $middleware->web(append: [
+            SecurityHeaders::class,
             HandleAppearance::class,
             HandleInertiaRequests::class,
             EnsureLeaderActive::class,
