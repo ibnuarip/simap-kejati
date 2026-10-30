@@ -165,21 +165,21 @@ export default function Dashboard({
                     {statCards.map((stat) => (
                         <Card
                             key={stat.title}
-                            className="justify-between gap-3 py-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md max-lg:last:col-span-2"
+                            className="justify-between gap-2 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md max-lg:last:col-span-2"
                         >
-                            <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0 px-4 pb-0">
-                                <CardDescription className="line-clamp-2 leading-snug font-medium">
+                            <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0 px-3.5 pb-0">
+                                <CardDescription className="line-clamp-2 text-xs leading-snug font-medium">
                                     {stat.title}
                                 </CardDescription>
-                                <span className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg">
-                                    <stat.icon className="size-4" />
+                                <span className="bg-primary/10 text-primary flex size-7 shrink-0 items-center justify-center rounded-md">
+                                    <stat.icon className="size-3.5" />
                                 </span>
                             </CardHeader>
-                            <CardContent className="flex flex-col gap-0.5 px-4">
-                                <p className="text-primary text-2xl font-bold tabular-nums md:text-3xl">
+                            <CardContent className="flex flex-col gap-0.5 px-3.5">
+                                <p className="text-primary text-xl font-bold tabular-nums md:text-2xl">
                                     {stat.value}
                                 </p>
-                                <p className="text-muted-foreground line-clamp-1 text-xs">
+                                <p className="text-muted-foreground line-clamp-1 text-[11px]">
                                     {stat.description}
                                 </p>
                             </CardContent>
@@ -201,7 +201,7 @@ export default function Dashboard({
                                         berjalan.
                                     </CardDescription>
                                 </div>
-                                <div className="shrink-0 text-right">
+                                <div className="shrink-0 text-left">
                                     <p className="text-foreground text-2xl leading-none font-bold tabular-nums">
                                         {trendTotal}
                                     </p>

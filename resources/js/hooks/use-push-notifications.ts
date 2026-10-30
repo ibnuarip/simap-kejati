@@ -59,10 +59,65 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
     return outputArray;
 }
 
-function toFriendlyError(error: unknown): string {
+function hasSameApplicationServerKey(
+    subscription: PushSubscription,
+    expectedKey: Uint8Array,
+): boolean {
+    const currentBuffer = subscription.options?.applicationServerKey;
+
+    if (!currentBuffer) {
+        return true;
+    }
+
+    const currentKey = new Uint8Array(currentBuffer);
+
+    if (currentKey.byteLength !== expectedKey.byteLength) {
+        return false;
+    }
+
+    for (let i = 0; i < currentKey.byteLength; i++) {
+        if (currentKey[i] !== expectedKey[i]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+async function detectBraveBrowser(): Promise<boolean> {
+    if (typeof navigator === 'undefined') {
+        return false;
+    }
+
+    const nav = navigator as Navigator & {
+        brave?: { isBrave?: () => Promise<boolean> };
+    };
+
+    if (typeof nav.brave?.isBrave === 'function') {
+        try {
+            return await nav.brave.isBrave();
+        } catch {
+            return false;
+        }
+    }
+
+    return false;
+}
+
+function toFriendlyError(error: unknown, isBrave: boolean): string {
     if (error instanceof Error) {
         if (/push service/i.test(error.message)) {
-            return 'Gagal mendaftar ke layanan push. Periksa koneksi internet, lalu coba lagi.';
+            if (isBrave) {
+                return 'Aktifkan "Google services for push messaging" di brave://settings/privacy lalu muat ulang browser.';
+            }
+
+            return 'Gagal mendaftar ke layanan push. Periksa koneksi internet atau pengaturan privasi browser.';
+        }
+
+        if (
+            /script|service worker|active service worker/i.test(error.message)
+        ) {
+            return 'Gagal menyiapkan Service Worker notifikasi. Muat ulang halaman lalu coba lagi.';
         }
 
         return error.message;
@@ -92,6 +147,7 @@ export function usePushNotifications(basePath: string = DEFAULT_BASE_PATH) {
     });
     const [isLoading, setIsLoading] = useState(false);
     const [isChecking, setIsChecking] = useState(true);
+    const [isBrave, setIsBrave] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const isSupported =
@@ -99,6 +155,10 @@ export function usePushNotifications(basePath: string = DEFAULT_BASE_PATH) {
         'serviceWorker' in navigator &&
         'PushManager' in window &&
         typeof Notification !== 'undefined';
+
+    useEffect(() => {
+        void detectBraveBrowser().then(setIsBrave);
+    }, []);
 
     const refreshStatus = useCallback(async () => {
         if (!isSupported) {
@@ -109,7 +169,8 @@ export function usePushNotifications(basePath: string = DEFAULT_BASE_PATH) {
 
         try {
             const registration =
-                await navigator.serviceWorker.getRegistration();
+                (await navigator.serviceWorker.getRegistration('/')) ??
+                (await navigator.serviceWorker.getRegistration());
 
             const browserSubscription =
                 (await registration?.pushManager.getSubscription()) ?? null;
@@ -123,8 +184,8 @@ export function usePushNotifications(basePath: string = DEFAULT_BASE_PATH) {
                 return;
             }
 
-            // Cek silang ke server: subscription dianggap aktif hanya jika
-            // endpoint-nya juga tercatat di database.
+            // Cek silang ke server: subscription dianggap aktif untuk user ini
+            // hanya jika endpoint-nya juga tercatat milik user ini di database.
             let serverKnown = false;
             let serverEndpoints: string[] = [];
 
@@ -148,44 +209,14 @@ export function usePushNotifications(basePath: string = DEFAULT_BASE_PATH) {
                 return;
             }
 
-            if (!serverEndpoints.includes(browserSubscription.endpoint)) {
-                // Endpoint tidak dikenal akun ini: kemungkinan milik akun
-                // lain di perangkat yang sama (atau yatim). Pindahkan
-                // kepemilikannya ke user yang sedang login — tanpa endpoint
-                // baru, tanpa prompt izin, tanpa menumpuk data ganda.
-                // JANGAN hapus subscription browser: itu mematikan notif
-                // pemilik sebelumnya secara permanen di perangkat ini.
-                try {
-                    const json = browserSubscription.toJSON() as {
-                        keys?: { p256dh?: string; auth?: string };
-                    };
-
-                    await api(subscribeUrl, {
-                        endpoint: browserSubscription.endpoint,
-                        public_key: json.keys?.p256dh,
-                        auth_secret: json.keys?.auth,
-                        name: navigator.userAgent.includes('Mobile')
-                            ? 'Perangkat Mobile'
-                            : 'Perangkat Desktop',
-                        user_agent: navigator.userAgent.slice(0, 255),
-                    });
-
-                    setStatus({
-                        subscribed: true,
-                        permission: Notification.permission,
-                    });
-                } catch {
-                    setStatus({
-                        subscribed: false,
-                        permission: Notification.permission,
-                    });
-                }
-
-                return;
-            }
-
+            // Jangan auto-transfer dan jangan auto-unsubscribe saat membuka halaman:
+            // jika endpoint di browser milik akun lain di perangkat yang sama,
+            // biarkan akun pemilik sebelumnya tetap aktif sampai user saat ini
+            // secara eksplisit menekan tombol "Aktifkan Notifikasi".
             setStatus({
-                subscribed: true,
+                subscribed: serverEndpoints.includes(
+                    browserSubscription.endpoint,
+                ),
                 permission: Notification.permission,
             });
         } catch {
@@ -193,7 +224,7 @@ export function usePushNotifications(basePath: string = DEFAULT_BASE_PATH) {
         } finally {
             setIsChecking(false);
         }
-    }, [isSupported, statusUrl, subscribeUrl]);
+    }, [isSupported, statusUrl]);
 
     useEffect(() => {
         void refreshStatus();
@@ -219,55 +250,53 @@ export function usePushNotifications(basePath: string = DEFAULT_BASE_PATH) {
                 );
             }
 
-            const registration = await navigator.serviceWorker.register(
-                '/sw.js',
-                { scope: '/' },
-            );
+            await navigator.serviceWorker.register('/sw.js', { scope: '/' });
 
-            await navigator.serviceWorker.ready;
+            const readyRegistration = await navigator.serviceWorker.ready;
 
             const { publicKey } = await api<{ publicKey: string }>(vapidKeyUrl);
+            const applicationServerKey = urlBase64ToUint8Array(publicKey);
 
-            // Hapus subscription lama/basi dulu agar subscribe selalu fresh
-            // (mencegah "Registration failed - push service error").
-            const stale = await registration.pushManager.getSubscription();
+            let subscription =
+                await readyRegistration.pushManager.getSubscription();
 
-            if (stale) {
-                await stale.unsubscribe().catch(() => false);
+            if (
+                subscription &&
+                !hasSameApplicationServerKey(subscription, applicationServerKey)
+            ) {
+                await subscription.unsubscribe().catch(() => false);
+                subscription = null;
             }
 
-            const subscription = await registration.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: urlBase64ToUint8Array(publicKey),
-            });
+            if (!subscription) {
+                subscription = await readyRegistration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey,
+                });
+            }
 
             const subscriptionJson = subscription.toJSON();
 
-            try {
-                await api(subscribeUrl, {
-                    endpoint: subscription.endpoint,
-                    public_key: subscriptionJson.keys?.p256dh,
-                    auth_secret: subscriptionJson.keys?.auth,
-                    name: navigator.userAgent.includes('Mobile')
-                        ? 'Perangkat Mobile'
-                        : 'Perangkat Desktop',
-                    user_agent: navigator.userAgent.slice(0, 255),
-                });
-            } catch (error) {
-                // Rollback: jangan sisakan subscription yatim di browser.
-                await subscription.unsubscribe().catch(() => false);
-                throw error;
-            }
+            await api(subscribeUrl, {
+                endpoint: subscription.endpoint,
+                public_key: subscriptionJson.keys?.p256dh,
+                auth_secret: subscriptionJson.keys?.auth,
+                name: navigator.userAgent.includes('Mobile')
+                    ? 'Perangkat Mobile'
+                    : 'Perangkat Desktop',
+                user_agent: navigator.userAgent.slice(0, 255),
+            });
 
             setStatus((prev) => ({ ...prev, subscribed: true }));
         } catch (error) {
             // Simpan error mentah di console untuk diagnosis (F12 → Console).
             console.error('[push] enable failed:', error);
-            setErrorMessage(toFriendlyError(error));
+            const braveDetected = isBrave || (await detectBraveBrowser());
+            setErrorMessage(toFriendlyError(error, braveDetected));
         } finally {
             setIsLoading(false);
         }
-    }, [isSupported, vapidKeyUrl, subscribeUrl]);
+    }, [isSupported, isBrave, vapidKeyUrl, subscribeUrl]);
 
     const disable = useCallback(async () => {
         setIsLoading(true);
@@ -275,7 +304,8 @@ export function usePushNotifications(basePath: string = DEFAULT_BASE_PATH) {
 
         try {
             const registration =
-                await navigator.serviceWorker.getRegistration();
+                (await navigator.serviceWorker.getRegistration('/')) ??
+                (await navigator.serviceWorker.getRegistration());
 
             const subscription =
                 await registration?.pushManager.getSubscription();
@@ -284,7 +314,7 @@ export function usePushNotifications(basePath: string = DEFAULT_BASE_PATH) {
                 await api(unsubscribeUrl, {
                     endpoint: subscription.endpoint,
                 });
-                await subscription.unsubscribe();
+                await subscription.unsubscribe().catch(() => false);
             }
 
             setStatus((prev) => ({ ...prev, subscribed: false }));
@@ -297,10 +327,11 @@ export function usePushNotifications(basePath: string = DEFAULT_BASE_PATH) {
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [unsubscribeUrl]);
 
     return {
         isSupported,
+        isBrave,
         subscribed: status.subscribed,
         permission: status.permission,
         isLoading,

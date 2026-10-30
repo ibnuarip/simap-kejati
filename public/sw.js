@@ -1,7 +1,18 @@
 /* sw.js — Service Worker untuk Web Push Notification SIMAP Kejati.*/
 
+self.addEventListener('install', () => {
+    self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+    event.waitUntil(self.clients.claim());
+});
+
 self.addEventListener('push', (event) => {
-    if (Notification.permission !== 'granted') {
+    if (
+        typeof Notification !== 'undefined' &&
+        Notification.permission !== 'granted'
+    ) {
         return;
     }
 
