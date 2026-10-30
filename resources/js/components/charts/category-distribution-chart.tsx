@@ -67,6 +67,7 @@ export function CategoryDistributionChart({ data }: Props) {
                             data={data}
                             dataKey="total"
                             nameKey="name"
+                            isAnimationActive={false}
                             innerRadius="68%"
                             outerRadius="100%"
                             paddingAngle={3}

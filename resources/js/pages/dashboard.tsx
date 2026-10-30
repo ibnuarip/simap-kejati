@@ -52,10 +52,10 @@ const CategoryDistributionChart = lazy(() =>
     ),
 );
 
-function ChartFallback() {
+function ChartFallback({ className = 'h-64 sm:h-72' }: { className?: string }) {
     return (
         <div
-            className="flex h-60 flex-col justify-end gap-2 sm:h-72"
+            className={`flex flex-col justify-end gap-2 ${className}`}
             aria-busy="true"
             aria-label="Memuat grafik"
         >
@@ -93,9 +93,18 @@ export default function Dashboard({
     const [chartsReady, setChartsReady] = useState(false);
 
     useEffect(() => {
-        const frame = requestAnimationFrame(() => setChartsReady(true));
+        if ('requestIdleCallback' in window) {
+            const idleId = window.requestIdleCallback(
+                () => setChartsReady(true),
+                { timeout: 300 },
+            );
 
-        return () => cancelAnimationFrame(frame);
+            return () => window.cancelIdleCallback(idleId);
+        }
+
+        const timer = setTimeout(() => setChartsReady(true), 150);
+
+        return () => clearTimeout(timer);
     }, []);
 
     const trendTotal = eventsTrend.reduce((sum, point) => sum + point.total, 0);
@@ -234,13 +243,17 @@ export default function Dashboard({
                         </CardHeader>
                         <CardContent>
                             {chartsReady ? (
-                                <Suspense fallback={<ChartFallback />}>
+                                <Suspense
+                                    fallback={
+                                        <ChartFallback className="h-52" />
+                                    }
+                                >
                                     <CategoryDistributionChart
                                         data={categoryDistribution}
                                     />
                                 </Suspense>
                             ) : (
-                                <ChartFallback />
+                                <ChartFallback className="h-52" />
                             )}
                         </CardContent>
                     </Card>

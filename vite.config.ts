@@ -11,6 +11,38 @@ export default defineConfig({
     optimizeDeps: {
         include: ['recharts'],
     },
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks(id: string) {
+                    const normalizedId = id.replaceAll('\\', '/');
+
+                    if (!normalizedId.includes('/node_modules/')) {
+                        return undefined;
+                    }
+
+                    if (
+                        normalizedId.includes('/node_modules/react/') ||
+                        normalizedId.includes('/node_modules/react-dom/') ||
+                        normalizedId.includes('/node_modules/scheduler/') ||
+                        normalizedId.includes('/node_modules/@inertiajs/')
+                    ) {
+                        return 'vendor-react';
+                    }
+
+                    if (
+                        normalizedId.includes('/node_modules/radix-ui/') ||
+                        normalizedId.includes('/node_modules/@radix-ui/') ||
+                        normalizedId.includes('/node_modules/lucide-react/')
+                    ) {
+                        return 'vendor-ui';
+                    }
+
+                    return undefined;
+                },
+            },
+        },
+    },
     resolve: {
         alias: {
             '@': path.resolve(import.meta.dirname, './resources/js'),

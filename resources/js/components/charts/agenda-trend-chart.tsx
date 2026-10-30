@@ -97,6 +97,7 @@ export function AgendaTrendChart({ data }: Props) {
                     <Bar
                         dataKey="total"
                         name="Agenda"
+                        isAnimationActive={false}
                         radius={[6, 6, 0, 0]}
                         maxBarSize={26}
                         background={{

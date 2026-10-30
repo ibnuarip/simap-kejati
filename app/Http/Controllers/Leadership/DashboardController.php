@@ -20,24 +20,48 @@ class DashboardController extends Controller
 
         abort_unless($leader instanceof Leader, 403, 'Akun Anda belum ditautkan ke data pimpinan.');
 
-        $events = Event::query()
-            ->with(['leader', 'room', 'category'])
-            ->where('leader_id', $leader->getKey())
+        $leaderId = $leader->getKey();
+        $nowString = now()->setTimezone(config('app.timezone'))->toDateTimeString();
+        $today = CarbonImmutable::today(config('app.timezone'));
+        $tomorrow = $today->addDay();
+        $todayStart = $today->startOfDay()->toDateTimeString();
+        $tomorrowStart = $tomorrow->startOfDay()->toDateTimeString();
+        $monthStart = $today->startOfMonth()->toDateTimeString();
+        $nextMonthStart = $today->startOfMonth()->addMonth()->toDateTimeString();
+
+        /** @var object{today: int|string|null, ongoing: int|string|null, upcoming: int|string|null, month: int|string|null}|null $summary */
+        $summary = Event::query()
+            ->where('leader_id', $leaderId)
+            ->selectRaw(
+                "SUM(CASE WHEN start_time >= ? AND start_time < ? THEN 1 ELSE 0 END) as today,
+                SUM(CASE WHEN status != 'cancelled' AND end_time >= ? AND start_time <= ? THEN 1 ELSE 0 END) as ongoing,
+                SUM(CASE WHEN start_time >= ? AND status NOT IN ('completed', 'cancelled') THEN 1 ELSE 0 END) as upcoming,
+                SUM(CASE WHEN start_time >= ? AND start_time < ? THEN 1 ELSE 0 END) as month",
+                [$todayStart, $tomorrowStart, $nowString, $nowString, $tomorrowStart, $monthStart, $nextMonthStart]
+            )
+            ->toBase()
+            ->first();
+
+        $relations = ['leader:id,name,position', 'room:id,name', 'category:id,name'];
+
+        $todayEvents = Event::query()
+            ->where('leader_id', $leaderId)
+            ->with($relations)
+            ->where('start_time', '>=', $todayStart)
+            ->where('start_time', '<', $tomorrowStart)
             ->orderBy('start_time')
             ->get();
 
-        $today = CarbonImmutable::today(config('app.timezone'));
-        $tomorrow = $today->addDay();
-
-        $todayEvents = $events->filter(fn (Event $event) => $event->start_time->isSameDay($today))->values();
-
         // Agenda mendatang = tanggal MULAI hari setelah hari ini (bukan >=
         // hari ini 00:00, yang ikut mengambil agenda hari ini), belum selesai.
-        $isUpcoming = fn (Event $event): bool => $event->start_time->greaterThanOrEqualTo($tomorrow)
-            && $event->status !== 'completed'
-            && $event->status !== 'cancelled';
-
-        $upcomingEvents = $events->filter($isUpcoming)->take(3)->values();
+        $upcomingEvents = Event::query()
+            ->where('leader_id', $leaderId)
+            ->with($relations)
+            ->where('start_time', '>=', $tomorrowStart)
+            ->whereNotIn('status', ['completed', 'cancelled'])
+            ->orderBy('start_time')
+            ->limit(3)
+            ->get();
 
         return Inertia::render('leadership/dashboard', [
             'leader' => [
@@ -45,10 +69,10 @@ class DashboardController extends Controller
                 'position' => $leader->position,
             ],
             'stats' => [
-                'today' => $todayEvents->count(),
-                'ongoing' => $events->filter(fn (Event $event) => $event->currentStatus() === 'ongoing')->count(),
-                'upcoming' => $events->filter($isUpcoming)->count(),
-                'month' => $events->filter(fn (Event $event) => $event->start_time->isSameMonth($today))->count(),
+                'today' => (int) ($summary->today ?? 0),
+                'ongoing' => (int) ($summary->ongoing ?? 0),
+                'upcoming' => (int) ($summary->upcoming ?? 0),
+                'month' => (int) ($summary->month ?? 0),
             ],
             'todayEvents' => EventResource::list($todayEvents),
             'upcomingEvents' => EventResource::list($upcomingEvents),
