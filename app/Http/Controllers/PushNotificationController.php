@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\PushSubscription;
+use App\Models\User;
 use App\Services\WebPushService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class PushNotificationController extends Controller
 {
@@ -16,13 +16,19 @@ class PushNotificationController extends Controller
 
     public function subscribe(Request $request): JsonResponse
     {
-        $user = Auth::user();
-        if (! $user) {
+        $user = $request->user();
+        if (! $user instanceof User) {
             return response()->json(['error' => 'Unauthenticated'], 401);
         }
 
         $validated = $request->validate([
-            'endpoint' => 'required|string|max:500',
+            'endpoint' => [
+                'required',
+                'string',
+                'max:500',
+                'url:https',
+                'not_regex:/^https:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])(:|\/|$)/i',
+            ],
             'public_key' => 'required|string|max:500',
             'auth_secret' => 'required|string|max:500',
             'name' => 'nullable|string|max:255',
@@ -63,16 +69,16 @@ class PushNotificationController extends Controller
 
     public function unsubscribe(Request $request): JsonResponse
     {
-        $user = Auth::user();
-        if (! $user) {
+        $user = $request->user();
+        if (! $user instanceof User) {
             return response()->json(['error' => 'Unauthenticated'], 401);
         }
 
         $validated = $request->validate([
-            'endpoint' => 'required|string|max:500',
+            'endpoint' => 'required|string|max:500|url:https',
         ]);
 
-        $deleted = $this->webPush->unsubscribe($validated['endpoint']);
+        $deleted = $this->webPush->unsubscribe($validated['endpoint'], $user->id);
 
         return response()->json([
             'success' => true,
@@ -93,8 +99,8 @@ class PushNotificationController extends Controller
 
     public function status(Request $request): JsonResponse
     {
-        $user = Auth::user();
-        if (! $user) {
+        $user = $request->user();
+        if (! $user instanceof User) {
             return response()->json(['error' => 'Unauthenticated'], 401);
         }
 

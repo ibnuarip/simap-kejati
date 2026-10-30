@@ -56,9 +56,11 @@ class WebPushService
         ]);
     }
 
-    public function unsubscribe(string $endpoint): int
+    public function unsubscribe(string $endpoint, ?int $userId = null): int
     {
-        return PushSubscription::where('endpoint', $endpoint)->delete();
+        return PushSubscription::where('endpoint', $endpoint)
+            ->when($userId !== null, fn ($query) => $query->where('user_id', $userId))
+            ->delete();
     }
 
     /**
