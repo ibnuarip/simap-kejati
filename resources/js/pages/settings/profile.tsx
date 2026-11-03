@@ -1,6 +1,7 @@
 import { Form, Head, usePage } from '@inertiajs/react';
 import { Link } from '@inertiajs/react';
 import { Ban } from 'lucide-react';
+import { toast } from 'sonner';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import { AvatarInput } from '@/components/avatar-input';
 import DeleteUser from '@/components/delete-user';
@@ -27,6 +28,15 @@ export default function Profile({
 }) {
     const { auth } = usePage<PageProps>().props;
 
+    const updateFormProps = {
+        onError: (errors: Record<string, string>) => {
+            const message = Object.values(errors)[0];
+            toast.error(
+                message ? String(message) : 'Gagal memperbarui profil.',
+            );
+        },
+    };
+
     return (
         <>
             <Head title="Profile settings" />
@@ -42,6 +52,7 @@ export default function Profile({
 
                 <Form
                     {...ProfileController.update.form()}
+                    {...updateFormProps}
                     options={{
                         preserveScroll: true,
                     }}

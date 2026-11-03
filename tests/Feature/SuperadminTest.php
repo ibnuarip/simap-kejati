@@ -1,6 +1,8 @@
 <?php
 
 use App\Mail\Auth\AccountCredentialsMail;
+use App\Mail\Auth\EmailChangedMail;
+use App\Mail\Auth\PasswordChangedMail;
 use App\Models\Category;
 use App\Models\Event;
 use App\Models\Leader;
@@ -251,6 +253,104 @@ test('superadmins can update and delete a leader', function () {
     $this->assertDatabaseMissing('leaders', ['id' => $leader->id]);
 });
 
+test('leader email nip and phone must not already be in use', function () {
+    $superadmin = makeSuperadmin();
+    $this->actingAs($superadmin);
+
+    Leader::factory()->create([
+        'nip' => '198001012010011001',
+        'email' => 'kajati@kejati.go.id',
+        'phone' => '081234561221',
+    ]);
+
+    $this->post(route('master.leaders.store'), [
+        'name' => 'Duplikat Email',
+        'position' => 'Asisten Bidang Intelijen',
+        'nip' => '197505121999031002',
+        'email' => 'kajati@kejati.go.id',
+        'phone' => '081399998888',
+        'is_active' => '1',
+    ])->assertSessionHasErrors(['email' => 'Email sudah digunakan oleh pimpinan lain.']);
+
+    $this->post(route('master.leaders.store'), [
+        'name' => 'Duplikat NIP',
+        'position' => 'Asisten Bidang Intelijen',
+        'nip' => '198001012010011001',
+        'email' => 'duplikat-nip@kejati.go.id',
+        'phone' => '081399998888',
+        'is_active' => '1',
+    ])->assertSessionHasErrors(['nip' => 'NIP sudah digunakan oleh pimpinan lain.']);
+
+    $this->post(route('master.leaders.store'), [
+        'name' => 'Duplikat Telepon',
+        'position' => 'Asisten Bidang Intelijen',
+        'nip' => '197505121999031002',
+        'email' => 'duplikat-phone@kejati.go.id',
+        'phone' => '081234561221',
+        'is_active' => '1',
+    ])->assertSessionHasErrors(['phone' => 'No. telepon sudah digunakan oleh pimpinan lain.']);
+
+    $this->assertDatabaseCount('leaders', 1);
+});
+
+test('leader update rejects another leaders email nip and phone but accepts its own', function () {
+    $superadmin = makeSuperadmin();
+    $leaderA = Leader::factory()->create([
+        'nip' => '198001012010011001',
+        'email' => 'a@kejati.go.id',
+        'phone' => '081234561221',
+    ]);
+    $leaderB = Leader::factory()->create([
+        'nip' => '197505121999031002',
+        'email' => 'b@kejati.go.id',
+        'phone' => '081399998888',
+    ]);
+
+    $this->actingAs($superadmin);
+
+    $this->patch(route('master.leaders.update', $leaderA), [
+        'name' => $leaderA->name,
+        'position' => $leaderA->position,
+        'nip' => $leaderA->nip,
+        'email' => $leaderB->email,
+        'phone' => $leaderA->phone,
+        'is_active' => '1',
+    ])->assertSessionHasErrors(['email' => 'Email sudah digunakan oleh pimpinan lain.']);
+
+    $this->patch(route('master.leaders.update', $leaderA), [
+        'name' => $leaderA->name,
+        'position' => $leaderA->position,
+        'nip' => '197505121999031002',
+        'email' => $leaderA->email,
+        'phone' => $leaderA->phone,
+        'is_active' => '1',
+    ])->assertSessionHasErrors(['nip' => 'NIP sudah digunakan oleh pimpinan lain.']);
+
+    $this->patch(route('master.leaders.update', $leaderA), [
+        'name' => $leaderA->name,
+        'position' => $leaderA->position,
+        'nip' => $leaderA->nip,
+        'email' => $leaderA->email,
+        'phone' => '081399998888',
+        'is_active' => '1',
+    ])->assertSessionHasErrors(['phone' => 'No. telepon sudah digunakan oleh pimpinan lain.']);
+
+    $this->patch(route('master.leaders.update', $leaderA), [
+        'name' => $leaderA->name,
+        'position' => $leaderA->position,
+        'nip' => '198001012010011001',
+        'email' => $leaderA->email,
+        'phone' => '081234561221',
+        'is_active' => '1',
+    ])->assertSessionHasNoErrors();
+
+    $leaderA->refresh();
+
+    expect($leaderA->nip)->toBe('1980xxxxxxxxxx1001')
+        ->and($leaderA->phone)->toBe('+62xxxxxxx1221')
+        ->and($leaderA->email)->toBe('a@kejati.go.id');
+});
+
 test('superadmins can create and delete a room', function () {
     $superadmin = makeSuperadmin();
     $this->actingAs($superadmin);
@@ -397,6 +497,93 @@ test('updating a user without a password keeps the existing password', function 
 
     expect($user->password)->toBe($originalPassword)
         ->and($user->name)->toBe('Nama Baru');
+});
+
+test('updating a user password queues a notification email to that user', function () {
+    Mail::fake();
+
+    $superadmin = makeSuperadmin();
+    $user = User::factory()->protokol()->create();
+
+    $this->actingAs($superadmin);
+
+    $this->patch(route('users.update', $user), [
+        'name' => $user->name,
+        'email' => $user->email,
+        'role' => 'protokol',
+        'password' => 'passwordbaru123',
+    ])->assertRedirect()->assertSessionHasNoErrors();
+
+    Mail::assertQueued(PasswordChangedMail::class, function (PasswordChangedMail $mail) use ($user) {
+        return $mail->hasTo($user->email);
+    });
+});
+
+test('updating a user without a password does not queue a notification email', function () {
+    Mail::fake();
+
+    $superadmin = makeSuperadmin();
+    $user = User::factory()->protokol()->create();
+
+    $this->actingAs($superadmin);
+
+    $this->patch(route('users.update', $user), [
+        'name' => 'Nama Baru',
+        'email' => $user->email,
+        'role' => 'protokol',
+    ])->assertRedirect();
+
+    Mail::assertNotQueued(PasswordChangedMail::class);
+});
+
+test('updating a user email queues a notification email to the new address', function () {
+    Mail::fake();
+
+    $superadmin = makeSuperadmin();
+    $user = User::factory()->protokol()->create();
+
+    $this->actingAs($superadmin);
+
+    $this->patch(route('users.update', $user), [
+        'name' => $user->name,
+        'email' => 'email-baru@kejati.go.id',
+        'role' => 'protokol',
+    ])->assertRedirect()->assertSessionHasNoErrors();
+
+    Mail::assertQueued(EmailChangedMail::class, fn (EmailChangedMail $mail): bool => $mail->hasTo('email-baru@kejati.go.id'));
+});
+
+test('updating a user without changing the email does not queue a notification email', function () {
+    Mail::fake();
+
+    $superadmin = makeSuperadmin();
+    $user = User::factory()->protokol()->create();
+
+    $this->actingAs($superadmin);
+
+    $this->patch(route('users.update', $user), [
+        'name' => 'Nama Baru',
+        'email' => $user->email,
+        'role' => 'protokol',
+    ])->assertRedirect()->assertSessionHasNoErrors();
+
+    Mail::assertNotQueued(EmailChangedMail::class);
+});
+
+test('creating a user with an email that is already used is rejected', function () {
+    $superadmin = makeSuperadmin();
+    $this->actingAs($superadmin);
+
+    User::factory()->create(['email' => 'terpakai@kejati.go.id']);
+
+    $this->post(route('users.store'), [
+        'name' => 'Duplikat Email',
+        'email' => 'terpakai@kejati.go.id',
+        'role' => 'superadmin',
+        'password' => 'rahasia1234',
+    ])->assertSessionHasErrors(['email' => 'Email sudah digunakan oleh akun lain.']);
+
+    $this->assertDatabaseCount('users', 2);
 });
 
 test('superadmins cannot delete their own account', function () {

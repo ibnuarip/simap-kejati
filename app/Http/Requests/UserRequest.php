@@ -38,6 +38,7 @@ class UserRequest extends FormRequest
     {
         return [
             'leader_id.required' => 'Akun pimpinan wajib ditautkan ke data pimpinan.',
+            'email.unique' => 'Email sudah digunakan oleh akun lain.',
             'avatar.image' => 'Berkas harus berupa gambar.',
             'avatar.mimes' => 'Foto harus berformat JPG, JPEG, atau PNG.',
             'avatar.max' => 'Ukuran foto maksimal '.ceil(AvatarService::MAX_KILOBYTES / 1024).' MB.',
