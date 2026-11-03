@@ -1,5 +1,6 @@
 import { Form, Head, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Pencil, Plus, X } from 'lucide-react';
 import UserController from '@/actions/App/Http/Controllers/Superadmin/UserController';
 import ConfirmDelete from '@/components/confirm-delete';
@@ -96,9 +97,33 @@ export default function SuperadminUsers({ users, leaders }: Props) {
         setDialogOpen(true);
     };
 
-    const formProps = {
+    const createFormProps = {
         className: 'grid gap-4',
-        onSuccess: closeDialog,
+        onSuccess: () => {
+            closeDialog();
+            toast.success('Pengguna berhasil ditambahkan.');
+        },
+        onError: (errors: Record<string, string>) => {
+            const message = Object.values(errors)[0];
+            toast.error(
+                message ? String(message) : 'Gagal menyimpan data pengguna.',
+            );
+        },
+        options: { preserveScroll: true },
+    };
+
+    const updateFormProps = {
+        className: 'grid gap-4',
+        onSuccess: () => {
+            closeDialog();
+            toast.success('Data pengguna berhasil diperbarui.');
+        },
+        onError: (errors: Record<string, string>) => {
+            const message = Object.values(errors)[0];
+            toast.error(
+                message ? String(message) : 'Gagal memperbarui data pengguna.',
+            );
+        },
         options: { preserveScroll: true },
     };
 
@@ -151,7 +176,7 @@ export default function SuperadminUsers({ users, leaders }: Props) {
 
                                 {/* Desktop (≥1024px): tabel scrollable */}
                                 <div className="hidden overflow-x-auto lg:block">
-                                    <table className="w-full min-w-[640px] text-left text-sm">
+                                    <table className="w-full min-w-160 text-left text-sm">
                                         <thead className="border-border text-muted-foreground border-b text-xs tracking-wide uppercase">
                                             <tr>
                                                 <th className="py-3 pr-4 font-medium">
@@ -292,7 +317,7 @@ export default function SuperadminUsers({ users, leaders }: Props) {
                         <Form
                             key={`edit-${editing.id}`}
                             {...UserController.update.form(editing.id)}
-                            {...formProps}
+                            {...updateFormProps}
                         >
                             {({ processing, errors }) => (
                                 <>
@@ -333,7 +358,7 @@ export default function SuperadminUsers({ users, leaders }: Props) {
                         <Form
                             key="create"
                             {...UserController.store.form()}
-                            {...formProps}
+                            {...createFormProps}
                         >
                             {({ processing, errors }) => (
                                 <>

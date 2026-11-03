@@ -1,5 +1,6 @@
 import { Form, Head } from '@inertiajs/react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Pencil, Plus, X } from 'lucide-react';
 import RoomController from '@/actions/App/Http/Controllers/Superadmin/RoomController';
 import { ActiveToggle } from '@/components/active-toggle';
@@ -48,9 +49,33 @@ export default function SuperadminRooms({ rooms }: Props) {
         setDialogOpen(true);
     };
 
-    const formProps = {
+    const createFormProps = {
         className: 'grid gap-4',
-        onSuccess: closeDialog,
+        onSuccess: () => {
+            closeDialog();
+            toast.success('Data ruangan berhasil ditambahkan.');
+        },
+        onError: (errors: Record<string, string>) => {
+            const message = Object.values(errors)[0];
+            toast.error(
+                message ? String(message) : 'Gagal menyimpan data ruangan.',
+            );
+        },
+        options: { preserveScroll: true },
+    };
+
+    const updateFormProps = {
+        className: 'grid gap-4',
+        onSuccess: () => {
+            closeDialog();
+            toast.success('Data ruangan berhasil diperbarui.');
+        },
+        onError: (errors: Record<string, string>) => {
+            const message = Object.values(errors)[0];
+            toast.error(
+                message ? String(message) : 'Gagal memperbarui data ruangan.',
+            );
+        },
         options: { preserveScroll: true },
     };
 
@@ -161,7 +186,7 @@ export default function SuperadminRooms({ rooms }: Props) {
                         <Form
                             key={`edit-${editing.id}`}
                             {...RoomController.update.form(editing.id)}
-                            {...formProps}
+                            {...updateFormProps}
                         >
                             {({ processing, errors }) => (
                                 <>
@@ -193,7 +218,7 @@ export default function SuperadminRooms({ rooms }: Props) {
                         <Form
                             key="create"
                             {...RoomController.store.form()}
-                            {...formProps}
+                            {...createFormProps}
                         >
                             {({ processing, errors }) => (
                                 <>

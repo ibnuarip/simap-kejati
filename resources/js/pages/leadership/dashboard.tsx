@@ -26,6 +26,16 @@ type Props = {
     upcomingEvents: AgendaItem[];
 };
 
+function shortMonthLabel(date: Date): string {
+    return date
+        .toLocaleDateString('id-ID', { month: 'short' })
+        .replace('.', '');
+}
+
+function toLocalDate(dateTime: string): Date {
+    return new Date(dateTime.replace(' ', 'T'));
+}
+
 export default function LeadershipDashboard({
     leader,
     stats,
@@ -43,82 +53,83 @@ export default function LeadershipDashboard({
                 ? 'Selamat sore'
                 : 'Selamat malam';
 
+    const statCards = [
+        {
+            title: 'Hari Ini',
+            value: stats.today,
+            description: 'Agenda Anda hari ini',
+            icon: CalendarClock,
+        },
+        {
+            title: 'Sedang Berlangsung',
+            value: stats.ongoing,
+            description: 'Kegiatan yang sedang berjalan',
+            icon: Activity,
+        },
+        {
+            title: 'Mendatang',
+            value: stats.upcoming,
+            description: 'Agenda terjadwal berikutnya',
+            icon: Calendar,
+        },
+        {
+            title: 'Bulan Ini',
+            value: stats.month,
+            description: 'Total agenda bulan berjalan',
+            icon: CalendarCheck,
+        },
+    ];
+
     return (
         <>
             <Head title="Beranda" />
 
-            <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col gap-6 duration-300 lg:gap-8">
-                <div className="flex flex-col gap-1.5">
-                    <p className="text-primary flex items-center gap-1.5 text-sm font-medium">
+            <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col gap-3.5 duration-300 2xl:gap-5">
+                <div className="flex flex-col gap-0.5 2xl:gap-1">
+                    <p className="text-primary flex items-center gap-1.5 text-xs font-medium">
                         {leader.position}
                     </p>
-                    <h1 className="text-foreground text-2xl font-bold tracking-tight md:text-3xl">
+                    <h1 className="text-foreground text-xl font-bold tracking-tight md:text-2xl">
                         {greeting}, {auth.user?.name}
                     </h1>
-                    <p className="text-muted-foreground max-w-2xl text-sm">
+                    <p className="text-muted-foreground max-w-2xl text-xs sm:text-sm">
                         Ringkasan kegiatan Anda hari ini dan mendatang.
                     </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                    <Card className="transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                        <CardContent className="flex flex-col gap-0.5 px-4 py-3.5">
-                            <span className="bg-primary/10 text-primary mb-1.5 flex size-8 items-center justify-center rounded-lg">
-                                <CalendarClock className="size-4" />
-                            </span>
-                            <p className="text-primary text-2xl font-bold tabular-nums">
-                                {stats.today}
-                            </p>
-                            <p className="text-muted-foreground text-xs">
-                                Hari Ini
-                            </p>
-                        </CardContent>
-                    </Card>
-                    <Card className="transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                        <CardContent className="flex flex-col gap-0.5 px-4 py-3.5">
-                            <span className="bg-primary/10 text-primary mb-1.5 flex size-8 items-center justify-center rounded-lg">
-                                <Activity className="size-4" />
-                            </span>
-                            <p className="text-primary text-2xl font-bold tabular-nums">
-                                {stats.ongoing}
-                            </p>
-                            <p className="text-muted-foreground text-xs">
-                                Sedang Berlangsung
-                            </p>
-                        </CardContent>
-                    </Card>
-                    <Card className="transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                        <CardContent className="flex flex-col gap-0.5 px-4 py-3.5">
-                            <span className="bg-primary/10 text-primary mb-1.5 flex size-8 items-center justify-center rounded-lg">
-                                <Calendar className="size-4" />
-                            </span>
-                            <p className="text-primary text-2xl font-bold tabular-nums">
-                                {stats.upcoming}
-                            </p>
-                            <p className="text-muted-foreground text-xs">
-                                Mendatang
-                            </p>
-                        </CardContent>
-                    </Card>
-                    <Card className="transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                        <CardContent className="flex flex-col gap-0.5 px-4 py-3.5">
-                            <span className="bg-primary/10 text-primary mb-1.5 flex size-8 items-center justify-center rounded-lg">
-                                <CalendarCheck className="size-4" />
-                            </span>
-                            <p className="text-primary text-2xl font-bold tabular-nums">
-                                {stats.month}
-                            </p>
-                            <p className="text-muted-foreground text-xs">
-                                Bulan Ini
-                            </p>
-                        </CardContent>
-                    </Card>
+                <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                    {statCards.map((stat) => (
+                        <Card
+                            key={stat.title}
+                            className="justify-between gap-1.5 py-2.5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md 2xl:gap-2 2xl:py-3"
+                        >
+                            <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0 px-3.5 pb-0">
+                                <CardDescription className="line-clamp-2 text-xs leading-snug font-medium">
+                                    {stat.title}
+                                </CardDescription>
+                                <span className="bg-primary/10 text-primary flex size-7 shrink-0 items-center justify-center rounded-md">
+                                    <stat.icon className="size-3.5" />
+                                </span>
+                            </CardHeader>
+                            <CardContent className="flex flex-col gap-0.5 px-3.5">
+                                <p className="text-primary text-xl font-bold tabular-nums md:text-2xl">
+                                    {stat.value}
+                                </p>
+                                <p className="text-muted-foreground line-clamp-1 text-[11px]">
+                                    {stat.description}
+                                </p>
+                            </CardContent>
+                        </Card>
+                    ))}
                 </div>
 
-                <div className="grid gap-6 lg:grid-cols-2">
-                    <Card className="min-w-0">
+                <div className="grid gap-3.5 lg:grid-cols-2 2xl:gap-4">
+                    <Card className="min-w-0 gap-3.5 py-4 2xl:gap-6 2xl:py-6">
                         <CardHeader>
-                            <CardTitle>Agenda Hari Ini</CardTitle>
+                            <CardTitle className="flex items-center gap-2">
+                                <CalendarCheck className="size-4 shrink-0" />
+                                Agenda Hari Ini
+                            </CardTitle>
                             <CardDescription>
                                 {new Date().toLocaleDateString('id-ID', {
                                     weekday: 'long',
@@ -130,29 +141,52 @@ export default function LeadershipDashboard({
                         </CardHeader>
                         <CardContent>
                             {todayEvents.length === 0 ? (
-                                <div className="rounded-lg border border-dashed p-8 text-center">
-                                    <p className="text-sm font-medium">
-                                        Tidak ada agenda hari ini
-                                    </p>
-                                </div>
+                                <p className="text-muted-foreground rounded-lg border border-dashed p-6 text-center text-sm">
+                                    Tidak ada agenda hari ini
+                                </p>
                             ) : (
-                                <div className="divide-border flex min-w-0 flex-col divide-y">
-                                    {todayEvents.map((event) => (
-                                        <div
-                                            key={event.id}
-                                            className="hover:bg-muted/60 min-w-0 rounded-xl px-3 py-3.5 transition-colors duration-200"
-                                        >
-                                            <AgendaItemRow event={event} />
-                                        </div>
-                                    ))}
-                                </div>
+                                <ul className="divide-border flex flex-col divide-y">
+                                    {todayEvents.map((event) => {
+                                        const date = event.start_time
+                                            ? toLocalDate(event.start_time)
+                                            : null;
+
+                                        return (
+                                            <li
+                                                key={event.id}
+                                                className="hover:bg-muted/60 -mx-2 flex items-start gap-3 rounded-xl px-2 py-3.5 transition-colors duration-200 first:-mt-2 last:-mb-2"
+                                            >
+                                                <div className="bg-primary/10 text-primary flex size-12 shrink-0 flex-col items-center justify-center rounded-xl">
+                                                    <span className="text-base leading-none font-bold tabular-nums">
+                                                        {date?.getDate() ?? '—'}
+                                                    </span>
+                                                    <span className="mt-1 text-[10px] leading-none font-semibold tracking-wide uppercase">
+                                                        {date
+                                                            ? shortMonthLabel(
+                                                                  date,
+                                                              )
+                                                            : '—'}
+                                                    </span>
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <AgendaItemRow
+                                                        event={event}
+                                                    />
+                                                </div>
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
                             )}
                         </CardContent>
                     </Card>
 
-                    <Card className="min-w-0">
+                    <Card className="min-w-0 gap-3.5 py-4 2xl:gap-6 2xl:py-6">
                         <CardHeader>
-                            <CardTitle>Agenda Mendatang</CardTitle>
+                            <CardTitle className="flex items-center gap-2">
+                                <CalendarClock className="size-4 shrink-0" />
+                                Agenda Mendatang
+                            </CardTitle>
                             <CardDescription>
                                 Kegiatan terjadwal berikutnya untuk Anda.
                             </CardDescription>
@@ -163,16 +197,38 @@ export default function LeadershipDashboard({
                                     Belum ada agenda mendatang.
                                 </p>
                             ) : (
-                                <div className="divide-border flex min-w-0 flex-col divide-y">
-                                    {upcomingEvents.map((event) => (
-                                        <div
-                                            key={event.id}
-                                            className="hover:bg-muted/60 min-w-0 rounded-xl px-3 py-3.5 transition-colors duration-200"
-                                        >
-                                            <AgendaItemRow event={event} />
-                                        </div>
-                                    ))}
-                                </div>
+                                <ul className="divide-border flex flex-col divide-y">
+                                    {upcomingEvents.map((event) => {
+                                        const date = event.start_time
+                                            ? toLocalDate(event.start_time)
+                                            : null;
+
+                                        return (
+                                            <li
+                                                key={event.id}
+                                                className="hover:bg-muted/60 -mx-2 flex items-start gap-3 rounded-xl px-2 py-3.5 transition-colors duration-200 first:-mt-2 last:-mb-2"
+                                            >
+                                                <div className="bg-primary/10 text-primary flex size-12 shrink-0 flex-col items-center justify-center rounded-xl">
+                                                    <span className="text-base leading-none font-bold tabular-nums">
+                                                        {date?.getDate() ?? '—'}
+                                                    </span>
+                                                    <span className="mt-1 text-[10px] leading-none font-semibold tracking-wide uppercase">
+                                                        {date
+                                                            ? shortMonthLabel(
+                                                                  date,
+                                                              )
+                                                            : '—'}
+                                                    </span>
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <AgendaItemRow
+                                                        event={event}
+                                                    />
+                                                </div>
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
                             )}
                         </CardContent>
                     </Card>
