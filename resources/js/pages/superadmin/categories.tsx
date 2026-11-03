@@ -1,5 +1,6 @@
 import { Form, Head } from '@inertiajs/react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Pencil, Plus, X } from 'lucide-react';
 import CategoryController from '@/actions/App/Http/Controllers/Superadmin/CategoryController';
 import ConfirmDelete from '@/components/confirm-delete';
@@ -40,9 +41,37 @@ export default function SuperadminCategories({ categories }: Props) {
         setDialogOpen(true);
     };
 
-    const formProps = {
+    const createFormProps = {
         className: 'grid gap-4',
-        onSuccess: closeDialog,
+        onSuccess: () => {
+            closeDialog();
+            toast.success('Kategori kegiatan berhasil ditambahkan.');
+        },
+        onError: (errors: Record<string, string>) => {
+            const message = Object.values(errors)[0];
+            toast.error(
+                message
+                    ? String(message)
+                    : 'Gagal menyimpan kategori kegiatan.',
+            );
+        },
+        options: { preserveScroll: true },
+    };
+
+    const updateFormProps = {
+        className: 'grid gap-4',
+        onSuccess: () => {
+            closeDialog();
+            toast.success('Kategori kegiatan berhasil diperbarui.');
+        },
+        onError: (errors: Record<string, string>) => {
+            const message = Object.values(errors)[0];
+            toast.error(
+                message
+                    ? String(message)
+                    : 'Gagal memperbarui kategori kegiatan.',
+            );
+        },
         options: { preserveScroll: true },
     };
 
@@ -155,7 +184,7 @@ export default function SuperadminCategories({ categories }: Props) {
                         <Form
                             key={`edit-${editing.id}`}
                             {...CategoryController.update.form(editing.id)}
-                            {...formProps}
+                            {...updateFormProps}
                         >
                             {({ processing, errors }) => (
                                 <>
@@ -185,7 +214,7 @@ export default function SuperadminCategories({ categories }: Props) {
                         <Form
                             key="create"
                             {...CategoryController.store.form()}
-                            {...formProps}
+                            {...createFormProps}
                         >
                             {({ processing, errors }) => (
                                 <>

@@ -1,7 +1,12 @@
 import { Form, Head } from '@inertiajs/react';
 import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import {
+    Calendar,
+    CalendarCheck,
+    CalendarClock,
     CalendarPlus,
+    CalendarX,
     Clock,
     MapPin,
     Pencil,
@@ -19,7 +24,13 @@ import { ScheduleConflictAlert } from '@/components/schedule-conflict-alert';
 import TablePagination from '@/components/table-pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import {
     Dialog,
     DialogContent,
@@ -193,23 +204,72 @@ export default function ProtokolEvents({
         setDialogOpen(true);
     };
 
-    const formProps = {
+    const createFormProps = {
         className: 'grid gap-4',
-        onSuccess: closeDialog,
+        onSuccess: () => {
+            closeDialog();
+            toast.success('Agenda berhasil ditambahkan.');
+        },
+        onError: (errors: Record<string, string>) => {
+            const message = Object.values(errors)[0];
+            toast.error(message ? String(message) : 'Gagal menyimpan agenda.');
+        },
         options: { preserveScroll: true },
     };
+
+    const updateFormProps = {
+        className: 'grid gap-4',
+        onSuccess: () => {
+            closeDialog();
+            toast.success('Agenda berhasil diperbarui.');
+        },
+        onError: (errors: Record<string, string>) => {
+            const message = Object.values(errors)[0];
+            toast.error(
+                message ? String(message) : 'Gagal memperbarui agenda.',
+            );
+        },
+        options: { preserveScroll: true },
+    };
+
+    const statCards = [
+        {
+            title: 'Semua Agenda',
+            value: statusCounts.total,
+            description: 'Seluruh kegiatan tercatat',
+            icon: Calendar,
+        },
+        {
+            title: 'Dijadwalkan',
+            value: statusCounts.scheduled,
+            description: 'Menunggu waktu pelaksanaan',
+            icon: CalendarClock,
+        },
+        {
+            title: 'Selesai',
+            value: statusCounts.completed,
+            description: 'Kegiatan telah terlaksana',
+            icon: CalendarCheck,
+        },
+        {
+            title: 'Dibatalkan',
+            value: statusCounts.cancelled,
+            description: 'Agenda berstatus batal',
+            icon: CalendarX,
+        },
+    ];
 
     return (
         <>
             <Head title="Kelola Agenda" />
 
-            <div className="flex flex-1 flex-col gap-6">
+            <div className="flex flex-1 flex-col gap-3.5 2xl:gap-5">
                 <div className="flex flex-wrap items-end justify-between gap-3">
-                    <div className="flex flex-col gap-1">
-                        <h1 className="text-2xl font-semibold tracking-tight">
+                    <div className="flex flex-col gap-0.5 2xl:gap-1">
+                        <h1 className="text-xl font-bold tracking-tight md:text-2xl">
                             Kelola Agenda
                         </h1>
-                        <p className="text-muted-foreground text-sm">
+                        <p className="text-muted-foreground text-xs sm:text-sm">
                             Tambah, perbarui, dan batalkan agenda pimpinan.
                             Status agenda dihitung otomatis sesuai waktu.
                         </p>
@@ -220,58 +280,33 @@ export default function ProtokolEvents({
                     </Button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-muted-foreground text-sm font-medium">
-                                Semua Agenda
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="pt-0">
-                            <p className="text-2xl font-semibold tabular-nums">
-                                {statusCounts.total}
-                            </p>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-muted-foreground text-sm font-medium">
-                                Dijadwalkan
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="pt-0">
-                            <p className="text-2xl font-semibold tabular-nums">
-                                {statusCounts.scheduled}
-                            </p>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-muted-foreground text-sm font-medium">
-                                Selesai
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="pt-0">
-                            <p className="text-2xl font-semibold tabular-nums">
-                                {statusCounts.completed}
-                            </p>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-muted-foreground text-sm font-medium">
-                                Dibatalkan
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="pt-0">
-                            <p className="text-2xl font-semibold tabular-nums">
-                                {statusCounts.cancelled}
-                            </p>
-                        </CardContent>
-                    </Card>
+                <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                    {statCards.map((stat) => (
+                        <Card
+                            key={stat.title}
+                            className="justify-between gap-1.5 py-2.5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md 2xl:gap-2 2xl:py-3"
+                        >
+                            <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0 px-3.5 pb-0">
+                                <CardDescription className="line-clamp-2 text-xs leading-snug font-medium">
+                                    {stat.title}
+                                </CardDescription>
+                                <span className="bg-primary/10 text-primary flex size-7 shrink-0 items-center justify-center rounded-md">
+                                    <stat.icon className="size-3.5" />
+                                </span>
+                            </CardHeader>
+                            <CardContent className="flex flex-col gap-0.5 px-3.5">
+                                <p className="text-primary text-xl font-bold tabular-nums md:text-2xl">
+                                    {stat.value}
+                                </p>
+                                <p className="text-muted-foreground line-clamp-1 text-[11px]">
+                                    {stat.description}
+                                </p>
+                            </CardContent>
+                        </Card>
+                    ))}
                 </div>
 
-                <Card>
+                <Card className="gap-3.5 py-4 2xl:gap-5 2xl:py-5">
                     <CardHeader className="flex flex-col gap-3 space-y-0 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                         <CardTitle>Daftar Agenda</CardTitle>
                         <div className="flex w-full min-w-0 flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
@@ -322,7 +357,7 @@ export default function ProtokolEvents({
                                 {agendaGroups.map((group) => (
                                     <section key={group.dateKey}>
                                         <div className="bg-muted/50 flex items-center justify-between gap-2 px-4 py-2">
-                                            <h3 className="text-sm font-semibold capitalize">
+                                            <h3 className="text-xs font-semibold capitalize sm:text-sm">
                                                 {formatDateLong(group.dateKey)}
                                             </h3>
                                             <span className="text-muted-foreground text-xs tabular-nums">
@@ -372,7 +407,7 @@ export default function ProtokolEvents({
                         <Form
                             key={`edit-${editing.id}`}
                             {...EventController.update.form(editing.id)}
-                            {...formProps}
+                            {...updateFormProps}
                         >
                             {({ processing, errors }) => (
                                 <>
@@ -412,7 +447,7 @@ export default function ProtokolEvents({
                         <Form
                             key="create"
                             {...EventController.store.form()}
-                            {...formProps}
+                            {...createFormProps}
                         >
                             {({ processing, errors }) => (
                                 <>
@@ -466,13 +501,13 @@ function AgendaCard({ event, onEdit }: AgendaRowProps) {
     return (
         <li
             className={cn(
-                'bg-card text-card-foreground flex h-full min-w-0 flex-col rounded-xl border shadow-sm',
+                'bg-card text-card-foreground flex h-full min-w-0 flex-col rounded-lg border shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md',
                 isCancelled && 'opacity-70',
             )}
         >
-            <div className="flex min-w-0 items-center justify-between gap-2 border-b px-4 py-2.5">
-                <span className="flex min-w-0 items-center gap-1.5 text-sm font-semibold tabular-nums">
-                    <Clock className="size-4 shrink-0" />
+            <div className="flex min-w-0 items-center justify-between gap-2 border-b px-3.5 py-2">
+                <span className="flex min-w-0 items-center gap-1.5 text-xs font-semibold tabular-nums">
+                    <Clock className="size-3.5 shrink-0" />
                     <span className="truncate">
                         {formatTime(event.start_time)} –{' '}
                         {formatTime(event.end_time)}
@@ -480,16 +515,16 @@ function AgendaCard({ event, onEdit }: AgendaRowProps) {
                 </span>
                 <Badge
                     variant={agendaStatusVariant[event.status]}
-                    className="shrink-0"
+                    className="shrink-0 text-[10px]"
                 >
                     {agendaStatusLabel[event.status]}
                 </Badge>
             </div>
 
-            <div className="flex min-w-0 flex-1 flex-col gap-1 px-4 py-3">
+            <div className="flex min-w-0 flex-1 flex-col gap-1.5 px-3.5 py-2.5">
                 <p
                     className={cn(
-                        'min-w-0 leading-snug font-medium break-words',
+                        'min-w-0 text-sm leading-snug font-semibold break-words',
                         isCancelled && 'line-through',
                     )}
                 >
@@ -518,7 +553,7 @@ function AgendaCard({ event, onEdit }: AgendaRowProps) {
                 </div>
             </div>
 
-            <div className="flex shrink-0 items-center justify-end gap-2 border-t px-4 py-2.5">
+            <div className="flex shrink-0 items-center justify-end gap-1.5 border-t px-3.5 py-2">
                 <EventActions event={event} onEdit={onEdit} />
             </div>
         </li>

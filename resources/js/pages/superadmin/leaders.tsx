@@ -1,5 +1,6 @@
 import { Form, Head } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import {
     Activity,
     IdCard,
@@ -92,9 +93,33 @@ export default function SuperadminLeaders({ leaders }: Props) {
         setDialogOpen(true);
     };
 
-    const formProps = {
+    const createFormProps = {
         className: 'grid gap-4',
-        onSuccess: closeDialog,
+        onSuccess: () => {
+            closeDialog();
+            toast.success('Data pimpinan berhasil ditambahkan.');
+        },
+        onError: (errors: Record<string, string>) => {
+            const message = Object.values(errors)[0];
+            toast.error(
+                message ? String(message) : 'Gagal menyimpan data pimpinan.',
+            );
+        },
+        options: { preserveScroll: true },
+    };
+
+    const updateFormProps = {
+        className: 'grid gap-4',
+        onSuccess: () => {
+            closeDialog();
+            toast.success('Data pimpinan berhasil diperbarui.');
+        },
+        onError: (errors: Record<string, string>) => {
+            const message = Object.values(errors)[0];
+            toast.error(
+                message ? String(message) : 'Gagal memperbarui data pimpinan.',
+            );
+        },
         options: { preserveScroll: true },
     };
 
@@ -259,7 +284,7 @@ export default function SuperadminLeaders({ leaders }: Props) {
                         <Form
                             key={`edit-${editing.id}`}
                             {...LeaderController.update.form(editing.id)}
-                            {...formProps}
+                            {...updateFormProps}
                         >
                             {({ processing, errors }) => (
                                 <>
@@ -293,7 +318,7 @@ export default function SuperadminLeaders({ leaders }: Props) {
                         <Form
                             key="create"
                             {...LeaderController.store.form()}
-                            {...formProps}
+                            {...createFormProps}
                         >
                             {({ processing, errors }) => (
                                 <>
