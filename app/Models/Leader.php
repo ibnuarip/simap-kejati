@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Database\Factories\LeaderFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -60,6 +61,30 @@ class Leader extends Model
     protected $casts = [
         'is_active' => 'boolean',
     ];
+
+    /**
+     * Samarkan nomor telepon 08xxxxxxxxxx menjadi +62xxxxxxx1234.
+     */
+    public static function maskPhone(string $phone): string
+    {
+        if (! preg_match('/^08\d{8,12}$/', $phone)) {
+            return $phone;
+        }
+
+        $middleLength = strlen($phone) - 5;
+
+        return '+62'.str_repeat('x', $middleLength).substr($phone, -4);
+    }
+
+    /**
+     * @return Attribute<string|null, string|null>
+     */
+    protected function phone(): Attribute
+    {
+        return Attribute::make(
+            set: fn (?string $value): ?string => $value !== null ? self::maskPhone($value) : null,
+        );
+    }
 
     /**
      * @return HasMany<Event, $this>

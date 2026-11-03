@@ -22,7 +22,7 @@ class LeaderFactory extends Factory
             'position' => fake()->randomElement(Leader::POSITIONS),
             'nip' => fake()->numerify('################'),
             'email' => fake()->unique()->safeEmail(),
-            'phone' => fake()->phoneNumber(),
+            'phone' => '08'.fake()->numerify('##########'),
             'is_active' => true,
         ];
     }

@@ -428,10 +428,16 @@ function LeaderFields({
                     name="phone"
                     required
                     inputMode="tel"
-                    maxLength={14}
+                    maxLength={16}
                     defaultValue={defaultValue?.phone ?? ''}
                     placeholder="08xxxxxxxxxx"
                 />
+                {defaultValue?.phone && (
+                    <p className="text-muted-foreground text-xs">
+                        Biarkan tetap jika tidak diubah, atau ketik nomor baru
+                        (08xxxxxxxxxx).
+                    </p>
+                )}
                 <InputError message={errors.phone} />
             </div>
 
