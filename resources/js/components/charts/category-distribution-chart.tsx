@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import type { CategoryDistribution } from '@/types';
 
@@ -48,6 +49,14 @@ function DonutTooltip({
 }
 
 export function CategoryDistributionChart({ data }: Props) {
+    const [barsReady, setBarsReady] = useState(false);
+
+    useEffect(() => {
+        const frame = requestAnimationFrame(() => setBarsReady(true));
+
+        return () => cancelAnimationFrame(frame);
+    }, []);
+
     const total = data.reduce((sum, item) => sum + item.total, 0);
 
     if (data.length === 0 || total === 0) {
@@ -67,7 +76,8 @@ export function CategoryDistributionChart({ data }: Props) {
                             data={data}
                             dataKey="total"
                             nameKey="name"
-                            isAnimationActive={false}
+                            animationDuration={600}
+                            animationEasing="ease-out"
                             innerRadius="68%"
                             outerRadius="100%"
                             paddingAngle={3}
@@ -128,9 +138,11 @@ export function CategoryDistributionChart({ data }: Props) {
                                 aria-label={entry.name}
                             >
                                 <div
-                                    className="h-full rounded-full transition-[width] duration-500"
+                                    className="h-full rounded-full transition-[width] duration-500 ease-out"
                                     style={{
-                                        width: `${percent}%`,
+                                        width: barsReady
+                                            ? `${percent}%`
+                                            : '0%',
                                         backgroundColor: entry.color,
                                     }}
                                 />

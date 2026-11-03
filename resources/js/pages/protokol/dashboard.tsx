@@ -65,7 +65,7 @@ export default function ProtokolDashboard({
         <>
             <Head title="Beranda" />
 
-            <div className="flex flex-1 flex-col gap-6 lg:gap-8">
+            <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col gap-6 duration-300 lg:gap-8">
                 <div className="flex flex-col gap-1.5">
                     <p className="text-primary flex items-center gap-1.5 text-sm font-medium tabular-nums">
                         {new Date().toLocaleDateString('id-ID', {
