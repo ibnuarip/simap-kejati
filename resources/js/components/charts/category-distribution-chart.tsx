@@ -140,9 +140,7 @@ export function CategoryDistributionChart({ data }: Props) {
                                 <div
                                     className="h-full rounded-full transition-[width] duration-500 ease-out"
                                     style={{
-                                        width: barsReady
-                                            ? `${percent}%`
-                                            : '0%',
+                                        width: barsReady ? `${percent}%` : '0%',
                                         backgroundColor: entry.color,
                                     }}
                                 />
