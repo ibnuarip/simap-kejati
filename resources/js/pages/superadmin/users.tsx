@@ -692,7 +692,7 @@ function UserFields({
                     required
                     value={email}
                     onChange={(event) => onEmailChange(event.target.value)}
-                    placeholder="email@kejati.go.id"
+                    placeholder="Masukan email Anda"
                 />
                 <InputError message={errors.email} />
             </div>
