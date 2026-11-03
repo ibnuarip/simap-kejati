@@ -396,7 +396,6 @@ function LeaderFields({
                     name="nip"
                     required
                     inputMode="numeric"
-                    pattern="[0-9]*"
                     maxLength={18}
                     defaultValue={defaultValue?.nip ?? ''}
                     placeholder="18 digit angka"
@@ -405,6 +404,12 @@ function LeaderFields({
                             inputEvent.target.value.replace(/\D/g, '');
                     }}
                 />
+                {defaultValue?.nip && (
+                    <p className="text-muted-foreground text-xs">
+                        Biarkan tetap jika tidak diubah, atau ketik 18 digit
+                        angka baru.
+                    </p>
+                )}
                 <InputError message={errors.nip} />
             </div>
 
@@ -428,10 +433,16 @@ function LeaderFields({
                     name="phone"
                     required
                     inputMode="tel"
-                    maxLength={14}
+                    maxLength={16}
                     defaultValue={defaultValue?.phone ?? ''}
                     placeholder="08xxxxxxxxxx"
                 />
+                {defaultValue?.phone && (
+                    <p className="text-muted-foreground text-xs">
+                        Biarkan tetap jika tidak diubah, atau ketik nomor baru
+                        (08xxxxxxxxxx).
+                    </p>
+                )}
                 <InputError message={errors.phone} />
             </div>
 
