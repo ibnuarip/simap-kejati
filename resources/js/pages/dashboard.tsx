@@ -93,18 +93,9 @@ export default function Dashboard({
     const [chartsReady, setChartsReady] = useState(false);
 
     useEffect(() => {
-        if ('requestIdleCallback' in window) {
-            const idleId = window.requestIdleCallback(
-                () => setChartsReady(true),
-                { timeout: 300 },
-            );
+        const frame = requestAnimationFrame(() => setChartsReady(true));
 
-            return () => window.cancelIdleCallback(idleId);
-        }
-
-        const timer = setTimeout(() => setChartsReady(true), 150);
-
-        return () => clearTimeout(timer);
+        return () => cancelAnimationFrame(frame);
     }, []);
 
     const trendTotal = eventsTrend.reduce((sum, point) => sum + point.total, 0);
@@ -151,7 +142,7 @@ export default function Dashboard({
         <>
             <Head title="Dashboard" />
 
-            <div className="flex flex-1 flex-col gap-4 lg:gap-5">
+            <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col gap-4 duration-300 lg:gap-5">
                 <div className="flex flex-col gap-1">
                     <p className="text-primary flex items-center gap-1.5 text-xs font-medium tabular-nums">
                         {new Date().toLocaleDateString('id-ID', {
@@ -368,9 +359,11 @@ export default function Dashboard({
                                             aria-label={agendaStatusLabel[key]}
                                         >
                                             <div
-                                                className="h-full rounded-full transition-[width] duration-500"
+                                                className="h-full rounded-full transition-[width] duration-500 ease-out"
                                                 style={{
-                                                    width: `${percent}%`,
+                                                    width: chartsReady
+                                                        ? `${percent}%`
+                                                        : '0%',
                                                     backgroundColor:
                                                         STATUS_DOT[key],
                                                 }}
