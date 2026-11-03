@@ -63,6 +63,18 @@ class Leader extends Model
     ];
 
     /**
+     * Samarkan NIP 18 digit menjadi 4 digit awal + 10 huruf 'x' + 4 digit akhir.
+     */
+    public static function maskNip(string $nip): string
+    {
+        if (! preg_match('/^\d{18}$/', $nip)) {
+            return $nip;
+        }
+
+        return substr($nip, 0, 4).str_repeat('x', strlen($nip) - 8).substr($nip, -4);
+    }
+
+    /**
      * Samarkan nomor telepon 08xxxxxxxxxx menjadi +62xxxxxxx1234.
      */
     public static function maskPhone(string $phone): string
@@ -74,6 +86,16 @@ class Leader extends Model
         $middleLength = strlen($phone) - 5;
 
         return '+62'.str_repeat('x', $middleLength).substr($phone, -4);
+    }
+
+    /**
+     * @return Attribute<string|null, string|null>
+     */
+    protected function nip(): Attribute
+    {
+        return Attribute::make(
+            set: fn (?string $value): ?string => $value !== null ? self::maskNip($value) : null,
+        );
     }
 
     /**

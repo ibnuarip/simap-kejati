@@ -19,6 +19,11 @@ class LeaderRequest extends FormRequest
     public function rules(): array
     {
         $leader = $this->route('leader');
+
+        $isUnchangedNip = $leader instanceof Leader
+            && is_string($this->input('nip'))
+            && $this->input('nip') === $leader->nip;
+
         $isUnchangedPhone = $leader instanceof Leader
             && is_string($this->input('phone'))
             && $this->input('phone') === $leader->phone;
@@ -26,7 +31,9 @@ class LeaderRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'position' => ['required', 'string', Rule::in(Leader::POSITIONS)],
-            'nip' => ['required', 'string', 'digits:18'],
+            'nip' => $isUnchangedNip
+                ? ['required', 'string']
+                : ['required', 'string', 'digits:18'],
             'email' => ['required', 'email', 'max:255'],
             'phone' => $isUnchangedPhone
                 ? ['required', 'string']

@@ -75,6 +75,7 @@ test('superadmins can create a leader', function () {
     $this->assertDatabaseHas('leaders', [
         'name' => 'Drs. H. Bambang',
         'position' => 'Kepala Kejaksaan Tinggi',
+        'nip' => '1980xxxxxxxxxx1001',
         'email' => 'kajati@kejati.go.id',
         'phone' => '+62xxxxxxx1221',
     ]);
@@ -190,18 +191,20 @@ test('a leader nip must be exactly 18 digits', function (string $nip) {
 test('superadmins can update and delete a leader', function () {
     $superadmin = makeSuperadmin();
     $leader = Leader::factory()->create([
+        'nip' => '198001012010011001',
         'phone' => '081234561221',
     ]);
 
-    expect($leader->phone)->toBe('+62xxxxxxx1221');
+    expect($leader->nip)->toBe('1980xxxxxxxxxx1001')
+        ->and($leader->phone)->toBe('+62xxxxxxx1221');
 
     $this->actingAs($superadmin);
 
-    // Update tanpa mengubah nomor telepon (tetap nilai tersamar yang sudah ada)
+    // Update tanpa mengubah NIP dan nomor telepon (tetap nilai tersamar yang sudah ada)
     $this->patch(route('master.leaders.update', $leader), [
         'name' => 'Dr. H. Siti',
         'position' => 'Wakil Kepala Kejaksaan Tinggi',
-        'nip' => '198001012010011001',
+        'nip' => $leader->nip,
         'email' => 'siti@kejati.go.id',
         'phone' => $leader->phone,
         'is_active' => '0',
@@ -211,15 +214,16 @@ test('superadmins can update and delete a leader', function () {
         'id' => $leader->id,
         'name' => 'Dr. H. Siti',
         'position' => 'Wakil Kepala Kejaksaan Tinggi',
+        'nip' => '1980xxxxxxxxxx1001',
         'phone' => '+62xxxxxxx1221',
         'is_active' => 0,
     ]);
 
-    // Update dengan nomor telepon baru berawalan 08 -> disimpan tersamar
+    // Update dengan NIP 18 digit baru & nomor telepon baru berawalan 08 -> disimpan tersamar
     $this->patch(route('master.leaders.update', $leader), [
         'name' => 'Dr. H. Siti',
         'position' => 'Wakil Kepala Kejaksaan Tinggi',
-        'nip' => '198001012010011001',
+        'nip' => '197505121999031002',
         'email' => 'siti@kejati.go.id',
         'phone' => '081399998888',
         'is_active' => '1',
@@ -227,6 +231,7 @@ test('superadmins can update and delete a leader', function () {
 
     $this->assertDatabaseHas('leaders', [
         'id' => $leader->id,
+        'nip' => '1975xxxxxxxxxx1002',
         'phone' => '+62xxxxxxx8888',
         'is_active' => 1,
     ]);
@@ -235,11 +240,11 @@ test('superadmins can update and delete a leader', function () {
     $this->patch(route('master.leaders.update', $leader), [
         'name' => 'Dr. H. Siti',
         'position' => 'Wakil Kepala Kejaksaan Tinggi',
-        'nip' => '198001012010011001',
+        'nip' => '1999xxxxxxxxxx9999',
         'email' => 'siti@kejati.go.id',
         'phone' => '+62xxxxxxx0000',
         'is_active' => '1',
-    ])->assertSessionHasErrors('phone');
+    ])->assertSessionHasErrors(['nip', 'phone']);
 
     $this->delete(route('master.leaders.destroy', $leader))->assertRedirect();
 
