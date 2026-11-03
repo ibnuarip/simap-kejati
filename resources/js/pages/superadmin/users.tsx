@@ -176,7 +176,7 @@ export default function SuperadminUsers({ users, leaders }: Props) {
 
                                 {/* Desktop (≥1024px): tabel scrollable */}
                                 <div className="hidden overflow-x-auto lg:block">
-                                    <table className="w-full min-w-[640px] text-left text-sm">
+                                    <table className="w-full min-w-160 text-left text-sm">
                                         <thead className="border-border text-muted-foreground border-b text-xs tracking-wide uppercase">
                                             <tr>
                                                 <th className="py-3 pr-4 font-medium">

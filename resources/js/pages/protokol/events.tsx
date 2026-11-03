@@ -524,7 +524,7 @@ function AgendaCard({ event, onEdit }: AgendaRowProps) {
             <div className="flex min-w-0 flex-1 flex-col gap-1.5 px-3.5 py-2.5">
                 <p
                     className={cn(
-                        'min-w-0 text-sm leading-snug font-semibold break-words',
+                        'min-w-0 text-sm leading-snug font-semibold wrap-break-word',
                         isCancelled && 'line-through',
                     )}
                 >
@@ -669,7 +669,7 @@ function EventFields({
                     <Select value={leaderId} onValueChange={onLeaderChange}>
                         <SelectTrigger
                             id="leader_id"
-                            className="w-full min-w-0 overflow-hidden [&_[data-slot=select-value]]:min-w-0 [&_[data-slot=select-value]]:truncate"
+                            className="w-full min-w-0 overflow-hidden **:data-[slot=select-value]:min-w-0 **:data-[slot=select-value]:truncate"
                         >
                             <SelectValue placeholder="Pilih pimpinan" />
                         </SelectTrigger>
@@ -678,7 +678,7 @@ function EventFields({
                                 <SelectItem
                                     key={leader.id}
                                     value={String(leader.id)}
-                                    className="break-words whitespace-normal"
+                                    className="wrap-break-word whitespace-normal"
                                 >
                                     {leader.name}
                                 </SelectItem>
