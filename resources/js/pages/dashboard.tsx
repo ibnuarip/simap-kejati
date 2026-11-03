@@ -52,7 +52,11 @@ const CategoryDistributionChart = lazy(() =>
     ),
 );
 
-function ChartFallback({ className = 'h-64 sm:h-72' }: { className?: string }) {
+function ChartFallback({
+    className = 'h-52 2xl:h-68',
+}: {
+    className?: string;
+}) {
     return (
         <div
             className={`flex flex-col justify-end gap-2 ${className}`}
@@ -142,8 +146,8 @@ export default function Dashboard({
         <>
             <Head title="Dashboard" />
 
-            <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col gap-4 duration-300 lg:gap-5">
-                <div className="flex flex-col gap-1">
+            <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col gap-3.5 duration-300 2xl:gap-5">
+                <div className="flex flex-col gap-0.5 2xl:gap-1">
                     <p className="text-primary flex items-center gap-1.5 text-xs font-medium tabular-nums">
                         {new Date().toLocaleDateString('id-ID', {
                             weekday: 'long',
@@ -155,7 +159,7 @@ export default function Dashboard({
                     <h1 className="text-foreground text-xl font-bold tracking-tight md:text-2xl">
                         Selamat bekerja, {auth.user?.name}!
                     </h1>
-                    <p className="text-muted-foreground max-w-2xl text-sm">
+                    <p className="text-muted-foreground max-w-2xl text-xs sm:text-sm">
                         Ringkasan sistem dan aktivitas agenda untuk pengelolaan
                         Kepala Kejaksaan Tinggi.
                     </p>
@@ -165,7 +169,7 @@ export default function Dashboard({
                     {statCards.map((stat) => (
                         <Card
                             key={stat.title}
-                            className="justify-between gap-2 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md max-lg:last:col-span-2"
+                            className="justify-between gap-1.5 py-2.5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md max-lg:last:col-span-2 2xl:gap-2 2xl:py-3"
                         >
                             <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0 px-3.5 pb-0">
                                 <CardDescription className="line-clamp-2 text-xs leading-snug font-medium">
@@ -187,8 +191,8 @@ export default function Dashboard({
                     ))}
                 </div>
 
-                <div className="grid gap-4 lg:grid-cols-2">
-                    <Card className="min-w-0">
+                <div className="grid gap-3.5 lg:grid-cols-2 2xl:gap-4">
+                    <Card className="min-w-0 gap-3.5 py-4 2xl:gap-6 2xl:py-6">
                         <CardHeader>
                             <div className="flex flex-wrap items-start justify-between gap-3">
                                 <div className="min-w-0">
@@ -222,7 +226,7 @@ export default function Dashboard({
                         </CardContent>
                     </Card>
 
-                    <Card className="min-w-0">
+                    <Card className="min-w-0 gap-3.5 py-4 2xl:gap-6 2xl:py-6">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <Tags className="size-4 shrink-0" />

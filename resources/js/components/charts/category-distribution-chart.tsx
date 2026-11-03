@@ -102,7 +102,7 @@ export function CategoryDistributionChart({ data }: Props) {
                 </div>
             </div>
 
-            <ul className="flex max-h-64 w-full min-w-0 flex-1 flex-col gap-3 overflow-y-auto pr-1">
+            <ul className="flex max-h-52 w-full min-w-0 flex-1 flex-col gap-3 overflow-y-auto pr-1 2xl:max-h-64">
                 {data.map((entry) => {
                     const percent = Math.round((entry.total / total) * 100);
 

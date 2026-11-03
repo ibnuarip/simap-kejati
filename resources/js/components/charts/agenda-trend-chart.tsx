@@ -57,7 +57,7 @@ export function AgendaTrendChart({ data }: Props) {
     const max = Math.max(...data.map((point) => point.total), 0);
 
     return (
-        <div className="h-64 w-full sm:h-72">
+        <div className="h-52 w-full 2xl:h-68">
             <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                     data={data}
