@@ -60,7 +60,9 @@ export default function TwoFactorRecoveryCodes({
                     Kode Pemulihan 2FA
                 </CardTitle>
                 <CardDescription>
-                    Kode pemulihan memungkinkan Anda mendapatkan kembali akses jika Anda kehilangan perangkat otentikasi dua faktor (2FA). Simpan kode tersebut di tempat yang aman.
+                    Kode pemulihan memungkinkan Anda mendapatkan kembali akses
+                    jika Anda kehilangan perangkat otentikasi dua faktor (2FA).
+                    Simpan kode tersebut di tempat yang aman.
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -75,7 +77,8 @@ export default function TwoFactorRecoveryCodes({
                             className="size-4"
                             aria-hidden="true"
                         />
-                        {codesAreVisible ? 'Sembunyikan' : 'Tampilkan'} Kode Pemulihan
+                        {codesAreVisible ? 'Sembunyikan' : 'Tampilkan'} Kode
+                        Pemulihan
                     </Button>
 
                     {canRegenerateCodes && (
@@ -144,7 +147,10 @@ export default function TwoFactorRecoveryCodes({
 
                                 <div className="text-muted-foreground text-xs select-none">
                                     <p id="regenerate-warning">
-                                        Setiap kode pemulihan hanya dapat digunakan sekali untuk mengakses akun Anda dan akan dihapus setelah digunakan. Jika Anda membutuhkan lebih banyak, klik{' '}
+                                        Setiap kode pemulihan hanya dapat
+                                        digunakan sekali untuk mengakses akun
+                                        Anda dan akan dihapus setelah digunakan.
+                                        Jika Anda membutuhkan lebih banyak, klik{' '}
                                         <span className="font-bold">
                                             Hasilkan Ulang
                                         </span>{' '}

@@ -4,7 +4,6 @@ namespace App\Listeners;
 
 use App\Concerns\SendsSecurityMail;
 use App\Mail\Auth\TwoFactorDisabledMail;
-use App\Models\User;
 use Laravel\Fortify\Events\TwoFactorAuthenticationDisabled;
 
 class SendTwoFactorDisabledEmail
@@ -16,10 +15,6 @@ class SendTwoFactorDisabledEmail
      */
     public function handle(TwoFactorAuthenticationDisabled $event): void
     {
-        if (! $event->user instanceof User) {
-            return;
-        }
-
         $this->sendSecurityMail(
             $event->user,
             new TwoFactorDisabledMail(

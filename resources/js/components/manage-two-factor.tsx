@@ -56,9 +56,9 @@ export default function ManageTwoFactor(props: Props) {
             {twoFactorEnabled ? (
                 <div className="flex flex-col items-start justify-start space-y-4">
                     <p className="text-muted-foreground text-sm">
-                        Autentikasi dua faktor mengharuskan Anda memasukkan
-                        kode rahasia, yang dapat diambil dari aplikasi
-                        pendukung TOTP di ponsel Anda, setiap kali Anda login.
+                        Autentikasi dua faktor mengharuskan Anda memasukkan kode
+                        rahasia, yang dapat diambil dari aplikasi pendukung TOTP
+                        di ponsel Anda, setiap kali Anda login.
                     </p>
 
                     <div className="relative inline">
@@ -81,9 +81,9 @@ export default function ManageTwoFactor(props: Props) {
                 <div className="flex flex-col items-start justify-start space-y-4">
                     <p className="text-muted-foreground text-sm">
                         Aktifkan autentikasi dua faktor, dan Anda akan diminta
-                        untuk memasukkan kode rahasia, yang dapat diambil
-                        dari aplikasi pendukung TOTP di ponsel Anda, setiap
-                        kali Anda login.
+                        untuk memasukkan kode rahasia, yang dapat diambil dari
+                        aplikasi pendukung TOTP di ponsel Anda, setiap kali Anda
+                        login.
                     </p>
 
                     <div>

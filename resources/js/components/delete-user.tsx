@@ -30,7 +30,8 @@ export default function DeleteUser() {
                 <div className="relative space-y-0.5 text-red-600 dark:text-red-100">
                     <p className="font-medium">Peringatan</p>
                     <p className="text-sm">
-                        Silakan lanjutkan dengan hati-hati, tindakan ini tidak dapat dibatalkan.
+                        Silakan lanjutkan dengan hati-hati, tindakan ini tidak
+                        dapat dibatalkan.
                     </p>
                 </div>
 
@@ -50,8 +51,8 @@ export default function DeleteUser() {
                         <DialogDescription>
                             Setelah akun dihapus, semua sumber daya dan data
                             akan dihapus secara permanen. Masukkan kata sandi
-                            Anda untuk mengkonfirmasi bahwa Anda ingin
-                            menghapus akun secara permanen.
+                            Anda untuk mengkonfirmasi bahwa Anda ingin menghapus
+                            akun secara permanen.
                         </DialogDescription>
 
                         <Form

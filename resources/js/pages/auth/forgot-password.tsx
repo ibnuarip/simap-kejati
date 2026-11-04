@@ -65,5 +65,6 @@ export default function ForgotPassword({ status }: { status?: string }) {
 
 ForgotPassword.layout = {
     title: 'Lupa Password',
-    description: 'Masukkan email Anda untuk menerima tautan atur ulang kata sandi',
+    description:
+        'Masukkan email Anda untuk menerima tautan atur ulang kata sandi',
 };

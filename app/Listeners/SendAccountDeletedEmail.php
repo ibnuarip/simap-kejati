@@ -21,11 +21,7 @@ class SendAccountDeletedEmail
             return;
         }
 
-        $roleLabel = match ($user->role) {
-            'protokol' => 'Protokol',
-            'pimpinan' => 'Pimpinan',
-            default => $user->role,
-        };
+        $roleLabel = $user->role === 'protokol' ? 'Protokol' : 'Pimpinan';
 
         $this->sendSecurityMail(
             $user,
