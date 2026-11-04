@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Superadmin;
 
+use App\Events\AccountDeleted;
 use App\Events\EmailChanged;
 use App\Events\PasswordChanged;
 use App\Http\Controllers\Controller;
@@ -145,6 +146,8 @@ class UserController extends Controller
 
         $avatars->delete($user);
         $user->delete();
+
+        AccountDeleted::dispatch($user, AccountDeleted::DELETED_BY_ADMIN);
 
         return back();
     }

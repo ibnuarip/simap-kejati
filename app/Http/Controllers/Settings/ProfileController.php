@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Settings;
 
+use App\Events\AccountDeleted;
 use App\Events\EmailChanged;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileDeleteRequest;
@@ -69,6 +70,8 @@ class ProfileController extends Controller
 
         $avatars->delete($user);
         $user->delete();
+
+        AccountDeleted::dispatch($user, AccountDeleted::DELETED_BY_SELF);
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

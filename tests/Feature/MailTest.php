@@ -1,6 +1,7 @@
 <?php
 
 use App\Mail\Auth\AccountCredentialsMail;
+use App\Mail\Auth\AccountDeletedMail;
 use App\Mail\Auth\EmailChangedMail;
 use App\Mail\Auth\PasskeyAddedMail;
 use App\Mail\Auth\PasskeyRemovedMail;
@@ -118,4 +119,21 @@ test('email changed email shows the old and new addresses with a verification no
     $mail->assertSeeInHtml('01/11/2026 10:00');
     $mail->assertSeeInText('verifikasi ulang');
     $mail->assertSeeInText('Yth. Budi Santoso');
+});
+
+test('account deleted email confirms the deletion', function () {
+    $mail = new AccountDeletedMail('Budi Santoso', 'budi@kejati.go.id', 'Protokol', '01/11/2026 10:00', 'self');
+
+    $mail->assertSeeInHtml('Konfirmasi Penghapusan Akun');
+    $mail->assertSeeInHtml('Budi Santoso');
+    $mail->assertSeeInHtml('budi@kejati.go.id');
+    $mail->assertSeeInHtml('Anda sendiri');
+    $mail->assertSeeInText('Terima kasih telah menggunakan');
+});
+
+test('account deleted email marks administrator initiated deletions', function () {
+    $mail = new AccountDeletedMail('Budi Santoso', 'budi@kejati.go.id', 'Pimpinan', '01/11/2026 10:00', 'admin');
+
+    $mail->assertSeeInHtml('Superadmin');
+    $mail->assertSeeInHtml('budi@kejati.go.id');
 });

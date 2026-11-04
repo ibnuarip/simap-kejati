@@ -1,5 +1,6 @@
 <?php
 
+use App\Mail\Auth\AccountDeletedMail;
 use App\Mail\Auth\EmailChangedMail;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
@@ -125,6 +126,48 @@ test('user can delete their account', function () {
 
     $this->assertGuest();
     expect($user->fresh())->toBeNull();
+});
+
+test('self-deleting a protokol account queues a confirmation email to that account', function () {
+    Mail::fake();
+
+    $user = User::factory()->protokol()->create();
+
+    $this->actingAs($user)
+        ->delete(route('profile.destroy'), ['password' => 'password'])
+        ->assertRedirect(route('home'));
+
+    $this->assertGuest();
+
+    Mail::assertQueued(AccountDeletedMail::class, fn (AccountDeletedMail $mail): bool => $mail->hasTo($user->email));
+});
+
+test('self-deleting a pimpinan account queues a confirmation email to that account', function () {
+    Mail::fake();
+
+    $user = User::factory()->pimpinan()->create();
+
+    $this->actingAs($user)
+        ->delete(route('profile.destroy'), ['password' => 'password'])
+        ->assertRedirect(route('home'));
+
+    $this->assertGuest();
+
+    Mail::assertQueued(AccountDeletedMail::class, fn (AccountDeletedMail $mail): bool => $mail->hasTo($user->email));
+});
+
+test('self-deleting a superadmin account does not queue a confirmation email', function () {
+    Mail::fake();
+
+    $user = User::factory()->superadmin()->create();
+
+    $this->actingAs($user)
+        ->delete(route('profile.destroy'), ['password' => 'password'])
+        ->assertRedirect(route('home'));
+
+    $this->assertGuest();
+
+    Mail::assertNotQueued(AccountDeletedMail::class);
 });
 
 test('correct password must be provided to delete account', function () {

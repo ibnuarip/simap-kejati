@@ -1,6 +1,7 @@
 <?php
 
 use App\Mail\Auth\AccountCredentialsMail;
+use App\Mail\Auth\AccountDeletedMail;
 use App\Mail\Auth\EmailChangedMail;
 use App\Mail\Auth\PasswordChangedMail;
 use App\Models\Category;
@@ -604,6 +605,32 @@ test('superadmins can delete another user', function () {
     $this->delete(route('users.destroy', $other))->assertRedirect();
 
     $this->assertDatabaseMissing('users', ['id' => $other->id]);
+});
+
+test('admin deleting a protokol account queues a confirmation email to that account', function () {
+    Mail::fake();
+
+    $superadmin = makeSuperadmin();
+    $user = User::factory()->protokol()->create();
+
+    $this->actingAs($superadmin);
+
+    $this->delete(route('users.destroy', $user))->assertRedirect();
+
+    Mail::assertQueued(AccountDeletedMail::class, fn (AccountDeletedMail $mail): bool => $mail->hasTo($user->email));
+});
+
+test('admin deleting a superadmin account does not queue a confirmation email', function () {
+    Mail::fake();
+
+    $superadmin = makeSuperadmin();
+    $other = User::factory()->superadmin()->create();
+
+    $this->actingAs($superadmin);
+
+    $this->delete(route('users.destroy', $other))->assertRedirect();
+
+    Mail::assertNotQueued(AccountDeletedMail::class);
 });
 
 test('superadmins can create an event linked to master data', function () {
