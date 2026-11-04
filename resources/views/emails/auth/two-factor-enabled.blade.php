@@ -21,7 +21,7 @@
     </p>
 
     <p style="margin:0 0 20px;font-size:13px;color:#374151;">
-        Jika Anda yang mengaktifkan fitur ini, abaikan email ini. Jika bukan, segera nonaktifkan autentikasi dua faktor melalui halaman Pengaturan &rsaquo; Keamanan dan hubungi administrator.
+        Jika Anda yang mengaktifkan fitur ini, abaikan email ini. Jika bukan, segera nonaktifkan autentikasi dua faktor melalui halaman Pengaturan &rsaquo; Keamanan dan hubungi Tim SIMAP.
     </p>
 
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">

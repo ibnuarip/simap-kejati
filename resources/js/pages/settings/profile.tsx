@@ -46,8 +46,8 @@ export default function Profile({
             <div className="space-y-6">
                 <Heading
                     variant="small"
-                    title="Profile"
-                    description="Update your name and email address"
+                    title="Profil"
+                    description="Perbarui nama dan alamat email Anda"
                 />
 
                 <Form
@@ -69,7 +69,7 @@ export default function Profile({
                             />
 
                             <div className="grid gap-2">
-                                <Label htmlFor="name">Name</Label>
+                                <Label htmlFor="name">Nama</Label>
 
                                 <Input
                                     id="name"
@@ -88,7 +88,7 @@ export default function Profile({
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
+                                <Label htmlFor="email">Alamat Email</Label>
 
                                 <Input
                                     id="email"

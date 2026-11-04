@@ -21,9 +21,9 @@ export default function ConfirmPassword() {
                     options: confirmOptions(),
                     submit: confirmStore(),
                 }}
-                label="Confirm with passkey"
-                loadingLabel="Confirming..."
-                separator="Or confirm with password"
+                label="Konfirmasi dengan passkey"
+                loadingLabel="Konfirmasi..."
+                separator="Atau konfirmasi dengan password"
             />
 
             <Form {...store.form()} resetOnSuccess={['password']}>
@@ -49,7 +49,7 @@ export default function ConfirmPassword() {
                                 data-test="confirm-password-button"
                             >
                                 {processing && <Spinner />}
-                                Confirm password
+                                Konfirmasi Password
                             </Button>
                         </div>
                     </div>
@@ -60,7 +60,7 @@ export default function ConfirmPassword() {
 }
 
 ConfirmPassword.layout = {
-    title: 'Confirm password',
+    title: 'Konfirmasi Password',
     description:
-        'This is a secure area of the application. Please confirm your password before continuing.',
+        'Ini adalah area aman aplikasi. Mohon konfirmasi kata sandi Anda sebelum melanjutkan.',
 };

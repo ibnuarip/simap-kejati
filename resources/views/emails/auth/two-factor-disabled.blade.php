@@ -17,7 +17,7 @@
     </table>
 
     <p style="margin:0 0 20px;font-size:13px;color:#374151;">
-        Akun Anda kini hanya dilindungi oleh kata sandi. Jika Anda yang menonaktifkan fitur ini, abaikan email ini. Jika bukan, segera hubungi administrator dan pertimbangkan untuk mengaktifkan kembali autentikasi dua faktor.
+        Akun Anda kini hanya dilindungi oleh kata sandi. Jika Anda yang menonaktifkan fitur ini, abaikan email ini. Jika bukan, segera hubungi Tim SIMAP dan pertimbangkan untuk mengaktifkan kembali autentikasi dua faktor.
     </p>
 
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">

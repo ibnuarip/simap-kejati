@@ -17,7 +17,7 @@
     </table>
 
     <p style="margin:0 0 20px;font-size:13px;color:#374151;">
-        Jika Anda yang mengubah kata sandi ini, abaikan email ini. Jika bukan, segera atur ulang kata sandi Anda melalui halaman &ldquo;Lupa Kata Sandi&rdquo; dan hubungi administrator.
+        Jika Anda yang mengubah kata sandi ini, abaikan email ini. Jika bukan, segera atur ulang kata sandi Anda melalui halaman &ldquo;Lupa Kata Sandi&rdquo; dan hubungi Tim SIMAP.
     </p>
 
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">

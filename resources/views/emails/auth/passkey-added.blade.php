@@ -22,7 +22,7 @@
     </p>
 
     <p style="margin:0 0 20px;font-size:13px;color:#374151;">
-        Jika Anda menambahkan passkey ini, abaikan email ini. Jika tidak, segera hapus passkey yang mencurigakan melalui halaman Pengaturan &rsaquo; Keamanan dan hubungi administrator.
+        Jika Anda menambahkan passkey ini, abaikan email ini. Jika tidak, segera hapus passkey yang mencurigakan melalui halaman Pengaturan &rsaquo; Keamanan dan hubungi Tim SIMAP.
     </p>
 
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
@@ -39,7 +39,7 @@
     </table>
 
     <p style="margin:0 0 16px;font-size:12px;color:#6b7280;line-height:1.6;">
-        Jika tombol di atas tidak berfungsi, salin dan buka tautan ini di peramban Anda:
+        Jika tombol di atas tidak berfungsi, salin dan buka tautan ini di Browser Anda:
     </p>
     <p style="margin:0 0 16px;font-size:12px;color:#6b7280;">
         <a href="{{ $loginUrl }}" style="color:#004d25;">{{ $loginUrl }}</a>

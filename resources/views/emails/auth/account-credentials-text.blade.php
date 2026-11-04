@@ -13,7 +13,7 @@ Buka halaman masuk melalui tautan berikut:
 
 {{ $loginUrl }}
 
-Jika Anda tidak pernah mendaftar atau membuat akun ini, mohon hubungi administrator.
+Jika Anda tidak pernah mendaftar atau membuat akun ini, mohon hubungi Tim SIMAP.
 
 Salam hormat,
 Tim {{ config('app.name') }}

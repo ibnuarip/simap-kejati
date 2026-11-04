@@ -18,7 +18,7 @@
     </table>
 
     <p style="margin:0 0 20px;font-size:13px;color:#374151;">
-        Jika Anda yang menghapus passkey ini, abaikan email ini. Jika tidak, segera periksa daftar passkey di halaman Pengaturan &rsaquo; Keamanan, hapus passkey yang mencurigakan, dan hubungi administrator.
+        Jika Anda yang menghapus passkey ini, abaikan email ini. Jika tidak, segera periksa daftar passkey di halaman Pengaturan &rsaquo; Keamanan, hapus passkey yang mencurigakan, dan hubungi Tim SIMAP.
     </p>
 
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">

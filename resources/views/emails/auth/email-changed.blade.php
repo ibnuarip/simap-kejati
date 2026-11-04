@@ -32,7 +32,7 @@
     </p>
 
     <p style="margin:0 0 20px;font-size:13px;color:#374151;">
-        Jika Anda yang mengubah alamat email ini, abaikan email ini. Jika bukan, segera hubungi administrator dan atur ulang kata sandi Anda.
+        Jika Anda yang mengubah alamat email ini, abaikan email ini. Jika bukan, segera hubungi Tim SIMAP dan atur ulang kata sandi Anda.
     </p>
 
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
