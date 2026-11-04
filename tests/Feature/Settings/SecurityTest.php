@@ -1,7 +1,12 @@
 <?php
 
+use App\Mail\Auth\PasskeyRemovedMail;
+use App\Mail\Auth\PasswordChangedMail;
+use App\Mail\Auth\TwoFactorDisabledMail;
+use App\Mail\Auth\TwoFactorEnabledMail;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\TwoFactorAuthenticationProvider;
@@ -265,4 +270,165 @@ test('password update returns localized 429 json payload when rate limited via i
 
     expect($response->json('message'))->toContain('Terlalu banyak permintaan');
     expect($response->json('retry_after'))->toBeGreaterThan(0);
+});
+
+test('updating a password queues a notification email', function () {
+    Mail::fake();
+
+    $user = User::factory()->create();
+
+    $this
+        ->actingAs($user)
+        ->from(route('security.edit'))
+        ->put(route('user-password.update'), [
+            'current_password' => 'password',
+            'password' => 'new-password',
+            'password_confirmation' => 'new-password',
+        ])
+        ->assertSessionHasNoErrors();
+
+    Mail::assertQueued(PasswordChangedMail::class, function (PasswordChangedMail $mail) use ($user) {
+        return $mail->hasTo($user->email);
+    });
+    Mail::assertQueuedCount(1);
+});
+
+test('a failed password update does not queue a notification email', function () {
+    Mail::fake();
+
+    $user = User::factory()->create();
+
+    $this
+        ->actingAs($user)
+        ->from(route('security.edit'))
+        ->put(route('user-password.update'), [
+            'current_password' => 'wrong-password',
+            'password' => 'new-password',
+            'password_confirmation' => 'new-password',
+        ])
+        ->assertSessionHasErrors('current_password');
+
+    Mail::assertNotQueued(PasswordChangedMail::class);
+});
+
+test('confirming two factor authentication queues a notification email', function () {
+    $this->skipUnlessFortifyHas(Features::twoFactorAuthentication());
+
+    Features::twoFactorAuthentication([
+        'confirm' => true,
+        'confirmPassword' => true,
+    ]);
+
+    Mail::fake();
+
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->from(route('security.edit'))
+        ->post(route('two-factor.enable'))
+        ->assertRedirect(route('security.edit'));
+
+    $user->refresh();
+
+    expect($user->two_factor_secret)->not->toBeNull()
+        ->and($user->two_factor_confirmed_at)->toBeNull();
+
+    $code = app(Google2FA::class)->getCurrentOtp(decrypt($user->two_factor_secret));
+
+    $this->actingAs($user)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->from(route('security.edit'))
+        ->post(route('two-factor.confirm'), ['code' => $code])
+        ->assertSessionHasNoErrors();
+
+    expect($user->refresh()->two_factor_confirmed_at)->not->toBeNull();
+
+    Mail::assertQueued(TwoFactorEnabledMail::class, function (TwoFactorEnabledMail $mail) use ($user) {
+        return $mail->hasTo($user->email);
+    });
+    Mail::assertQueuedCount(1);
+});
+
+test('an invalid two factor confirmation code does not queue a notification email', function () {
+    $this->skipUnlessFortifyHas(Features::twoFactorAuthentication());
+
+    Features::twoFactorAuthentication([
+        'confirm' => true,
+        'confirmPassword' => true,
+    ]);
+
+    Mail::fake();
+
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->post(route('two-factor.enable'));
+
+    $wrongCode = app(Google2FA::class)->getCurrentOtp(
+        app(TwoFactorAuthenticationProvider::class)->generateSecretKey()
+    );
+
+    $this->actingAs($user)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->from(route('security.edit'))
+        ->post(route('two-factor.confirm'), ['code' => $wrongCode])
+        ->assertSessionHasErrors('code', null, 'confirmTwoFactorAuthentication');
+
+    expect($user->refresh()->two_factor_confirmed_at)->toBeNull();
+
+    Mail::assertNotQueued(TwoFactorEnabledMail::class);
+});
+
+test('disabling two factor authentication queues a notification email', function () {
+    $this->skipUnlessFortifyHas(Features::twoFactorAuthentication());
+
+    $secret = app(TwoFactorAuthenticationProvider::class)->generateSecretKey();
+
+    Mail::fake();
+
+    $user = User::factory()->create([
+        'two_factor_secret' => encrypt($secret),
+        'two_factor_recovery_codes' => encrypt(json_encode(['recovery-code-1'])),
+        'two_factor_confirmed_at' => now(),
+    ]);
+
+    $code = app(Google2FA::class)->getCurrentOtp($secret);
+
+    $this
+        ->actingAs($user)
+        ->from(route('security.edit'))
+        ->post(route('settings.two-factor.disable'), ['code' => $code])
+        ->assertSessionHasNoErrors();
+
+    Mail::assertQueued(TwoFactorDisabledMail::class, function (TwoFactorDisabledMail $mail) use ($user) {
+        return $mail->hasTo($user->email);
+    });
+    Mail::assertQueuedCount(1);
+});
+
+test('deleting a passkey queues a notification email', function () {
+    $this->skipUnlessFortifyHas(Features::passkeys());
+
+    Mail::fake();
+
+    $user = User::factory()->create();
+
+    $passkey = $user->passkeys()->create([
+        'name' => 'Chrome on Windows',
+        'credential_id' => 'cred-mail-123',
+        'credential' => json_encode(['id' => 'cred-mail-123']),
+    ]);
+
+    $this->actingAs($user)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->from(route('security.edit'))
+        ->delete(route('passkey.destroy', $passkey))
+        ->assertRedirect(route('security.edit'));
+
+    Mail::assertQueued(PasskeyRemovedMail::class, function (PasskeyRemovedMail $mail) use ($user) {
+        return $mail->hasTo($user->email);
+    });
+    Mail::assertQueuedCount(1);
 });

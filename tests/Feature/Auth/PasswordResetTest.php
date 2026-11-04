@@ -1,7 +1,9 @@
 <?php
 
+use App\Mail\Auth\PasswordChangedMail;
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Fortify\Features;
 
@@ -75,4 +77,43 @@ test('password cannot be reset with invalid token', function () {
     ]);
 
     $response->assertSessionHasErrors('email');
+});
+
+test('successful password reset queues a notification email', function () {
+    Notification::fake();
+    Mail::fake();
+
+    $user = User::factory()->create();
+
+    $this->post(route('password.email'), ['email' => $user->email]);
+
+    Notification::assertSentTo($user, ResetPassword::class, function ($notification) use ($user) {
+        $this->post(route('password.update'), [
+            'token' => $notification->token,
+            'email' => $user->email,
+            'password' => 'newpassword123',
+            'password_confirmation' => 'newpassword123',
+        ])->assertSessionHasNoErrors();
+
+        return true;
+    });
+
+    Mail::assertQueued(PasswordChangedMail::class, function (PasswordChangedMail $mail) use ($user) {
+        return $mail->hasTo($user->email);
+    });
+});
+
+test('failed password reset does not queue a notification email', function () {
+    Mail::fake();
+
+    $user = User::factory()->create();
+
+    $this->post(route('password.update'), [
+        'token' => 'invalid-token',
+        'email' => $user->email,
+        'password' => 'newpassword123',
+        'password_confirmation' => 'newpassword123',
+    ])->assertSessionHasErrors('email');
+
+    Mail::assertNotQueued(PasswordChangedMail::class);
 });

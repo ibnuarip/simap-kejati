@@ -1,6 +1,7 @@
 import { Form, Head, usePage } from '@inertiajs/react';
 import { Link } from '@inertiajs/react';
 import { Ban } from 'lucide-react';
+import { toast } from 'sonner';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import { AvatarInput } from '@/components/avatar-input';
 import DeleteUser from '@/components/delete-user';
@@ -27,6 +28,15 @@ export default function Profile({
 }) {
     const { auth } = usePage<PageProps>().props;
 
+    const updateFormProps = {
+        onError: (errors: Record<string, string>) => {
+            const message = Object.values(errors)[0];
+            toast.error(
+                message ? String(message) : 'Gagal memperbarui profil.',
+            );
+        },
+    };
+
     return (
         <>
             <Head title="Profile settings" />
@@ -36,12 +46,13 @@ export default function Profile({
             <div className="space-y-6">
                 <Heading
                     variant="small"
-                    title="Profile"
-                    description="Update your name and email address"
+                    title="Profil"
+                    description="Perbarui nama dan alamat email Anda"
                 />
 
                 <Form
                     {...ProfileController.update.form()}
+                    {...updateFormProps}
                     options={{
                         preserveScroll: true,
                     }}
@@ -58,7 +69,7 @@ export default function Profile({
                             />
 
                             <div className="grid gap-2">
-                                <Label htmlFor="name">Name</Label>
+                                <Label htmlFor="name">Nama</Label>
 
                                 <Input
                                     id="name"
@@ -77,7 +88,7 @@ export default function Profile({
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
+                                <Label htmlFor="email">Alamat Email</Label>
 
                                 <Input
                                     id="email"

@@ -446,7 +446,7 @@ function LeaderFields({
                     name="email"
                     required
                     defaultValue={defaultValue?.email ?? ''}
-                    placeholder="email@kejati.go.id"
+                    placeholder="Masukan email Anda"
                 />
                 <InputError message={errors.email} />
             </div>

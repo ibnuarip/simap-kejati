@@ -98,7 +98,7 @@ export default function PasskeyRegistration({ onSuccess }: Props) {
     if (!showForm) {
         return (
             <Button variant="outline" onClick={() => setShowForm(true)}>
-                Add passkey
+                Tambah Passkey
             </Button>
         );
     }
@@ -120,7 +120,7 @@ export default function PasskeyRegistration({ onSuccess }: Props) {
             className="border-border bg-muted/50 space-y-4 rounded-lg border p-4"
         >
             <div className="grid gap-2">
-                <Label htmlFor="passkey-name">Passkey name</Label>
+                <Label htmlFor="passkey-name">Nama Passkey</Label>
                 <Input
                     id="passkey-name"
                     type="text"
@@ -131,7 +131,7 @@ export default function PasskeyRegistration({ onSuccess }: Props) {
                     autoFocus
                 />
                 <p className="text-muted-foreground text-xs">
-                    A name helps you identify this passkey later.
+                    Nama passkey digunakan untuk mengidentifikasi passkey Anda.
                 </p>
             </div>
 
@@ -146,7 +146,7 @@ export default function PasskeyRegistration({ onSuccess }: Props) {
                         ? 'Memeriksa...'
                         : isLoading
                           ? 'Registering...'
-                          : 'Register passkey'}
+                          : 'Daftarkan passkey'}
                 </Button>
                 <Button type="button" variant="ghost" onClick={handleCancel}>
                     Cancel

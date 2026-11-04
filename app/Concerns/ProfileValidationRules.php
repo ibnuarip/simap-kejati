@@ -24,6 +24,18 @@ trait ProfileValidationRules
     }
 
     /**
+     * Get the validation messages used for user profiles.
+     *
+     * @return array<string, string>
+     */
+    protected function profileMessages(): array
+    {
+        return [
+            'email.unique' => 'Email sudah digunakan oleh akun lain.',
+        ];
+    }
+
+    /**
      * Get the validation rules used to validate user names.
      *
      * @return array<int, ValidationRule|array<mixed>|string>

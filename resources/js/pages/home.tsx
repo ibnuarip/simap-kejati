@@ -117,7 +117,7 @@ export default function Home({
                                                 autoFocus
                                                 tabIndex={1}
                                                 autoComplete="email"
-                                                placeholder="email@gmail.com"
+                                                placeholder="Masukkan Email"
                                             />
                                             <InputError
                                                 message={errors.email}
@@ -127,7 +127,7 @@ export default function Home({
                                         <div className="grid gap-2">
                                             <div className="flex items-center">
                                                 <Label htmlFor="password">
-                                                    Kata sandi
+                                                    Kata Sandi
                                                 </Label>
                                                 {canResetPassword && (
                                                     <TextLink
@@ -145,7 +145,7 @@ export default function Home({
                                                 required
                                                 tabIndex={2}
                                                 autoComplete="current-password"
-                                                placeholder="Kata sandi"
+                                                placeholder="Masukan Password"
                                             />
                                             <InputError
                                                 message={errors.password}

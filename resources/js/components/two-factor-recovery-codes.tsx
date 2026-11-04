@@ -57,11 +57,12 @@ export default function TwoFactorRecoveryCodes({
             <CardHeader>
                 <CardTitle className="flex gap-3">
                     <LockKeyhole className="size-4" aria-hidden="true" />
-                    2FA recovery codes
+                    Kode Pemulihan 2FA
                 </CardTitle>
                 <CardDescription>
-                    Recovery codes let you regain access if you lose your 2FA
-                    device. Store them in a secure password manager.
+                    Kode pemulihan memungkinkan Anda mendapatkan kembali akses
+                    jika Anda kehilangan perangkat otentikasi dua faktor (2FA).
+                    Simpan kode tersebut di tempat yang aman.
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -76,7 +77,8 @@ export default function TwoFactorRecoveryCodes({
                             className="size-4"
                             aria-hidden="true"
                         />
-                        {codesAreVisible ? 'Hide' : 'View'} recovery codes
+                        {codesAreVisible ? 'Sembunyikan' : 'Tampilkan'} Kode
+                        Pemulihan
                     </Button>
 
                     {canRegenerateCodes && (
@@ -92,7 +94,7 @@ export default function TwoFactorRecoveryCodes({
                                     disabled={processing}
                                     aria-describedby="regenerate-warning"
                                 >
-                                    <RefreshCw /> Regenerate codes
+                                    <RefreshCw /> Hasilkan Ulang Kode Pemulihan
                                 </Button>
                             )}
                         </Form>
@@ -145,13 +147,14 @@ export default function TwoFactorRecoveryCodes({
 
                                 <div className="text-muted-foreground text-xs select-none">
                                     <p id="regenerate-warning">
-                                        Each recovery code can be used once to
-                                        access your account and will be removed
-                                        after use. If you need more, click{' '}
+                                        Setiap kode pemulihan hanya dapat
+                                        digunakan sekali untuk mengakses akun
+                                        Anda dan akan dihapus setelah digunakan.
+                                        Jika Anda membutuhkan lebih banyak, klik{' '}
                                         <span className="font-bold">
-                                            Regenerate codes
+                                            Hasilkan Ulang
                                         </span>{' '}
-                                        above.
+                                        di atas.
                                     </p>
                                 </div>
                             </>

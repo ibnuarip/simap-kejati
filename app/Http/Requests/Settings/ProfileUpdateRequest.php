@@ -29,6 +29,7 @@ class ProfileUpdateRequest extends FormRequest
     public function messages(): array
     {
         return [
+            ...$this->profileMessages(),
             'avatar.image' => 'Berkas harus berupa gambar.',
             'avatar.mimes' => 'Foto harus berformat JPG, JPEG, atau PNG.',
             'avatar.max' => 'Ukuran foto maksimal '.ceil(AvatarService::MAX_KILOBYTES / 1024).' MB.',

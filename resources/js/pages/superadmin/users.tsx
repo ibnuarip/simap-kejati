@@ -5,6 +5,7 @@ import { Pencil, Plus, X } from 'lucide-react';
 import UserController from '@/actions/App/Http/Controllers/Superadmin/UserController';
 import ConfirmDelete from '@/components/confirm-delete';
 import InputError from '@/components/input-error';
+import PasswordInput from '@/components/password-input';
 import { UserAvatar } from '@/components/user-avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -691,7 +692,7 @@ function UserFields({
                     required
                     value={email}
                     onChange={(event) => onEmailChange(event.target.value)}
-                    placeholder="email@kejati.go.id"
+                    placeholder="Masukan email Anda"
                 />
                 <InputError message={errors.email} />
             </div>
@@ -700,9 +701,8 @@ function UserFields({
                 <Label htmlFor="password">
                     Password {passwordRequired ? '' : '(opsional)'}
                 </Label>
-                <Input
+                <PasswordInput
                     id="password"
-                    type="password"
                     name="password"
                     required={passwordRequired}
                     autoComplete="new-password"

@@ -50,15 +50,15 @@ export default function ManageTwoFactor(props: Props) {
         <div className="space-y-6">
             <Heading
                 variant="small"
-                title="Two-factor authentication"
-                description="Manage your two-factor authentication settings"
+                title="Autentikasi Dua Faktor (2FA)"
+                description="Kelola pengaturan autentikasi dua faktor Anda"
             />
             {twoFactorEnabled ? (
                 <div className="flex flex-col items-start justify-start space-y-4">
                     <p className="text-muted-foreground text-sm">
-                        You will be prompted for a secure, random pin during
-                        login, which you can retrieve from the TOTP-supported
-                        application on your phone.
+                        Autentikasi dua faktor mengharuskan Anda memasukkan kode
+                        rahasia, yang dapat diambil dari aplikasi pendukung TOTP
+                        di ponsel Anda, setiap kali Anda login.
                     </p>
 
                     <div className="relative inline">
@@ -67,7 +67,7 @@ export default function ManageTwoFactor(props: Props) {
                             type="button"
                             onClick={() => setShowDisableModal(true)}
                         >
-                            Disable 2FA
+                            Non-aktifkan 2FA
                         </Button>
                     </div>
 
@@ -80,17 +80,17 @@ export default function ManageTwoFactor(props: Props) {
             ) : (
                 <div className="flex flex-col items-start justify-start space-y-4">
                     <p className="text-muted-foreground text-sm">
-                        When you enable two-factor authentication, you will be
-                        prompted for a secure pin during login. This pin can be
-                        retrieved from a TOTP-supported application on your
-                        phone.
+                        Aktifkan autentikasi dua faktor, dan Anda akan diminta
+                        untuk memasukkan kode rahasia, yang dapat diambil dari
+                        aplikasi pendukung TOTP di ponsel Anda, setiap kali Anda
+                        login.
                     </p>
 
                     <div>
                         {hasSetupData ? (
                             <Button onClick={() => setShowSetupModal(true)}>
                                 <ShieldCheck />
-                                Continue setup
+                                Lanjutkan Setup
                             </Button>
                         ) : (
                             <Form
@@ -99,7 +99,7 @@ export default function ManageTwoFactor(props: Props) {
                             >
                                 {({ processing }) => (
                                     <Button type="submit" disabled={processing}>
-                                        Enable 2FA
+                                        Aktifkan 2FA
                                     </Button>
                                 )}
                             </Form>

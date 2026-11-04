@@ -47,7 +47,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
                                     {processing && (
                                         <LoaderCircle className="h-4 w-4 animate-spin" />
                                     )}
-                                    Email password reset link
+                                    Kirim Tautan Atur Ulang Kata Sandi
                                 </Button>
                             </div>
                         </>
@@ -55,7 +55,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
                 </Form>
 
                 <div className="text-muted-foreground space-x-1 text-center text-sm">
-                    <span>Or, return to</span>
+                    <span>Atau, kembali ke halaman</span>
                     <TextLink href={login()}>log in</TextLink>
                 </div>
             </div>
@@ -64,6 +64,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
 }
 
 ForgotPassword.layout = {
-    title: 'Forgot password',
-    description: 'Enter your email to receive a password reset link',
+    title: 'Lupa Password',
+    description:
+        'Masukkan email Anda untuk menerima tautan atur ulang kata sandi',
 };

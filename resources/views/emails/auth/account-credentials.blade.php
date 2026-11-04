@@ -62,7 +62,7 @@
     </p>
 
     <p style="margin:0 0 16px;font-size:12px;color:#6b7280;line-height:1.6;">
-        Jika Anda tidak pernah mendaftar atau membuat akun ini, mohon hubungi administrator.
+        Jika Anda tidak pernah mendaftar atau membuat akun ini, mohon hubungi Tim SIMAP.
     </p>
 
     <p style="margin:0;font-size:13px;color:#374151;">

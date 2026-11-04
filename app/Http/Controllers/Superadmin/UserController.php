@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Superadmin;
 
+use App\Events\AccountDeleted;
+use App\Events\EmailChanged;
+use App\Events\PasswordChanged;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserRequest;
 use App\Mail\Auth\AccountCredentialsMail;
@@ -92,6 +95,8 @@ class UserController extends Controller
 
     public function update(UserRequest $request, User $user, AvatarService $avatars): RedirectResponse
     {
+        $oldEmail = $user->email;
+
         $user->update(array_filter([
             'name' => $request->validated('name'),
             'email' => $request->validated('email'),
@@ -99,10 +104,18 @@ class UserController extends Controller
             'password' => $request->filled('password') ? $request->input('password') : null,
         ], fn (mixed $value): bool => $value !== null));
 
+        if ($user->wasChanged('email')) {
+            EmailChanged::dispatch($user, $oldEmail, $user->email);
+        }
+
         $avatars->syncFromRequest($user, $request);
 
         $this->syncLeaderLink($user, $request->validated('leader_id'));
         $this->syncAssignedLeaders($user, $request->validated('leaders'));
+
+        if ($request->filled('password')) {
+            PasswordChanged::dispatch($user);
+        }
 
         return back();
     }
@@ -133,6 +146,8 @@ class UserController extends Controller
 
         $avatars->delete($user);
         $user->delete();
+
+        AccountDeleted::dispatch($user, AccountDeleted::DELETED_BY_ADMIN);
 
         return back();
     }

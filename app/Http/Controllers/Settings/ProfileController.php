@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Settings;
 
+use App\Events\AccountDeleted;
+use App\Events\EmailChanged;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileDeleteRequest;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
@@ -31,17 +33,28 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request, AvatarService $avatars): RedirectResponse
     {
-        $request->user()->fill($request->safe()->except(['avatar']));
+        $user = $request->user();
+        $user->fill($request->safe()->except(['avatar']));
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $oldEmail = (string) $user->getOriginal('email');
+        $emailChanged = $user->isDirty('email');
+
+        if ($emailChanged) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        $user->save();
 
-        $avatars->syncFromRequest($request->user(), $request);
+        if ($emailChanged) {
+            EmailChanged::dispatch($user, $oldEmail, $user->email);
+        }
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Profile updated.')]);
+        $avatars->syncFromRequest($user, $request);
+
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => $emailChanged ? 'Email berhasil diperbarui.' : 'Profil berhasil diperbarui.',
+        ]);
 
         return to_route('profile.edit');
     }
@@ -57,6 +70,8 @@ class ProfileController extends Controller
 
         $avatars->delete($user);
         $user->delete();
+
+        AccountDeleted::dispatch($user, AccountDeleted::DELETED_BY_SELF);
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
