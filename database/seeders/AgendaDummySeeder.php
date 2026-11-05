@@ -104,9 +104,10 @@ class AgendaDummySeeder extends Seeder
 
                     $useRoom = mt_rand(1, 100) <= 70;
 
-                    // Waktu input disebar acak dalam 6 bulan terakhir (selalu
-                    // sebelum agenda dimulai) agar grafik tren naik-turun
-                    // natural, bukan menumpuk di satu bulan.
+                    // Waktu input disebar acak sejak 1 Januari tahun berjalan
+                    // (selalu sebelum agenda dimulai) agar grafik tren bulanan
+                    // terisi penuh dari Januari, bukan menumpuk di bulan-bulan
+                    // terakhir saja.
                     $createdAt = $this->randomInputTime($today, $start, $timezone);
 
                     Event::factory()->dummy()->create([
@@ -196,12 +197,12 @@ class AgendaDummySeeder extends Seeder
     }
 
     /**
-     * Waktu input acak: antara 6 bulan lalu dan 1 jam sebelum agenda
-     * dimulai (dibatasi hari ini), sebagai wall-clock Asia/Jakarta.
+     * Waktu input acak: antara 1 Januari tahun berjalan dan 1 jam sebelum
+     * agenda dimulai (dibatasi hari ini), sebagai wall-clock Asia/Jakarta.
      */
     private function randomInputTime(Carbon $today, Carbon $start, string $timezone): Carbon
     {
-        $lower = $today->copy()->subMonths(6)->startOfDay();
+        $lower = $today->copy()->startOfYear();
 
         $upper = $start->copy()->subHour();
         $now = Carbon::now($timezone);
