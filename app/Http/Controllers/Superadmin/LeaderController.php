@@ -38,7 +38,13 @@ class LeaderController extends Controller
 
     public function store(LeaderRequest $request): RedirectResponse
     {
-        Leader::create($request->validated());
+        $leader = Leader::create($request->validated());
+
+        Inertia::flash('offerLeaderAccount', [
+            'id' => $leader->getKey(),
+            'name' => $leader->name,
+            'email' => $leader->email,
+        ]);
 
         return back();
     }

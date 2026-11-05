@@ -1,4 +1,4 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, router, usePage } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import {
@@ -9,6 +9,7 @@ import {
     Phone,
     Plus,
     Search,
+    UserPlus,
     X,
 } from 'lucide-react';
 import LeaderController from '@/actions/App/Http/Controllers/Superadmin/LeaderController';
@@ -40,19 +41,28 @@ import { useInitials } from '@/hooks/use-initials';
 import { leaderPositions } from '@/lib/user';
 import { dashboard } from '@/routes';
 import { index as leadersIndex } from '@/routes/master/leaders';
+import { index as usersIndex } from '@/routes/users';
 import type { Leader, LeaderPosition } from '@/types';
+import type { OfferLeaderAccount } from '@/types/ui';
 
 type Props = {
     leaders: Leader[];
 };
 
 export default function SuperadminLeaders({ leaders }: Props) {
+    const { flash } = usePage();
+    const offer = flash?.offerLeaderAccount as OfferLeaderAccount | undefined;
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editing, setEditing] = useState<Leader | null>(null);
     const [position, setPosition] = useState<LeaderPosition>('Kajati');
     const [isActive, setIsActive] = useState(true);
     const [search, setSearch] = useState('');
+    const [dismissedOfferId, setDismissedOfferId] = useState<number | null>(
+        null,
+    );
     const getInitials = useInitials();
+
+    const showOfferAccount = offer != null && offer.id !== dismissedOfferId;
 
     const filteredLeaders = useMemo(() => {
         const lowerQuery = search.trim().toLowerCase();
@@ -91,6 +101,25 @@ export default function SuperadminLeaders({ leaders }: Props) {
         setIsActive(leader.is_active);
         setEditing(leader);
         setDialogOpen(true);
+    };
+
+    const dismissOffer = () => {
+        if (offer) {
+            setDismissedOfferId(offer.id);
+        }
+    };
+
+    const goToCreateAccount = () => {
+        if (!offer) {
+            return;
+        }
+
+        dismissOffer();
+        router.visit(
+            usersIndex.url({
+                query: { create: '1', leader_id: String(offer.id) },
+            }),
+        );
     };
 
     const createFormProps = {
@@ -349,6 +378,44 @@ export default function SuperadminLeaders({ leaders }: Props) {
                             )}
                         </Form>
                     )}
+                </DialogContent>
+            </Dialog>
+
+            <Dialog
+                open={showOfferAccount}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        dismissOffer();
+                    }
+                }}
+            >
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <UserPlus
+                                aria-hidden
+                                className="text-primary size-5"
+                            />
+                            Buat akun pengguna?
+                        </DialogTitle>
+                        <DialogDescription>
+                            Data pimpinan “{offer?.name}” berhasil disimpan.
+                            Buatkan akun login role Pimpinan sekarang agar bisa
+                            mengakses sistem?
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="gap-2 sm:justify-end">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={dismissOffer}
+                        >
+                            Nanti Saja
+                        </Button>
+                        <Button type="button" onClick={goToCreateAccount}>
+                            Buat Akun
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </>
