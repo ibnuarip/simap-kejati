@@ -13,6 +13,12 @@ export type FlashToast = {
     message: string;
 };
 
+export type OfferLeaderAccount = {
+    id: number;
+    name: string;
+    email: string | null;
+};
+
 export type AuthLayoutProps = {
     children?: ReactNode;
     name?: string;

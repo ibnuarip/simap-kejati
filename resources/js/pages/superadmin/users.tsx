@@ -1,5 +1,5 @@
 import { Form, Head, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Pencil, Plus, X } from 'lucide-react';
 import UserController from '@/actions/App/Http/Controllers/Superadmin/UserController';
@@ -44,6 +44,7 @@ const ROLE_OPTIONS: UserRole[] = ['superadmin', 'protokol', 'pimpinan'];
 export default function SuperadminUsers({ users, leaders }: Props) {
     const { auth } = usePage().props;
     const currentUserId = auth.user.id;
+    const prefilledFromLeader = useRef(false);
 
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editing, setEditing] = useState<ManagedUser | null>(null);
@@ -52,6 +53,45 @@ export default function SuperadminUsers({ users, leaders }: Props) {
     const [leaderId, setLeaderId] = useState<string>('');
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
+
+    // Prefill form tambah pengguna saat datang dari penawaran
+    // "Buat Akun" di halaman Data Pimpinan (?create=1&leader_id=…).
+    useEffect(() => {
+        if (prefilledFromLeader.current) {
+            return;
+        }
+
+        const params = new URLSearchParams(window.location.search);
+
+        if (params.get('create') !== '1') {
+            return;
+        }
+
+        const rawLeaderId = params.get('leader_id');
+        const selected = rawLeaderId
+            ? leaders.find((leader) => String(leader.id) === rawLeaderId)
+            : undefined;
+
+        if (!selected) {
+            return;
+        }
+
+        prefilledFromLeader.current = true;
+        setRole('pimpinan');
+        setLeaderIds([]);
+        setEditing(null);
+        setLeaderId(String(selected.id));
+        setName(selected.name);
+        setEmail(selected.email ?? '');
+        setDialogOpen(true);
+
+        // Bersihkan query agar refresh tidak membuka dialog lagi.
+        window.history.replaceState(
+            window.history.state,
+            '',
+            window.location.pathname,
+        );
+    }, [leaders]);
 
     const handleLeaderChange = (id: string) => {
         setLeaderId(id);

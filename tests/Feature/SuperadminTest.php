@@ -73,7 +73,8 @@ test('superadmins can create a leader', function () {
         'email' => 'kajati@kejati.go.id',
         'phone' => '081234561221',
         'is_active' => '1',
-    ])->assertRedirect();
+    ])->assertRedirect()
+        ->assertInertiaFlash('offerLeaderAccount');
 
     $this->assertDatabaseHas('leaders', [
         'name' => 'Drs. H. Bambang',
