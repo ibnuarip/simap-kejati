@@ -12,21 +12,21 @@ Sistem Informasi Manajemen Agenda Pimpinan untuk Kejaksaan Tinggi Jawa Barat. Me
 
 ## Fungsi Aplikasi
 
-| Peran | Fungsi |
-| --- | --- |
-| **Superadmin** | Mengelola seluruh sistem: master data, pengguna, agenda, kalender, serta cetak & ekspor laporan. |
+| Peran            | Fungsi                                                                                                                  |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **Superadmin**   | Mengelola seluruh sistem: master data, pengguna, agenda, kalender, serta cetak & ekspor laporan.                        |
 | **Tim Protokol** | Mengelola agenda pimpinan yang ditugaskan, deteksi bentrok jadwal, kalender, cetak & ekspor, dan pengaturan notifikasi. |
-| **Pimpinan** | Melihat ringkasan agenda, kalender jadwal, dan pengaturan notifikasi. |
+| **Pimpinan**     | Melihat ringkasan agenda, kalender jadwal, dan pengaturan notifikasi.                                                   |
 
 ## Fitur-fitur
 
-- **Manajemen Agenda**  input, ubah, dan batalkan agenda dengan status lengkap; deteksi bentrok jadwal otomatis; kalender interaktif; pencarian, filter, dan paginasi.
-- **Master Data**  kelola data pimpinan, ruangan & tempat, serta kategori kegiatan.
-- **Kelola Pengguna**  pembuatan dan pengaturan akun beserta perannya (registrasi publik nonaktif).
-- **Dashboard Analitik**  statistik sistem, tren aktivitas agenda bulanan, distribusi kategori, ringkasan status agenda, dan agenda mendatang.
-- **Cetak & Ekspor**  cetak/simpan PDF berkop surat (A4), ekspor Excel dan CSV, periode harian hingga tahunan atau rentang kustom.
-- **Notifikasi**  pengingat agenda via push notification dengan jam pengingat yang dapat diatur.
-- **Keamanan**  autentikasi lengkap (login, verifikasi email, two-factor authentication, passkey), profil pengguna, tema tampilan, dan akses berbasis peran.
+- **Manajemen Agenda** input, ubah, dan batalkan agenda dengan status lengkap; deteksi bentrok jadwal otomatis; kalender interaktif; pencarian, filter, dan paginasi.
+- **Master Data** kelola data pimpinan, ruangan & tempat, serta kategori kegiatan.
+- **Kelola Pengguna** pembuatan dan pengaturan akun beserta perannya (registrasi publik nonaktif).
+- **Dashboard Analitik** statistik sistem, tren aktivitas agenda bulanan, distribusi kategori, ringkasan status agenda, dan agenda mendatang.
+- **Cetak & Ekspor** cetak/simpan PDF berkop surat (A4), ekspor Excel dan CSV, periode harian hingga tahunan atau rentang kustom.
+- **Notifikasi** pengingat agenda via push notification dengan jam pengingat yang dapat diatur.
+- **Keamanan** autentikasi lengkap (login, verifikasi email, two-factor authentication, passkey), profil pengguna, tema tampilan, dan akses berbasis peran.
 
 ## Teknologi
 
@@ -91,7 +91,7 @@ Perintah lain seperti `make down`, `make logs`, `make artisan cmd="..."`, dan `m
 
 ## Pengembangan
 
-Pastikan perubahan kode lolos pemeriksaan berikut sebelum push  CI akan menjalankannya kembali secara otomatis:
+Pastikan perubahan kode lolos pemeriksaan berikut sebelum push CI akan menjalankannya kembali secara otomatis:
 
 ```bash
 make format      # format kode PHP (Pint)
@@ -99,4 +99,3 @@ make types       # analisis statis (PHPStan)
 make test-pest   # unit & feature test (Pest)
 make npm-types   # validasi TypeScript
 ```
-
