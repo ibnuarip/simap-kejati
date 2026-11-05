@@ -1,7 +1,4 @@
-# ==========================================
-# DOCKER COMMANDS
-# ==========================================
-up:
+.PHONY: up down restart build logs logs-app ps bash bash-node bash-db artisan migrate fresh seed rollback tinker key storage routes wayfinder clear cache composer-install composer-update composer-dump lint format types test test-filter test-pest npm-install npm-dev npm-build npm-check npm-types share
 	docker compose up -d
 
 down:
@@ -102,19 +99,20 @@ lint:
 	docker compose exec app composer lint:check
 
 format:
-	docker compose exec app composer lint:fix
+	php vendor/bin/pint --parallel
+
+format-check:
+	php vendor/bin/pint --parallel --test
 
 types:
 	docker compose exec app composer types:check
 
 test:
-	docker compose exec app php artisan test
+	php vendor/bin/pest
 
 test-filter:
-	docker compose exec app php artisan test --filter=$(filter)
+	php vendor/bin/pest --filter=$(filter)
 
-test-pest:
-	docker compose exec app ./vendor/bin/pest
 
 # ==========================================
 # NODE / REACT / FRONTEND
