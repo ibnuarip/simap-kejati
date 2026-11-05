@@ -8,9 +8,27 @@
 ![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)
 ![Docker](https://img.shields.io/badge/Docker-2496ED.svg?logo=docker&logoColor=white)
 
-Sistem Informasi Manajemen Terpadu untuk Kejaksaan Tinggi (Kejati) Jawa Barat. Aplikasi ini dibangun dengan standar teknologi modern menggunakan arsitektur Monolith berbasis Inertia.js.
+Sistem Informasi Manajemen Agenda Pimpinan untuk Kejaksaan Tinggi Jawa Barat. Mengelola jadwal kegiatan pimpinan secara terpusat, mulai dari pencatatan agenda, deteksi bentrok jadwal, notifikasi pengingat, hingga pelaporan.
 
-## Tech Stack
+## Fungsi Aplikasi
+
+| Peran | Fungsi |
+| --- | --- |
+| **Superadmin** | Mengelola seluruh sistem: master data, pengguna, agenda, kalender, serta cetak & ekspor laporan. |
+| **Tim Protokol** | Mengelola agenda pimpinan yang ditugaskan, deteksi bentrok jadwal, kalender, cetak & ekspor, dan pengaturan notifikasi. |
+| **Pimpinan** | Melihat ringkasan agenda, kalender jadwal, dan pengaturan notifikasi. |
+
+## Fitur-fitur
+
+- **Manajemen Agenda**  input, ubah, dan batalkan agenda dengan status lengkap; deteksi bentrok jadwal otomatis; kalender interaktif; pencarian, filter, dan paginasi.
+- **Master Data**  kelola data pimpinan, ruangan & tempat, serta kategori kegiatan.
+- **Kelola Pengguna**  pembuatan dan pengaturan akun beserta perannya (registrasi publik nonaktif).
+- **Dashboard Analitik**  statistik sistem, tren aktivitas agenda bulanan, distribusi kategori, ringkasan status agenda, dan agenda mendatang.
+- **Cetak & Ekspor**  cetak/simpan PDF berkop surat (A4), ekspor Excel dan CSV, periode harian hingga tahunan atau rentang kustom.
+- **Notifikasi**  pengingat agenda via push notification dengan jam pengingat yang dapat diatur.
+- **Keamanan**  autentikasi lengkap (login, verifikasi email, two-factor authentication, passkey), profil pengguna, tema tampilan, dan akses berbasis peran.
+
+## Teknologi
 
 - **Backend:** Laravel (PHP 8.4)
 - **Frontend:** React, Inertia.js, TypeScript
@@ -20,116 +38,65 @@ Sistem Informasi Manajemen Terpadu untuk Kejaksaan Tinggi (Kejati) Jawa Barat. A
 - **Testing & Quality:** Pest, PHPStan, Laravel Pint
 - **Infrastructure:** Docker & Docker Compose (Nginx, PHP-FPM)
 
----
+## Cara Instalasi
 
-## Prerequisites
+Prasyarat: [Docker Desktop](https://www.docker.com/products/docker-desktop/), [Git](https://git-scm.com/), dan `make` (tersedia via Git Bash, Chocolatey, atau Scoop di Windows).
 
-Proyek ini sepenuhnya beroperasi menggunakan lingkungan terisolasi (Docker). Pastikan sistem Anda telah memiliki perangkat lunak berikut:
-
-1. [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows/Mac) atau Docker Engine (Linux).
-2. [Git](https://git-scm.com/).
-3. Akses ke terminal `make` (tersedia via Git Bash, Chocolatey, atau Scoop pada sistem operasi Windows).
-
----
-
-## Installation
-
-Ikuti langkah-langkah di bawah ini untuk menjalankan aplikasi pada lingkungan lokal Anda:
-
-### 1. Clone Repository
+**1. Clone repository**
 
 ```bash
 git clone https://github.com/ibnuarip/simap-kejati.git
 cd simap-kejati
 ```
 
-### 2. Environment Configuration
-
-Gandakan file konfigurasi `.env` dan sesuaikan kredensial di dalamnya apabila diperlukan.
+**2. Siapkan environment**
 
 ```bash
 cp .env.example .env
 cp .env.docker.example .env.docker
 ```
 
-### 3. Start Container
-
-Aplikasi menggunakan `Makefile` untuk manajemen Docker yang efisien. Jalankan perintah berikut untuk menginisialisasi server:
+**3. Build container**
 
 ```bash
 make build
 ```
 
-### 4. Setup Dependencies & Database
-
-Setelah container aktif, jalankan serangkaian perintah berikut untuk menyiapkan inti aplikasi:
+**4. Instalasi dependensi & database**
 
 ```bash
-# Instalasi dependensi backend
-make composer-install
-
-# Konfigurasi aplikasi
-make key
-make storage
-
-# Migrasi dan inisialisasi basis data
-make fresh
-
-# Instalasi dan kompilasi dependensi frontend
-make npm-install
-make npm-build
+make composer-install   # dependensi backend
+make key                # application key
+make storage            # storage link
+make fresh              # migrasi + seed
+make npm-install        # dependensi frontend
+make npm-build          # kompilasi aset
 ```
 
-Aplikasi kini dapat diakses melalui peramban pada alamat: **`http://localhost:8080`**
+## Cara Menjalankan
 
----
+```bash
+make up                 # nyalakan seluruh layanan
+```
 
-## Development Workflow
+Aplikasi dapat diakses di **`http://localhost:8080`**.
 
-Proyek ini menggunakan _Hot Module Replacement_ (HMR) untuk efisiensi penulisan kode antar-muka. Untuk mengaktifkan sinkronisasi otomatis, jalankan _development server_:
+Untuk pengembangan frontend dengan _Hot Module Replacement_:
 
 ```bash
 make npm-dev
 ```
 
-### Command Reference (Makefile)
+Perintah lain seperti `make down`, `make logs`, `make artisan cmd="..."`, dan `make tinker` tersedia di `Makefile`.
 
-Gunakan pintasan berikut untuk berinteraksi dengan layanan Docker tanpa mengetik instruksi panjang:
+## Pengembangan
 
-| Command                     | Description                                                              |
-| --------------------------- | ------------------------------------------------------------------------ |
-| `make up` / `make down`     | Menyalakan / mematikan layanan aplikasi                                  |
-| `make bash`                 | Mengakses _shell_ pada container Laravel (PHP)                           |
-| `make bash-node`            | Mengakses _shell_ pada container Node (Vite/Frontend)                    |
-| `make bash-db`              | Mengakses terminal sesi MySQL                                            |
-| `make artisan cmd="..."`    | Menjalankan perintah artisan, misal `make artisan cmd="make:model User"` |
-| `make tinker`               | Membuka antarmuka interaktif Laravel Tinker                              |
-| `make clear` / `make cache` | Membersihkan atau menyusun ulang _cache_ aplikasi                        |
-
----
-
-## Code Quality & Testing
-
-Seluruh kontribusi kode diwajibkan untuk melewati standar validasi. GitHub Actions akan otomatis menolak integrasi kode apabila terjadi kegagalan pada pengujian berikut:
+Pastikan perubahan kode lolos pemeriksaan berikut sebelum push  CI akan menjalankannya kembali secara otomatis:
 
 ```bash
-# Merapikan gaya penulisan kode PHP (Pint)
-make format
-
-# Analisis statis logika PHP (PHPStan)
-make types
-
-# Eksekusi unit test dan feature test (Pest)
-make test-pest
-
-# Validasi kompilasi TypeScript
-make npm-types
+make format      # format kode PHP (Pint)
+make types       # analisis statis (PHPStan)
+make test-pest   # unit & feature test (Pest)
+make npm-types   # validasi TypeScript
 ```
 
-Disarankan untuk menjalankan pengujian di atas pada lokal komputer Anda sebelum melakukan `git push`.
-
----
-
-## Security
-
-Repositori ini secara ketat dimonitor oleh **Dependabot** guna memastikan keamanan seluruh dependensi paket. Apabila Anda menemukan kelemahan keamanan (_security vulnerability_), harap melaporkannya langsung kepada pengelola repositori dan tidak melalui isu publik (_public tracker_).
