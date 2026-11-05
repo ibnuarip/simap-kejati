@@ -61,7 +61,7 @@ export function AgendaTrendChart({ data }: Props) {
             <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                     data={data}
-                    margin={{ top: 12, right: 12, left: -12, bottom: 0 }}
+                    margin={{ top: 12, right: 12, left: 4, bottom: 0 }}
                     barCategoryGap="28%"
                 >
                     <CartesianGrid
@@ -85,7 +85,18 @@ export function AgendaTrendChart({ data }: Props) {
                         tick={{ fontSize: 12, fill: colors.mutedForeground }}
                         tickLine={false}
                         tickMargin={4}
-                        width={30}
+                        width={46}
+                        label={{
+                            value: 'Jumlah Agenda',
+                            angle: -90,
+                            position: 'insideLeft',
+                            offset: 8,
+                            style: {
+                                fontSize: 11,
+                                fill: colors.mutedForeground,
+                                textAnchor: 'middle',
+                            },
+                        }}
                     />
                     <Tooltip
                         content={<TrendTooltip />}
