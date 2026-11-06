@@ -1,5 +1,5 @@
 import { Head, usePage } from '@inertiajs/react';
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense } from 'react';
 import {
     Building2,
     CalendarCheck,
@@ -10,6 +10,14 @@ import {
     Users,
 } from 'lucide-react';
 import { AgendaItemRow } from '@/components/agenda-item-row';
+import {
+    AgendaListSkeleton,
+    ChartSkeleton,
+    RecentActivitySkeleton,
+    StatCardContentSkeleton,
+    StatusSummarySkeleton,
+    useDashboardLoading,
+} from '@/components/dashboard-skeleton';
 import { Badge } from '@/components/ui/badge';
 import {
     Card,
@@ -18,6 +26,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { agendaStatusLabel, agendaStatusVariant } from '@/lib/agenda';
 import { dashboard as superadminDashboard } from '@/routes';
 import type {
@@ -52,23 +61,6 @@ const CategoryDistributionChart = lazy(() =>
     ),
 );
 
-function ChartFallback({
-    className = 'h-52 2xl:h-68',
-}: {
-    className?: string;
-}) {
-    return (
-        <div
-            className={`flex flex-col justify-end gap-2 ${className}`}
-            aria-busy="true"
-            aria-label="Memuat grafik"
-        >
-            <div className="bg-muted flex-1 animate-pulse rounded-lg" />
-            <div className="bg-muted h-4 w-2/3 animate-pulse rounded" />
-        </div>
-    );
-}
-
 const STATUS_DOT: Record<(typeof STATUS_KEYS)[number], string> = {
     scheduled: '#2563eb',
     ongoing: '#d97706',
@@ -94,13 +86,7 @@ export default function Dashboard({
     categoryDistribution,
 }: Props) {
     const { auth } = usePage().props;
-    const [chartsReady, setChartsReady] = useState(false);
-
-    useEffect(() => {
-        const frame = requestAnimationFrame(() => setChartsReady(true));
-
-        return () => cancelAnimationFrame(frame);
-    }, []);
+    const { isLoading, isReady } = useDashboardLoading();
 
     const trendTotal = eventsTrend.reduce((sum, point) => sum + point.total, 0);
 
@@ -180,12 +166,18 @@ export default function Dashboard({
                                 </span>
                             </CardHeader>
                             <CardContent className="flex flex-col gap-0.5 px-3.5">
-                                <p className="text-primary text-xl font-bold tabular-nums md:text-2xl">
-                                    {stat.value}
-                                </p>
-                                <p className="text-muted-foreground line-clamp-1 text-[11px]">
-                                    {stat.description}
-                                </p>
+                                {isLoading ? (
+                                    <StatCardContentSkeleton />
+                                ) : (
+                                    <>
+                                        <p className="text-primary text-xl font-bold tabular-nums md:text-2xl">
+                                            {stat.value}
+                                        </p>
+                                        <p className="text-muted-foreground line-clamp-1 text-[11px]">
+                                            {stat.description}
+                                        </p>
+                                    </>
+                                )}
                             </CardContent>
                         </Card>
                     ))}
@@ -206,22 +198,31 @@ export default function Dashboard({
                                     </CardDescription>
                                 </div>
                                 <div className="shrink-0 text-left">
-                                    <p className="text-foreground text-2xl leading-none font-bold tabular-nums">
-                                        {trendTotal}
-                                    </p>
-                                    <p className="text-muted-foreground mt-1 text-[11px] font-medium tracking-wide uppercase">
-                                        Total tahun ini
-                                    </p>
+                                    {isLoading ? (
+                                        <div className="flex flex-col gap-1.5">
+                                            <Skeleton className="h-6 w-10" />
+                                            <Skeleton className="h-3 w-20" />
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <p className="text-foreground text-2xl leading-none font-bold tabular-nums">
+                                                {trendTotal}
+                                            </p>
+                                            <p className="text-muted-foreground mt-1 text-[11px] font-medium tracking-wide uppercase">
+                                                Total tahun ini
+                                            </p>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </CardHeader>
                         <CardContent>
-                            {chartsReady ? (
-                                <Suspense fallback={<ChartFallback />}>
+                            {!isLoading && isReady ? (
+                                <Suspense fallback={<ChartSkeleton />}>
                                     <AgendaTrendChart data={eventsTrend} />
                                 </Suspense>
                             ) : (
-                                <ChartFallback />
+                                <ChartSkeleton />
                             )}
                         </CardContent>
                     </Card>
@@ -237,10 +238,10 @@ export default function Dashboard({
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            {chartsReady ? (
+                            {!isLoading && isReady ? (
                                 <Suspense
                                     fallback={
-                                        <ChartFallback className="h-52" />
+                                        <ChartSkeleton className="h-52" />
                                     }
                                 >
                                     <CategoryDistributionChart
@@ -248,7 +249,7 @@ export default function Dashboard({
                                     />
                                 </Suspense>
                             ) : (
-                                <ChartFallback className="h-52" />
+                                <ChartSkeleton className="h-52" />
                             )}
                         </CardContent>
                     </Card>
@@ -266,7 +267,9 @@ export default function Dashboard({
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            {upcomingEvents.length === 0 ? (
+                            {isLoading ? (
+                                <AgendaListSkeleton count={3} />
+                            ) : upcomingEvents.length === 0 ? (
                                 <p className="text-muted-foreground rounded-lg border border-dashed p-6 text-center text-sm">
                                     Belum ada agenda mendatang.
                                 </p>
@@ -318,70 +321,88 @@ export default function Dashboard({
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="flex flex-col gap-3.5">
-                            {STATUS_KEYS.map((key) => {
-                                const value = stats.eventsByStatus[key] ?? 0;
-                                const percent =
-                                    statusTotal > 0
-                                        ? Math.round(
-                                              (value / statusTotal) * 100,
-                                          )
-                                        : 0;
+                            {isLoading ? (
+                                <StatusSummarySkeleton
+                                    count={STATUS_KEYS.length}
+                                />
+                            ) : (
+                                <>
+                                    {STATUS_KEYS.map((key) => {
+                                        const value =
+                                            stats.eventsByStatus[key] ?? 0;
+                                        const percent =
+                                            statusTotal > 0
+                                                ? Math.round(
+                                                      (value / statusTotal) *
+                                                          100,
+                                                  )
+                                                : 0;
 
-                                return (
-                                    <div
-                                        key={key}
-                                        className="flex flex-col gap-1.5"
-                                    >
-                                        <div className="flex items-center justify-between gap-2">
-                                            <span className="flex min-w-0 items-center gap-2 text-sm font-medium">
-                                                <span
-                                                    className="size-2.5 shrink-0 rounded-full"
-                                                    style={{
-                                                        backgroundColor:
-                                                            STATUS_DOT[key],
-                                                    }}
-                                                />
-                                                <span className="truncate">
-                                                    {agendaStatusLabel[key]}
-                                                </span>
-                                            </span>
-                                            <span className="shrink-0 text-sm tabular-nums">
-                                                <span className="text-foreground font-bold">
-                                                    {value}
-                                                </span>{' '}
-                                                <span className="text-muted-foreground text-xs font-medium">
-                                                    · {percent}%
-                                                </span>
-                                            </span>
-                                        </div>
-                                        <div
-                                            className="bg-muted h-1.5 overflow-hidden rounded-full"
-                                            role="progressbar"
-                                            aria-valuenow={percent}
-                                            aria-valuemin={0}
-                                            aria-valuemax={100}
-                                            aria-label={agendaStatusLabel[key]}
-                                        >
+                                        return (
                                             <div
-                                                className="h-full rounded-full transition-[width] duration-500 ease-out"
-                                                style={{
-                                                    width: chartsReady
-                                                        ? `${percent}%`
-                                                        : '0%',
-                                                    backgroundColor:
-                                                        STATUS_DOT[key],
-                                                }}
-                                            />
-                                        </div>
+                                                key={key}
+                                                className="flex flex-col gap-1.5"
+                                            >
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span className="flex min-w-0 items-center gap-2 text-sm font-medium">
+                                                        <span
+                                                            className="size-2.5 shrink-0 rounded-full"
+                                                            style={{
+                                                                backgroundColor:
+                                                                    STATUS_DOT[
+                                                                        key
+                                                                    ],
+                                                            }}
+                                                        />
+                                                        <span className="truncate">
+                                                            {
+                                                                agendaStatusLabel[
+                                                                    key
+                                                                ]
+                                                            }
+                                                        </span>
+                                                    </span>
+                                                    <span className="shrink-0 text-sm tabular-nums">
+                                                        <span className="text-foreground font-bold">
+                                                            {value}
+                                                        </span>{' '}
+                                                        <span className="text-muted-foreground text-xs font-medium">
+                                                            · {percent}%
+                                                        </span>
+                                                    </span>
+                                                </div>
+                                                <div
+                                                    className="bg-muted h-1.5 overflow-hidden rounded-full"
+                                                    role="progressbar"
+                                                    aria-valuenow={percent}
+                                                    aria-valuemin={0}
+                                                    aria-valuemax={100}
+                                                    aria-label={
+                                                        agendaStatusLabel[key]
+                                                    }
+                                                >
+                                                    <div
+                                                        className="h-full rounded-full transition-[width] duration-500 ease-out"
+                                                        style={{
+                                                            width: isReady
+                                                                ? `${percent}%`
+                                                                : '0%',
+                                                            backgroundColor:
+                                                                STATUS_DOT[key],
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                    <div className="text-muted-foreground mt-1 flex items-center justify-between border-t pt-3 text-xs font-medium">
+                                        <span>Total agenda</span>
+                                        <span className="text-foreground text-sm font-bold tabular-nums">
+                                            {statusTotal}
+                                        </span>
                                     </div>
-                                );
-                            })}
-                            <div className="text-muted-foreground mt-1 flex items-center justify-between border-t pt-3 text-xs font-medium">
-                                <span>Total agenda</span>
-                                <span className="text-foreground text-sm font-bold tabular-nums">
-                                    {statusTotal}
-                                </span>
-                            </div>
+                                </>
+                            )}
                         </CardContent>
                     </Card>
                 </div>
@@ -395,7 +416,9 @@ export default function Dashboard({
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        {recentEvents.length === 0 ? (
+                        {isLoading ? (
+                            <RecentActivitySkeleton count={4} />
+                        ) : recentEvents.length === 0 ? (
                             <p className="text-muted-foreground rounded-lg border border-dashed p-6 text-center text-sm">
                                 Belum ada aktivitas input agenda.
                             </p>
