@@ -9,6 +9,8 @@ use App\Models\Event;
 use App\Models\Leader;
 use App\Models\Room;
 use App\Models\User;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -76,13 +78,17 @@ test('superadmins can create a leader', function () {
     ])->assertRedirect()
         ->assertInertiaFlash('offerLeaderAccount');
 
-    $this->assertDatabaseHas('leaders', [
-        'name' => 'Drs. H. Bambang',
-        'position' => 'Kepala Kejaksaan Tinggi',
-        'nip' => '1980xxxxxxxxxx1001',
-        'email' => 'kajati@kejati.go.id',
-        'phone' => '+62xxxxxxx1221',
-    ]);
+    $leader = Leader::where('email', 'kajati@kejati.go.id')->firstOrFail();
+    $raw = DB::table('leaders')->where('id', $leader->id)->first();
+
+    expect($leader->name)->toBe('Drs. H. Bambang')
+        ->and($leader->position)->toBe('Kepala Kejaksaan Tinggi')
+        ->and($leader->nip)->toBe('198001012010011001')
+        ->and($leader->phone)->toBe('081234561221')
+        ->and($raw->nip)->not->toBe('198001012010011001')
+        ->and($raw->phone)->not->toBe('081234561221')
+        ->and(Crypt::decryptString($raw->nip))->toBe('198001012010011001')
+        ->and(Crypt::decryptString($raw->phone))->toBe('081234561221');
 });
 
 test('leader phone must start with 08 and be 10 to 14 digits', function () {
@@ -199,12 +205,12 @@ test('superadmins can update and delete a leader', function () {
         'phone' => '081234561221',
     ]);
 
-    expect($leader->nip)->toBe('1980xxxxxxxxxx1001')
-        ->and($leader->phone)->toBe('+62xxxxxxx1221');
+    expect($leader->nip)->toBe('198001012010011001')
+        ->and($leader->phone)->toBe('081234561221');
 
     $this->actingAs($superadmin);
 
-    // Update tanpa mengubah NIP dan nomor telepon (tetap nilai tersamar yang sudah ada)
+    // Update tanpa mengubah NIP dan nomor telepon (tetap nilai asli yang sudah ada)
     $this->patch(route('master.leaders.update', $leader), [
         'name' => 'Dr. H. Siti',
         'position' => 'Wakil Kepala Kejaksaan Tinggi',
@@ -214,16 +220,15 @@ test('superadmins can update and delete a leader', function () {
         'is_active' => '0',
     ])->assertRedirect()->assertSessionHasNoErrors();
 
-    $this->assertDatabaseHas('leaders', [
-        'id' => $leader->id,
-        'name' => 'Dr. H. Siti',
-        'position' => 'Wakil Kepala Kejaksaan Tinggi',
-        'nip' => '1980xxxxxxxxxx1001',
-        'phone' => '+62xxxxxxx1221',
-        'is_active' => 0,
-    ]);
+    $leader->refresh();
 
-    // Update dengan NIP 18 digit baru & nomor telepon baru berawalan 08 -> disimpan tersamar
+    expect($leader->name)->toBe('Dr. H. Siti')
+        ->and($leader->position)->toBe('Wakil Kepala Kejaksaan Tinggi')
+        ->and($leader->nip)->toBe('198001012010011001')
+        ->and($leader->phone)->toBe('081234561221')
+        ->and($leader->is_active)->toBeFalse();
+
+    // Update dengan NIP 18 digit baru & nomor telepon baru berawalan 08 -> disimpan terenkripsi AES
     $this->patch(route('master.leaders.update', $leader), [
         'name' => 'Dr. H. Siti',
         'position' => 'Wakil Kepala Kejaksaan Tinggi',
@@ -233,14 +238,18 @@ test('superadmins can update and delete a leader', function () {
         'is_active' => '1',
     ])->assertRedirect()->assertSessionHasNoErrors();
 
-    $this->assertDatabaseHas('leaders', [
-        'id' => $leader->id,
-        'nip' => '1975xxxxxxxxxx1002',
-        'phone' => '+62xxxxxxx8888',
-        'is_active' => 1,
-    ]);
+    $leader->refresh();
+    $raw = DB::table('leaders')->where('id', $leader->id)->first();
 
-    // Update dengan nilai tersamar lain yang bukan milik pimpinan tersebut ditolak
+    expect($leader->nip)->toBe('197505121999031002')
+        ->and($leader->phone)->toBe('081399998888')
+        ->and($leader->is_active)->toBeTrue()
+        ->and($raw->nip)->not->toBe('197505121999031002')
+        ->and($raw->phone)->not->toBe('081399998888')
+        ->and(Crypt::decryptString($raw->nip))->toBe('197505121999031002')
+        ->and(Crypt::decryptString($raw->phone))->toBe('081399998888');
+
+    // Update dengan format NIP atau nomor telepon tidak valid ditolak
     $this->patch(route('master.leaders.update', $leader), [
         'name' => 'Dr. H. Siti',
         'position' => 'Wakil Kepala Kejaksaan Tinggi',
@@ -348,8 +357,8 @@ test('leader update rejects another leaders email nip and phone but accepts its 
 
     $leaderA->refresh();
 
-    expect($leaderA->nip)->toBe('1980xxxxxxxxxx1001')
-        ->and($leaderA->phone)->toBe('+62xxxxxxx1221')
+    expect($leaderA->nip)->toBe('198001012010011001')
+        ->and($leaderA->phone)->toBe('081234561221')
         ->and($leaderA->email)->toBe('a@kejati.go.id');
 });
 
