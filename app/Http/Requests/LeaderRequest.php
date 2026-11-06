@@ -19,26 +19,12 @@ class LeaderRequest extends FormRequest
      */
     public function rules(): array
     {
-        $leader = $this->route('leader');
-
-        $isUnchangedNip = $leader instanceof Leader
-            && is_string($this->input('nip'))
-            && $this->input('nip') === $leader->nip;
-
-        $isUnchangedPhone = $leader instanceof Leader
-            && is_string($this->input('phone'))
-            && $this->input('phone') === $leader->phone;
-
         return [
             'name' => ['required', 'string', 'max:255'],
             'position' => ['required', 'string', Rule::in(Leader::POSITIONS)],
-            'nip' => $isUnchangedNip
-                ? ['required', 'string']
-                : ['required', 'string', 'digits:18', $this->uniqueMaskedValue('nip')],
+            'nip' => ['required', 'string', 'digits:18', $this->uniqueEncryptedValue('nip')],
             'email' => ['required', 'email', 'max:255', Rule::unique('leaders', 'email')->ignore($this->route('leader'))],
-            'phone' => $isUnchangedPhone
-                ? ['required', 'string']
-                : ['required', 'string', 'regex:/^08\d{8,12}$/', $this->uniqueMaskedValue('phone')],
+            'phone' => ['required', 'string', 'regex:/^08\d{8,12}$/', $this->uniqueEncryptedValue('phone')],
             'is_active' => ['required', 'boolean'],
         ];
     }
@@ -58,21 +44,21 @@ class LeaderRequest extends FormRequest
     }
 
     /**
-     * Validasi unik untuk kolom yang di-mask sebelum disimpan (nip & phone).
-     * Nilai input yang di-mask harus cocok dengan data tersimpan, kecuali milik record sendiri.
+     * Validasi unik untuk kolom yang dienkripsi AES sebelum disimpan (nip & phone).
+     * Karena AES-256-CBC menghasilkan ciphertext acak setiap enkripsi, nilai
+     * dibandingkan setelah didekripsi melalui cast model kecuali milik record sendiri.
      *
+     * @param  'nip'|'phone'  $column
      * @return Closure(string, mixed, Closure(string): void): void
      */
-    private function uniqueMaskedValue(string $column): Closure
+    private function uniqueEncryptedValue(string $column): Closure
     {
         return function (string $attribute, mixed $value, Closure $fail) use ($column): void {
             if (! is_string($value)) {
                 return;
             }
 
-            $masked = $column === 'nip' ? Leader::maskNip($value) : Leader::maskPhone($value);
-
-            $query = Leader::where($column, $masked);
+            $query = Leader::query();
 
             $leader = $this->route('leader');
 
@@ -80,10 +66,15 @@ class LeaderRequest extends FormRequest
                 $query->whereKeyNot($leader->getKey());
             }
 
-            if ($query->exists()) {
-                $fail($column === 'nip'
-                    ? 'NIP sudah digunakan oleh pimpinan lain.'
-                    : 'No. telepon sudah digunakan oleh pimpinan lain.');
+            /** @var Leader $existing */
+            foreach ($query->get(['id', $column]) as $existing) {
+                if (($column === 'nip' ? $existing->nip : $existing->phone) === $value) {
+                    $fail($column === 'nip'
+                        ? 'NIP sudah digunakan oleh pimpinan lain.'
+                        : 'No. telepon sudah digunakan oleh pimpinan lain.');
+
+                    return;
+                }
             }
         };
     }

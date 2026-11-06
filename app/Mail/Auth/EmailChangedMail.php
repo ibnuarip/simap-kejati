@@ -15,6 +15,10 @@ class EmailChangedMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
+    public string $logoUrl;
+
+    public string $loginUrl;
+
     /**
      * Create a new message instance.
      */
@@ -23,7 +27,10 @@ class EmailChangedMail extends Mailable implements ShouldQueue
         public string $oldEmail,
         public string $newEmail,
         public string $occurredAt,
-    ) {}
+    ) {
+        $this->logoUrl = asset('images/logo-kejati.png');
+        $this->loginUrl = route('login');
+    }
 
     /**
      * Get the message envelope.
@@ -45,7 +52,8 @@ class EmailChangedMail extends Mailable implements ShouldQueue
             text: 'emails.auth.email-changed-text',
             with: [
                 'appName' => config('app.name'),
-                'loginUrl' => route('login'),
+                'loginUrl' => $this->loginUrl,
+                'logoUrl' => $this->logoUrl,
                 'oldEmail' => $this->oldEmail,
                 'newEmail' => $this->newEmail,
                 'occurredAt' => $this->occurredAt,

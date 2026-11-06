@@ -3,15 +3,20 @@
 namespace App\Mail\Auth;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class ResetPasswordMail extends Mailable
+class ResetPasswordMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
+
+    public string $logoUrl;
+
+    public string $resetUrl;
 
     /**
      * Create a new message instance.
@@ -19,7 +24,10 @@ class ResetPasswordMail extends Mailable
     public function __construct(
         public string $token,
         public string $email,
-    ) {}
+    ) {
+        $this->logoUrl = asset('images/logo-kejati.png');
+        $this->resetUrl = route('password.reset', ['token' => $this->token, 'email' => $this->email]);
+    }
 
     /**
      * Get the message envelope.
@@ -40,7 +48,8 @@ class ResetPasswordMail extends Mailable
             view: 'emails.auth.reset-password',
             text: 'emails.auth.reset-password-text',
             with: [
-                'resetUrl' => route('password.reset', ['token' => $this->token, 'email' => $this->email]),
+                'resetUrl' => $this->resetUrl,
+                'logoUrl' => $this->logoUrl,
                 'expiresInMinutes' => config('auth.passwords.users.expire', 60),
             ],
         );

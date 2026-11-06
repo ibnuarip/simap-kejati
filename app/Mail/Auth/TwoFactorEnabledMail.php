@@ -15,13 +15,20 @@ class TwoFactorEnabledMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
+    public string $logoUrl;
+
+    public string $loginUrl;
+
     /**
      * Create a new message instance.
      */
     public function __construct(
         public User $user,
         public string $occurredAt,
-    ) {}
+    ) {
+        $this->logoUrl = asset('images/logo-kejati.png');
+        $this->loginUrl = route('login');
+    }
 
     /**
      * Get the message envelope.
@@ -43,7 +50,8 @@ class TwoFactorEnabledMail extends Mailable implements ShouldQueue
             text: 'emails.auth.two-factor-enabled-text',
             with: [
                 'appName' => config('app.name'),
-                'loginUrl' => route('login'),
+                'loginUrl' => $this->loginUrl,
+                'logoUrl' => $this->logoUrl,
                 'occurredAt' => $this->occurredAt,
             ],
         );

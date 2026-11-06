@@ -15,13 +15,20 @@ class AccountCredentialsMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
+    public string $logoUrl;
+
+    public string $loginUrl;
+
     /**
      * Create a new message instance.
      */
     public function __construct(
         public User $user,
         public string $password,
-    ) {}
+    ) {
+        $this->logoUrl = asset('images/logo-kejati.png');
+        $this->loginUrl = route('login');
+    }
 
     /**
      * Get the message envelope.
@@ -45,7 +52,8 @@ class AccountCredentialsMail extends Mailable implements ShouldQueue
                 'email' => $this->user->email,
                 'password' => $this->password,
                 'appName' => config('app.name'),
-                'loginUrl' => route('login'),
+                'loginUrl' => $this->loginUrl,
+                'logoUrl' => $this->logoUrl,
             ],
         );
     }

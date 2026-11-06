@@ -496,12 +496,6 @@ function LeaderFields({
                             inputEvent.target.value.replace(/\D/g, '');
                     }}
                 />
-                {defaultValue?.nip && (
-                    <p className="text-muted-foreground text-xs">
-                        Biarkan tetap jika tidak diubah, atau ketik 18 digit
-                        angka baru.
-                    </p>
-                )}
                 <InputError message={errors.nip} />
             </div>
 
@@ -529,12 +523,6 @@ function LeaderFields({
                     defaultValue={defaultValue?.phone ?? ''}
                     placeholder="08xxxxxxxxxx"
                 />
-                {defaultValue?.phone && (
-                    <p className="text-muted-foreground text-xs">
-                        Biarkan tetap jika tidak diubah, atau ketik nomor baru
-                        (08xxxxxxxxxx).
-                    </p>
-                )}
                 <InputError message={errors.phone} />
             </div>
 

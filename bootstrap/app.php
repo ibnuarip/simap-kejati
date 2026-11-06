@@ -21,9 +21,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Percayai header X-Forwarded-* hanya dari reverse proxy lokal server
-        // agar rate limiter login tidak bisa ditembus dengan X-Forwarded-For palsu.
-        $middleware->trustProxies(at: ['127.0.0.1', '::1']);
+        // Percayai header X-Forwarded-* dari reverse proxy lokal / jaringan container Docker
+        // agar skema HTTPS tunnel (cloudflared/nginx) terbaca dengan benar.
+        $middleware->trustProxies(at: [
+            '127.0.0.1',
+            '::1',
+            '10.0.0.0/8',
+            '172.16.0.0/12',
+            '192.168.0.0/16',
+        ]);
 
         $middleware->alias([
             'role' => EnsureRole::class,

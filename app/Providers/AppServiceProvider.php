@@ -11,6 +11,8 @@ use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -30,8 +32,34 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->configureTunnelAssets();
         $this->configureResetPasswordMail();
         $this->verifyEmailOnFirstLogin();
+    }
+
+    /**
+     * Saat diakses melalui tunnel (mis. cloudflared *.trycloudflare.com dari HP),
+     * abaikan public/hot (localhost:5173) dan gunakan hasil build statis di public/build
+     * agar browser HP tidak gagal memuat script dari localhost.
+     */
+    protected function configureTunnelAssets(): void
+    {
+        if (app()->runningInConsole()) {
+            return;
+        }
+
+        $request = request();
+        $host = $request->getHost();
+        $isLocalHost = in_array($host, ['localhost', '127.0.0.1'], true)
+            || str_ends_with($host, '.test');
+
+        if (! $isLocalHost) {
+            Vite::useHotFile(storage_path('framework/vite.hot.disabled'));
+
+            if ($request->header('X-Forwarded-Proto') === 'https' || $request->isSecure()) {
+                URL::forceScheme('https');
+            }
+        }
     }
 
     /**
