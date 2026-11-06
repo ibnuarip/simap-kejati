@@ -22,7 +22,7 @@
                                             <tr>
                                                 <td style="background-color:#ffffff;border-radius:8px;padding:5px;">
                                                     <img
-                                                        src="{{ asset('images/logo-kejati.png') }}"
+                                                        src="{{ $logoUrl ?? asset('images/logo-kejati.png') }}"
                                                         alt="Logo Kejaksaan Tinggi"
                                                         width="42"
                                                         style="display:block;width:42px;height:auto;border:0;"

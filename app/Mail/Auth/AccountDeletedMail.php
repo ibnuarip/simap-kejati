@@ -18,6 +18,8 @@ class AccountDeletedMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
+    public string $logoUrl;
+
     /**
      * Create a new message instance.
      *
@@ -29,7 +31,9 @@ class AccountDeletedMail extends Mailable implements ShouldQueue
         public string $roleLabel,
         public string $occurredAt,
         public string $deletedBy,
-    ) {}
+    ) {
+        $this->logoUrl = asset('images/logo-kejati.png');
+    }
 
     /**
      * Get the message envelope.
@@ -56,6 +60,7 @@ class AccountDeletedMail extends Mailable implements ShouldQueue
                 'roleLabel' => $this->roleLabel,
                 'occurredAt' => $this->occurredAt,
                 'deletedBy' => $this->deletedBy,
+                'logoUrl' => $this->logoUrl,
             ],
         );
     }

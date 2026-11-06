@@ -13,13 +13,20 @@ class ResetPasswordMail extends Mailable
 {
     use Queueable, SerializesModels;
 
+    public string $logoUrl;
+
+    public string $resetUrl;
+
     /**
      * Create a new message instance.
      */
     public function __construct(
         public string $token,
         public string $email,
-    ) {}
+    ) {
+        $this->logoUrl = asset('images/logo-kejati.png');
+        $this->resetUrl = route('password.reset', ['token' => $this->token, 'email' => $this->email]);
+    }
 
     /**
      * Get the message envelope.
@@ -40,7 +47,8 @@ class ResetPasswordMail extends Mailable
             view: 'emails.auth.reset-password',
             text: 'emails.auth.reset-password-text',
             with: [
-                'resetUrl' => route('password.reset', ['token' => $this->token, 'email' => $this->email]),
+                'resetUrl' => $this->resetUrl,
+                'logoUrl' => $this->logoUrl,
                 'expiresInMinutes' => config('auth.passwords.users.expire', 60),
             ],
         );
