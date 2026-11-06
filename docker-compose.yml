@@ -12,6 +12,12 @@ services:
         env_file:
             - .env.docker
         volumes:
+            - ./app:/var/www/html/app
+            - ./bootstrap/app.php:/var/www/html/bootstrap/app.php
+            - ./database:/var/www/html/database
+            - ./public:/var/www/html/public
+            - ./resources:/var/www/html/resources
+            - ./routes:/var/www/html/routes
             - app-storage:/var/www/html/storage/app
         networks:
             - simap-network

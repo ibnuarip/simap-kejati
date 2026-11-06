@@ -136,4 +136,5 @@ npm-types:
 # TEST MOBILE
 # ==========================================
 share:
+	npm run build
 	cloudflared tunnel --protocol http2 --url http://localhost:8080
