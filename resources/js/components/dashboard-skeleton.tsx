@@ -10,7 +10,10 @@ export function useDashboardLoading() {
         const frame = requestAnimationFrame(() => setIsReady(true));
 
         const removeStart = router.on('start', (event) => {
-            if (event.detail.visit.method === 'get' && !event.detail.visit.prefetch) {
+            if (
+                event.detail.visit.method === 'get' &&
+                !event.detail.visit.prefetch
+            ) {
                 setIsNavigating(true);
             }
         });
@@ -142,4 +145,3 @@ export function RecentActivitySkeleton({ count = 4 }: { count?: number }) {
         </div>
     );
 }
-
