@@ -7,6 +7,11 @@ import {
 } from 'lucide-react';
 import { AgendaItemRow } from '@/components/agenda-item-row';
 import {
+    AgendaListSkeleton,
+    StatCardContentSkeleton,
+    useDashboardLoading,
+} from '@/components/dashboard-skeleton';
+import {
     Card,
     CardContent,
     CardDescription,
@@ -43,6 +48,7 @@ export default function ProtokolDashboard({
     upcomingEvents,
 }: Props) {
     const { auth } = usePage().props;
+    const { isLoading } = useDashboardLoading();
 
     const statCards = [
         {
@@ -108,12 +114,18 @@ export default function ProtokolDashboard({
                                 </span>
                             </CardHeader>
                             <CardContent className="flex flex-col gap-0.5 px-3.5">
-                                <p className="text-primary text-xl font-bold tabular-nums md:text-2xl">
-                                    {stat.value}
-                                </p>
-                                <p className="text-muted-foreground line-clamp-1 text-[11px]">
-                                    {stat.description}
-                                </p>
+                                {isLoading ? (
+                                    <StatCardContentSkeleton />
+                                ) : (
+                                    <>
+                                        <p className="text-primary text-xl font-bold tabular-nums md:text-2xl">
+                                            {stat.value}
+                                        </p>
+                                        <p className="text-muted-foreground line-clamp-1 text-[11px]">
+                                            {stat.description}
+                                        </p>
+                                    </>
+                                )}
                             </CardContent>
                         </Card>
                     ))}
@@ -131,7 +143,9 @@ export default function ProtokolDashboard({
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            {todayEvents.length === 0 ? (
+                            {isLoading ? (
+                                <AgendaListSkeleton count={3} />
+                            ) : todayEvents.length === 0 ? (
                                 <p className="text-muted-foreground rounded-lg border border-dashed p-6 text-center text-sm">
                                     Tidak ada agenda hari ini.
                                 </p>
@@ -183,7 +197,9 @@ export default function ProtokolDashboard({
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            {upcomingEvents.length === 0 ? (
+                            {isLoading ? (
+                                <AgendaListSkeleton count={3} />
+                            ) : upcomingEvents.length === 0 ? (
                                 <p className="text-muted-foreground rounded-lg border border-dashed p-6 text-center text-sm">
                                     Belum ada agenda mendatang.
                                 </p>
