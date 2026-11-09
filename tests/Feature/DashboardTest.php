@@ -21,7 +21,7 @@ test('home page includes open graph and twitter card social preview meta tags', 
     $response->assertOk()
         ->assertSee('property="og:type" content="website"', false)
         ->assertSee('property="og:site_name" content="SIMAP Kejaksaan Tinggi Jawa Barat"', false)
-        ->assertSee('property="og:title" content="SIMAP — Sistem Informasi Manajemen Agenda Pimpinan | Kejaksaan Tinggi Jawa Barat"', false)
+        ->assertSee('property="og:title" content="Sistem Informasi Manajemen Agenda Pimpinan"', false)
         ->assertSee('/images/og-image.jpg"', false)
         ->assertSee('property="og:image:width" content="1200"', false)
         ->assertSee('property="og:image:height" content="630"', false)

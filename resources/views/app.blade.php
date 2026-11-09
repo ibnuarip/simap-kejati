@@ -31,7 +31,7 @@
         </style>
 
         @php
-            $seoTitle = 'SIMAP — Sistem Informasi Manajemen Agenda Pimpinan | Kejaksaan Tinggi Jawa Barat';
+            $seoTitle = 'Sistem Informasi Manajemen Agenda Pimpinan';
             $seoDescription = 'Kelola dan pantau seluruh agenda pimpinan Kejaksaan Tinggi Jawa Barat dalam satu tempat terjadwal, terdokumentasi, dan tepat waktu.';
             $baseUrl = rtrim(request()->getSchemeAndHttpHost() ?: config('app.url', 'http://localhost'), '/');
             $currentUrl = $baseUrl . request()->getRequestUri();
