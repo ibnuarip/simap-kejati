@@ -50,6 +50,14 @@ jobs:
       - name: Run static analysis (PHPStan)
         run: composer types:check
 
+      - name: Audit Composer dependencies for security vulnerabilities
+        run: composer audit --locked
+
+      - name: Validate Docker Compose configuration
+        run: |
+          cp .env.example .env.docker
+          docker compose config --quiet
+
   test:
     name: Tests
     runs-on: ubuntu-latest

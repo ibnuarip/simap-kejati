@@ -95,6 +95,9 @@ RUN chown -R www-data:www-data /var/www/html/storage \
     && chmod -R 775 /var/www/html/storage \
     /var/www/html/bootstrap/cache
 
+# PHP Custom Configuration
+COPY docker/php/php.ini /usr/local/etc/php/conf.d/custom.ini
+
 # Supervisor Config
 COPY docker/supervisor/supervisord.conf /etc/supervisord.conf
 
@@ -104,9 +107,8 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 9000
 
-# Healthcheck opsional (uncomment jika diperlukan orchestration)
-# HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-#     CMD php -r 'exit extension_loaded("pdo_mysql") ? 0 : 1;'
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+    CMD php -r 'exit(extension_loaded("pdo_mysql") && extension_loaded("redis") ? 0 : 1);'
 
 ENTRYPOINT ["entrypoint.sh"]
 CMD ["supervisord", "-c", "/etc/supervisord.conf", "-n"]

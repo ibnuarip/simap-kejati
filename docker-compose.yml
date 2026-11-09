@@ -18,6 +18,7 @@ services:
             - ./public:/var/www/html/public
             - ./resources:/var/www/html/resources
             - ./routes:/var/www/html/routes
+            - ./docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini:ro
             - app-storage:/var/www/html/storage/app
         networks:
             - simap-network
@@ -94,7 +95,7 @@ services:
         env_file:
             - .env.docker
         ports:
-            - '${SIMAP_MYSQL_PORT:-3307}:3306'
+            - '127.0.0.1:${SIMAP_MYSQL_PORT:-3307}:3306'
         volumes:
             - mysql-data:/var/lib/mysql
         networks:
@@ -116,7 +117,7 @@ services:
         container_name: simap-redis
         restart: unless-stopped
         ports:
-            - '${SIMAP_REDIS_PORT:-6380}:6379'
+            - '127.0.0.1:${SIMAP_REDIS_PORT:-6380}:6379'
         volumes:
             - redis-data:/data
         networks:
