@@ -17,8 +17,7 @@
         "laravel/tinker": "^3.0",
         "laravel/wayfinder": "^0.1.14",
         "minishlink/web-push": "^11.0",
-        "phpoffice/phpspreadsheet": "*",
-        "resend/resend-laravel": "^1.5"
+        "phpoffice/phpspreadsheet": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.24",

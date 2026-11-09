@@ -40,8 +40,6 @@ Sistem Informasi Manajemen Agenda Pimpinan untuk Kejaksaan Tinggi Jawa Barat. Me
 
 ## Cara Instalasi
 
-Prasyarat: [Docker Desktop](https://www.docker.com/products/docker-desktop/), [Git](https://git-scm.com/), dan `make` (tersedia via Git Bash, Chocolatey, atau Scoop di Windows).
-
 **1. Clone repository**
 
 ```bash
@@ -53,49 +51,88 @@ cd simap-kejati
 
 ```bash
 cp .env.example .env
-cp .env.docker.example .env.docker
+cp .env.example .env.docker
 ```
 
-**3. Build container**
+**3. Generate kredensial keamanan (`APP_KEY` & `VAPID_*`)**
 
 ```bash
-make build
+# Generate APP_KEY baru
+php artisan key:generate --show
+
+# Generate pasangan kunci VAPID Web Push baru
+node -e "const c=require('crypto').createECDH('prime256v1');c.generateKeys();console.log('VAPID_PUBLIC_KEY='+c.getPublicKey().toString('base64url'));console.log('VAPID_PRIVATE_KEY='+Buffer.concat([Buffer.alloc(32-c.getPrivateKey().length),c.getPrivateKey()]).toString('base64url'));"
 ```
 
-**4. Instalasi dependensi & database**
+Salin nilai `APP_KEY`, `VAPID_PUBLIC_KEY`, dan `VAPID_PRIVATE_KEY` yang dihasilkan ke dalam file `.env` dan `.env.docker`.
 
-```bash
-make composer-install   # dependensi backend
-make key                # application key
-make storage            # storage link
-make fresh              # migrasi + seed
-make npm-install        # dependensi frontend
-make npm-build          # kompilasi aset
-```
+---
 
 ## Cara Menjalankan
 
+### Opsi A: Menggunakan Docker Compose
+
+Prasyarat: [Docker Desktop](https://www.docker.com/products/docker-desktop/) atau Docker Engine + Docker Compose.
+
 ```bash
-make up                 # nyalakan seluruh layanan
+# Build & nyalakan seluruh layanan (app, nginx, mysql, redis, node)
+docker compose up -d --build
 ```
 
 Aplikasi dapat diakses di **`http://localhost:8080`**.
 
-Untuk pengembangan frontend dengan _Hot Module Replacement_:
+Perintah utilitas Docker yang sering digunakan:
 
 ```bash
-make npm-dev
+docker compose ps                                      # cek status container
+docker compose logs -f app node                        # pantau log aplikasi & frontend
+docker compose down                                    # matikan seluruh container
+docker compose down -v                                 # matikan container & hapus volume data
+docker compose exec app php artisan migrate:fresh --seed # reset database & jalankan seeder
+docker compose exec app php artisan optimize:clear     # bersihkan seluruh cache Laravel
+docker compose exec node npm run build                 # kompilasi aset frontend secara manual
 ```
 
-Perintah lain seperti `make down`, `make logs`, `make artisan cmd="..."`, dan `make tinker` tersedia di `Makefile`.
+### Opsi B: Menggunakan Laragon / Lokal (Native)
 
-## Pengembangan
-
-Pastikan perubahan kode lolos pemeriksaan berikut sebelum push CI akan menjalankannya kembali secara otomatis:
+Prasyarat: PHP 8.4, Composer, Node.js 22+, dan MySQL 8+.
 
 ```bash
-make format      # format kode PHP (Pint)
-make types       # analisis statis (PHPStan)
-make test-pest   # unit & feature test (Pest)
-make npm-types   # validasi TypeScript
+# 1. Instal dependensi backend & frontend
+composer install
+npm install
+
+# 2. Migrasi database, seeder, & symlink storage
+php artisan migrate --seed
+php artisan storage:link
+
+# 3. Kompilasi aset frontend (untuk production)
+npm run build
+```
+
+Untuk menjalankan server pengembangan secara lokal (server PHP, queue worker, dan Vite HMR sekaligus):
+
+```bash
+composer run dev
+```
+
+Atau jalankan worker dan scheduler secara terpisah pada mode production di Laragon:
+
+```bash
+php artisan queue:work --tries=3
+php artisan schedule:work
+```
+
+---
+
+## Pengembangan & Kualitas Kode
+
+Pastikan perubahan kode lolos pemeriksaan berikut sebelum melakukan commit/push (CI akan menjalankannya secara otomatis):
+
+```bash
+vendor/bin/pint              # format kode PHP (Laravel Pint)
+composer types:check         # analisis statis PHP (PHPStan)
+php artisan test --compact   # unit & feature test (Pest)
+npm run check                # lint & format frontend
+npm run types:check          # validasi tipe TypeScript
 ```
