@@ -125,4 +125,20 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Initial Superadmin Account
+    |--------------------------------------------------------------------------
+    |
+    | Kredensial awal akun Superadmin yang digunakan oleh UserSeeder saat
+    | inisialisasi database (khususnya pada environment production).
+    |
+    */
+
+    'superadmin' => [
+        'name' => env('SUPERADMIN_NAME', 'Super Admin'),
+        'email' => env('SUPERADMIN_EMAIL', 'daskrimti.kejatijabar@gmail.com'),
+        'password' => env('SUPERADMIN_PASSWORD', 'password'),
+    ],
+
 ];

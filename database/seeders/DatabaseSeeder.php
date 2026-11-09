@@ -10,12 +10,20 @@ class DatabaseSeeder extends Seeder
     use WithoutModelEvents;
 
     /**
-     * Orkestrasi seeding awal. Urutan penting: pimpinan dulu (ditautkan
-     * ke akun), lalu master lain, terakhir agenda contoh. Seed parsial:
-     * php artisan db:seed --class=LeaderSeeder
+     * Orkestrasi seeding awal. Pada environment production, hanya akun
+     * Superadmin yang dibuat agar database bersih dari data contoh/dummy.
+     * Pada environment non-production, seluruh master dan akun peran dibuat.
      */
     public function run(): void
     {
+        if (app()->isProduction()) {
+            $this->call([
+                UserSeeder::class,
+            ]);
+
+            return;
+        }
+
         $this->call([
             LeaderSeeder::class,
             UserSeeder::class,
@@ -24,7 +32,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Data dummy agenda (100 baris, awalan judul "[DUMMY]").
-        // Khusus non-production agar seeding production tetap bersih.
+        // Khusus local agar environment testing/staging tetap bersih.
         if (app()->isLocal()) {
             $this->call(AgendaDummySeeder::class);
         }
