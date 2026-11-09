@@ -10,21 +10,26 @@ use Illuminate\Support\Facades\Hash;
 class UserSeeder extends Seeder
 {
     /**
-     * 4 akun peran (idempotent by email). Dijalankan setelah
-     * LeaderSeeder karena akun pimpinan ditautkan ke datanya dan
-     * akun protokol diberi akses ke seluruh pimpinan.
+     * Seeding akun pengguna (idempotent by email).
+     * Pada environment production, hanya 1 akun Superadmin yang dibuat.
+     * Pada environment non-production, dibuat 4 akun peran lengkap beserta
+     * relasi ke data pimpinan.
      */
     public function run(): void
     {
         User::updateOrCreate(
-            ['email' => 'daskrimti.kejatijabar@gmail.com'],
+            ['email' => (string) config('app.superadmin.email', 'daskrimti.kejatijabar@gmail.com')],
             [
-                'name' => 'Super Admin',
-                'password' => Hash::make('password'),
+                'name' => (string) config('app.superadmin.name', 'Super Admin'),
+                'password' => Hash::make((string) config('app.superadmin.password', 'password')),
                 'role' => 'superadmin',
                 'email_verified_at' => now(),
             ]
         );
+
+        if (app()->isProduction()) {
+            return;
+        }
 
         $protokol = User::updateOrCreate(
             ['email' => 'protokol@kejati.go.id'],
