@@ -138,7 +138,8 @@ export default function Profile({
                                 auth.user.email_verified_at === null && (
                                     <div>
                                         <p className="text-muted-foreground -mt-4 text-sm">
-                                            Alamat email Anda belum terverifikasi.{' '}
+                                            Alamat email Anda belum
+                                            terverifikasi.{' '}
                                             <Link
                                                 href={send()}
                                                 as="button"
@@ -151,7 +152,8 @@ export default function Profile({
                                         {status ===
                                             'verification-link-sent' && (
                                             <div className="mt-2 text-sm font-medium text-green-600">
-                                                Email verifikasi baru telah dikirimkan ke alamat email Anda.
+                                                Email verifikasi baru telah
+                                                dikirimkan ke alamat email Anda.
                                             </div>
                                         )}
                                     </div>
