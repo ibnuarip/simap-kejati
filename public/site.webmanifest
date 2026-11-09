@@ -1,9 +1,10 @@
 {
-    "name": "SIMAP KEJATI",
-    "short_name": "SIMAP",
+    "name": "Sistem Informasi Manajemen Agenda Pimpinan Kejaksaan Tinggi Jawa Barat",
+    "short_name": "SIMAP Kejati",
+    "description": "Kelola dan pantau seluruh agenda pimpinan Kejaksaan Tinggi Jawa Barat dalam satu tempat terjadwal, terdokumentasi, dan tepat waktu.",
     "start_url": ".",
     "display": "standalone",
-    "theme_color": "#ffffff",
+    "theme_color": "#008752",
     "background_color": "#ffffff",
     "icons": [
         {
