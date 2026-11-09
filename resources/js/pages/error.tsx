@@ -5,7 +5,6 @@ import {
     ServerCrash,
     ShieldAlert,
     Wrench,
-    type LucideIcon,
 } from 'lucide-react';
 import AppLogoIcon from '@/components/app-logo-icon';
 
@@ -17,7 +16,6 @@ type ErrorConfig = {
     title: string;
     description: string;
     hint: string;
-    icon: LucideIcon;
 };
 
 const ERROR_CONTENT: Record<number, ErrorConfig> = {
@@ -26,28 +24,24 @@ const ERROR_CONTENT: Record<number, ErrorConfig> = {
         description:
             'Maaf, akun Anda tidak memiliki hak akses atau wewenang untuk membuka halaman ini.',
         hint: 'Pastikan Anda masuk menggunakan akun dengan peran yang sesuai.',
-        icon: ShieldAlert,
     },
     404: {
         title: 'Halaman Tidak Ditemukan',
         description:
             'Alamat URL yang Anda akses tidak tersedia, telah dipindahkan, atau terdapat kesalahan penulisan tautan.',
         hint: 'Periksa kembali penulisan alamat URL pada bilah peramban Anda.',
-        icon: FileQuestion,
     },
     500: {
         title: 'Terjadi Gangguan pada Server',
         description:
             'Sistem mengalami kendala internal saat memproses permintaan Anda.',
         hint: 'Silakan muat ulang halaman beberapa saat lagi atau hubungi administrator SIMAP.',
-        icon: ServerCrash,
     },
     503: {
         title: 'Layanan Sedang Pemeliharaan',
         description:
             'Sistem SIMAP sedang dalam pemeliharaan terjadwal guna meningkatkan kualitas layanan.',
         hint: 'Silakan akses kembali sistem beberapa saat lagi.',
-        icon: Wrench,
     },
 };
 
@@ -55,12 +49,25 @@ const DEFAULT_ERROR: ErrorConfig = {
     title: 'Permintaan Tidak Dapat Diproses',
     description: 'Terjadi kendala saat membuka halaman yang Anda minta.',
     hint: 'Silakan periksa kembali alamat URL atau coba beberapa saat lagi.',
-    icon: ServerCrash,
 };
+
+function ErrorStatusIcon({ status }: { status: number }) {
+    const className = 'size-10 stroke-[1.75]';
+
+    switch (status) {
+        case 403:
+            return <ShieldAlert className={className} />;
+        case 404:
+            return <FileQuestion className={className} />;
+        case 503:
+            return <Wrench className={className} />;
+        default:
+            return <ServerCrash className={className} />;
+    }
+}
 
 export default function ErrorPage({ status }: Props) {
     const config = ERROR_CONTENT[status] ?? DEFAULT_ERROR;
-    const Icon = config.icon;
 
     return (
         <>
@@ -97,7 +104,7 @@ export default function ErrorPage({ status }: Props) {
                         {/* Garis Aksen Hijau & Emas di bagian atas kartu */}
                         <div
                             aria-hidden
-                            className="from-primary via-secondary to-primary absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r"
+                            className="from-primary via-secondary to-primary absolute inset-x-0 top-0 h-1.5 bg-linear-to-r"
                         />
 
                         {/* Ikon Berlapis */}
@@ -107,14 +114,14 @@ export default function ErrorPage({ status }: Props) {
                                 className="bg-primary/15 absolute inset-0 animate-pulse rounded-3xl blur-md"
                             />
                             <div className="border-primary/20 bg-primary/10 text-primary relative flex size-20 items-center justify-center rounded-2xl border shadow-inner">
-                                <Icon className="size-10 stroke-[1.75]" />
+                                <ErrorStatusIcon status={status} />
                             </div>
                         </div>
 
                         {/* Angka Status & Judul */}
                         <p
                             data-test="error-status"
-                            className="from-primary via-primary to-secondary bg-gradient-to-br bg-clip-text text-6xl font-black tracking-tight text-transparent sm:text-7xl"
+                            className="from-primary via-primary to-secondary bg-linear-to-br bg-clip-text text-6xl font-black tracking-tight text-transparent sm:text-7xl"
                         >
                             {status}
                         </p>
