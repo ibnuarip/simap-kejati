@@ -63,6 +63,7 @@ php artisan key:generate --show
 # Generate pasangan kunci VAPID Web Push baru
 node -e "const c=require('crypto').createECDH('prime256v1');c.generateKeys();console.log('VAPID_PUBLIC_KEY='+c.getPublicKey().toString('base64url'));console.log('VAPID_PRIVATE_KEY='+Buffer.concat([Buffer.alloc(32-c.getPrivateKey().length),c.getPrivateKey()]).toString('base64url'));"
 ```
+
 Salin nilai `APP_KEY`, `VAPID_PUBLIC_KEY`, dan `VAPID_PRIVATE_KEY` yang dihasilkan ke dalam file `.env` dan `.env.docker`.
 
 ---
