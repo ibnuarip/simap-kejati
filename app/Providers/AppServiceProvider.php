@@ -23,7 +23,31 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->configureRedisFallback();
+    }
+
+    /**
+     * Jika dijalankan di host lokal (mis. Laragon/Windows) yang belum memiliki
+     * ekstensi phpredis (\Redis), alihkan driver redis ke database/file agar
+     * tidak terjadi Error 500 "Class Redis not found".
+     */
+    protected function configureRedisFallback(): void
+    {
+        if (config('database.redis.client') !== 'phpredis' || class_exists(\Redis::class)) {
+            return;
+        }
+
+        if (config('session.driver') === 'redis') {
+            config(['session.driver' => 'database']);
+        }
+
+        if (config('cache.default') === 'redis') {
+            config(['cache.default' => 'database']);
+        }
+
+        if (config('queue.default') === 'redis') {
+            config(['queue.default' => 'database']);
+        }
     }
 
     /**
