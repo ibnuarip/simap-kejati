@@ -30,7 +30,40 @@
             }
         </style>
 
-        <meta name="theme-color" content="#ffffff">
+        @php
+            $seoTitle = 'SIMAP — Sistem Informasi Manajemen Agenda Pimpinan | Kejaksaan Tinggi Jawa Barat';
+            $seoDescription = 'Kelola dan pantau seluruh agenda pimpinan Kejaksaan Tinggi Jawa Barat dalam satu tempat terjadwal, terdokumentasi, dan tepat waktu.';
+            $baseUrl = rtrim(request()->getSchemeAndHttpHost() ?: config('app.url', 'http://localhost'), '/');
+            $currentUrl = $baseUrl . request()->getRequestUri();
+            $ogImageUrl = $baseUrl . '/images/og-image.jpg';
+        @endphp
+
+        <meta name="description" content="{{ $seoDescription }}">
+        <meta name="application-name" content="SIMAP Kejati Jabar">
+        <meta name="theme-color" content="#008752">
+        <link rel="canonical" href="{{ $currentUrl }}">
+
+        {{-- Open Graph / WhatsApp / Telegram / Facebook --}}
+        <meta property="og:type" content="website">
+        <meta property="og:locale" content="id_ID">
+        <meta property="og:site_name" content="SIMAP Kejaksaan Tinggi Jawa Barat">
+        <meta property="og:title" content="{{ $seoTitle }}">
+        <meta property="og:description" content="{{ $seoDescription }}">
+        <meta property="og:url" content="{{ $currentUrl }}">
+        <meta property="og:image" content="{{ $ogImageUrl }}">
+        <meta property="og:image:secure_url" content="{{ $ogImageUrl }}">
+        <meta property="og:image:type" content="image/jpeg">
+        <meta property="og:image:width" content="1200">
+        <meta property="og:image:height" content="630">
+        <meta property="og:image:alt" content="SIMAP — Sistem Informasi Manajemen Agenda Pimpinan Kejaksaan Tinggi Jawa Barat">
+
+        {{-- Twitter / X Card --}}
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="{{ $seoTitle }}">
+        <meta name="twitter:description" content="{{ $seoDescription }}">
+        <meta name="twitter:image" content="{{ $ogImageUrl }}">
+        <meta name="twitter:image:alt" content="SIMAP — Sistem Informasi Manajemen Agenda Pimpinan Kejaksaan Tinggi Jawa Barat">
+
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
         <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png">
