@@ -1,39 +1,16 @@
-## Deskripsi
+## Ringkasan Perubahan
 
-Ringkasan singkat tentang perubahan yang dilakukan pada PR ini.
+Jelaskan secara singkat apa yang diubah dan tujuannya.
 
 ## Jenis Perubahan
 
-- [ ] Perbaikan bug
-- [ ] Fitur baru
-- [ ] Refaktor kode
-- [ ] Peningkatan performa
-- [ ] Perubahan desain UI/UX
-- [ ] Dokumentasi
-- [ ] Dependensi / perkakas pengembangan
-- [ ] Lainnya: ...
+- [ ] Fitur baru (`feat`)
+- [ ] Perbaikan bug (`fix`)
+- [ ] Refaktor / peningkatan performa (`refactor` / `perf`)
+- [ ] Dokumentasi / konfigurasi / CI (`chore` / `docs`)
 
 ## Checklist
 
-Sebelum merge, pastikan:
-
-- [ ] `composer lint:check` lulus (Pint)
-- [ ] `composer types:check` lulus (PHPStan)
-- [ ] `php artisan test` lulus (Pest)
-- [ ] `npm run check` lulus (vite-plus)
-- [ ] `npm run types:check` lulus (TypeScript)
-- [ ] `npm run build` berhasil diproses
-- [ ] Penamaan file/folder sudah Bahasa Inggris dan sinkron dengan struktur database
-- [ ] Tidak ada secrets/credential yang ikut ter-commit
-
-## Cara Menguji
-
-Jelaskan langkah verifikasi yang dilakukan.
-
-## Screenshot (opsional)
-
-Jika ada perubahan visual, lampirkan sebelum/sesudah.
-
-## Referensi
-
-Tautkan issue terkait, misalnya `Closes #123`.
+- [ ] Perubahan sudah diuji secara lokal dan berjalan sesuai harapan
+- [ ] Tidak ada kredensial / `.env` yang ikut ter-commit
+- [ ] Migrasi / seeder database tetap aman untuk Production (jika ada perubahan DB)
