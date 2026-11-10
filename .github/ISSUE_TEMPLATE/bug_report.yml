@@ -52,10 +52,9 @@ body:
       label: Peran (role) yang dipakai
       description: Role akun yang mengalami masalah.
       options:
-        - Operator
-        - Protokol
-        - Kajati
-        - Wakajati
+        - Superadmin
+        - Tim Protokol
+        - Pimpinan
         - Tidak yakin / lainnya
     validations:
       required: false

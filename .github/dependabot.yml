@@ -4,7 +4,7 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
     commit-message:
       prefix: "chore(actions)"
     groups:
@@ -16,50 +16,30 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
     versioning-strategy: "increase-if-necessary"
     commit-message:
       prefix: "chore(composer)"
     groups:
-      laravel:
-        patterns:
-          - "laravel/*"
-      pest:
-        patterns:
-          - "pestphp/*"
-      php-dev:
-        patterns:
-          - "phpunit/*"
-          - "mockery/*"
-          - "nunomaduro/*"
-          - "fakerphp/*"
-      php-misc:
+      composer-dependencies:
         patterns:
           - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 10
-    versioning-strategy: "increase"
+    open-pull-requests-limit: 5
+    versioning-strategy: "increase-if-necessary"
     commit-message:
       prefix: "chore(npm)"
     groups:
-      react-inertia:
-        patterns:
-          - "@inertiajs/*"
-          - "react"
-          - "react-dom"
-          - "@types/react"
-          - "@types/react-dom"
-      radix-ui:
-        patterns:
-          - "@radix-ui/*"
-      tailwind:
-        patterns:
-          - "tailwindcss"
-          - "@tailwindcss/*"
-      npm-misc:
+      npm-dependencies:
         patterns:
           - "*"
+        update-types:
+          - "minor"
+          - "patch"

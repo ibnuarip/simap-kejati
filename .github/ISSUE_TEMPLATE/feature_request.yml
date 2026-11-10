@@ -1,5 +1,5 @@
 name: 💡 Permintaan Fitur
-description: Usulkan ide atau fitur baru untuk SIMAP (Sistem Informasi Manajemen Acara Protokol).
+description: Usulkan ide atau fitur baru untuk SIMAP (Sistem Informasi Manajemen Agenda Pimpinan).
 title: "[Feature]: "
 labels: ["enhancement", "triage"]
 body:
@@ -30,8 +30,8 @@ body:
       label: Kriteria penerimaan (opsional)
       description: Hal-hal yang harus terpenuhi agar fitur dianggap selesai.
       placeholder: |
-        - Operator dapat ...
-        - Protokol dapat ...
+        - Superadmin dapat ...
+        - Tim Protokol dapat ...
     validations:
       required: false
 
