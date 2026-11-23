@@ -9,6 +9,8 @@ use App\Models\Category;
 use App\Models\Event;
 use App\Models\Leader;
 use App\Models\Room;
+use App\Services\EventAttachmentService;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,13 +23,21 @@ class EventController extends Controller
 {
     public function index(): Response
     {
+        /** @var Collection<int, Event> $events */
+        /** @var Collection<int, Event> $events */
         $events = Event::query()
             ->with(['leader', 'room', 'category'])
             ->orderByDesc('start_time')
             ->get();
 
+        /** @var Collection<int, Leader> $leaders */
+        /** @var Collection<int, Leader> $leaders */
         $leaders = Leader::query()->where('is_active', true)->orderBy('name')->get();
+        /** @var Collection<int, Room> $rooms */
+        /** @var Collection<int, Room> $rooms */
         $rooms = Room::query()->where('is_active', true)->orderBy('name')->get();
+        /** @var Collection<int, Category> $categories */
+        /** @var Collection<int, Category> $categories */
         $categories = Category::query()->orderBy('name')->get();
 
         $statusCounts = $events->countBy(fn (Event $event): string => $event->currentStatus());
@@ -56,19 +66,23 @@ class EventController extends Controller
         ]);
     }
 
-    public function store(EventRequest $request): RedirectResponse
+    public function store(EventRequest $request, EventAttachmentService $attachments): RedirectResponse
     {
-        Event::create([
-            ...$request->safe()->except('force_save'),
+        $event = Event::create([
+            ...$request->safe()->except(['force_save', 'attachment', 'remove_attachment']),
             'created_by' => $request->user()?->getAuthIdentifier(),
         ]);
+
+        $attachments->syncFromRequest($event, $request);
 
         return back();
     }
 
-    public function update(EventRequest $request, Event $event): RedirectResponse
+    public function update(EventRequest $request, Event $event, EventAttachmentService $attachments): RedirectResponse
     {
-        $event->update($request->safe()->except('force_save'));
+        $event->update($request->safe()->except(['force_save', 'attachment', 'remove_attachment']));
+
+        $attachments->syncFromRequest($event, $request);
 
         return back();
     }
@@ -110,8 +124,9 @@ class EventController extends Controller
         ]);
     }
 
-    public function destroy(Event $event): RedirectResponse
+    public function destroy(Event $event, EventAttachmentService $attachments): RedirectResponse
     {
+        $attachments->delete($event);
         $event->delete();
 
         return back();

@@ -8,6 +8,8 @@ import {
     CalendarPlus,
     CalendarX,
     Clock,
+    ExternalLink,
+    FileText,
     MapPin,
     Pencil,
     Search,
@@ -20,6 +22,7 @@ import CancelAgenda from '@/components/cancel-agenda';
 import ConfirmDelete from '@/components/confirm-delete';
 import { DatetimeLocalField } from '@/components/datetime-local-field';
 import InputError from '@/components/input-error';
+import { PdfAttachmentInput } from '@/components/pdf-attachment-input';
 import { ScheduleConflictAlert } from '@/components/schedule-conflict-alert';
 import TablePagination from '@/components/table-pagination';
 import { Badge } from '@/components/ui/badge';
@@ -550,6 +553,20 @@ function AgendaCard({ event, onEdit }: AgendaRowProps) {
                             </span>
                         </span>
                     )}
+                    {event.attachment_url && (
+                        <a
+                            href={event.attachment_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary mt-0.5 inline-flex w-fit max-w-full min-w-0 items-center gap-1.5 font-medium hover:underline"
+                        >
+                            <FileText className="size-3.5 shrink-0" />
+                            <span className="truncate">
+                                {event.attachment_name ?? 'Lihat Lampiran PDF'}
+                            </span>
+                            <ExternalLink className="size-3 shrink-0" />
+                        </a>
+                    )}
                 </div>
             </div>
 
@@ -829,6 +846,12 @@ function EventFields({
                 />
                 <InputError message={errors.description} />
             </div>
+
+            <PdfAttachmentInput
+                currentName={defaultValue?.attachment_name}
+                currentUrl={defaultValue?.attachment_url}
+                error={errors.attachment}
+            />
         </>
     );
 }

@@ -1,5 +1,10 @@
 import { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+    ChevronLeft,
+    ChevronRight,
+    ExternalLink,
+    FileText,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
@@ -245,6 +250,21 @@ export function AgendaCalendar({ events }: { events: AgendaItem[] }) {
                                         'Lokasi belum diatur'}{' '}
                                     • {event.category?.name ?? 'Tanpa kategori'}
                                 </p>
+                                {event.attachment_url && (
+                                    <a
+                                        href={event.attachment_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-primary mt-0.5 inline-flex w-fit max-w-full min-w-0 items-center gap-1.5 text-xs font-medium hover:underline"
+                                    >
+                                        <FileText className="size-3.5 shrink-0" />
+                                        <span className="truncate">
+                                            {event.attachment_name ??
+                                                'Lihat Lampiran PDF'}
+                                        </span>
+                                        <ExternalLink className="size-3 shrink-0" />
+                                    </a>
+                                )}
                             </div>
                         ))}
                     </div>

@@ -9,6 +9,8 @@ export type AgendaItem = {
     dress_code: string | null;
     participants: string | null;
     custom_location: string | null;
+    attachment_name?: string | null;
+    attachment_url?: string | null;
     status: AgendaStatus;
     can_cancel: boolean;
     leader: {

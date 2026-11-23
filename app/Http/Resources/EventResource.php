@@ -39,6 +39,8 @@ class EventResource extends JsonResource
             'dress_code' => $this->dress_code,
             'participants' => $this->participants,
             'custom_location' => $this->custom_location,
+            'attachment_name' => $this->attachment_name,
+            'attachment_url' => $this->attachment_path ? route('events.attachment', $this->resource) : null,
             'status' => $this->currentStatus(),
             'can_cancel' => $this->canBeCancelled(),
             'leader' => $this->whenLoaded('leader', fn () => $this->leader ? [

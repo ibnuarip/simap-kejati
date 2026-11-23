@@ -87,6 +87,23 @@ return [
             'report' => false,
         ],
 
+        /*
+        |--------------------------------------------------------------------------
+        | Event Attachments Disk (private)
+        |--------------------------------------------------------------------------
+        |
+        | Lampiran PDF agenda disimpan secara privat dan hanya disajikan
+        | melalui route terotentikasi sesuai kewenangan role pengguna.
+        |
+        */
+
+        'event_attachments' => [
+            'driver' => 'local',
+            'root' => storage_path('app/event-attachments'),
+            'throw' => true,
+            'report' => false,
+        ],
+
     ],
 
     /*
