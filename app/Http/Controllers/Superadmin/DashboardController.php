@@ -98,9 +98,9 @@ class DashboardController extends Controller
     }
 
     /**
-     * @return \Illuminate\Support\Collection<int, array<string, mixed>>
+     * @return array<int, array<string, mixed>>
      */
-    private function upcomingEvents(CarbonInterface $now): \Illuminate\Support\Collection
+    private function upcomingEvents(CarbonInterface $now): array
     {
         /** @var Collection<int, Event> $upcomingEventModels */
         $upcomingEventModels = Event::query()
@@ -139,13 +139,14 @@ class DashboardController extends Controller
                     'name' => $event->category->name,
                 ] : null,
             ])
-            ->values();
+            ->values()
+            ->all();
     }
 
     /**
-     * @return \Illuminate\Support\Collection<int, array<string, mixed>>
+     * @return array<int, array<string, mixed>>
      */
-    private function recentEvents(): \Illuminate\Support\Collection
+    private function recentEvents(): array
     {
         /** @var Collection<int, Event> $recentEventModels */
         $recentEventModels = Event::query()
@@ -162,6 +163,7 @@ class DashboardController extends Controller
                 'created_at' => $event->created_at?->toDateTimeString(),
                 'creator' => $event->creator ? ['id' => $event->creator->id, 'name' => $event->creator->name] : null,
             ])
-            ->values();
+            ->values()
+            ->all();
     }
 }
