@@ -8,6 +8,8 @@ use App\Models\Event;
 use App\Models\Leader;
 use App\Models\Room;
 use App\Models\User;
+use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -60,6 +62,7 @@ class DashboardController extends Controller
             ->pluck('total', 'category_id')
             ->map(fn (mixed $total): int => (int) $total);
 
+        /** @var Collection<int, Category> $categories */
         $categories = Category::query()->get(['id', 'name', 'color']);
 
         $categoryDistribution = $categories
@@ -72,52 +75,6 @@ class DashboardController extends Controller
             ->values()
             ->sortByDesc(fn (array $row): int => $row['total'])
             ->values();
-
-        $upcomingEvents = Event::query()
-            ->with(['leader:id,name,position', 'room:id,name', 'category:id,name'])
-            ->where('start_time', '>=', $now)
-            ->where('status', '!=', 'completed')
-            ->where('status', '!=', 'cancelled')
-            ->orderBy('start_time')
-            ->limit(5)
-            ->get()
-            ->map(fn (Event $event): array => [
-                'id' => $event->id,
-                'title' => $event->title,
-                'description' => $event->description,
-                'start_time' => $event->start_time->toDateTimeString(),
-                'end_time' => $event->end_time->toDateTimeString(),
-                'dress_code' => $event->dress_code,
-                'participants' => $event->participants,
-                'custom_location' => $event->custom_location,
-                'status' => $event->currentStatus(),
-                'leader' => $event->leader ? [
-                    'id' => $event->leader->id,
-                    'name' => $event->leader->name,
-                    'position' => $event->leader->position,
-                ] : null,
-                'room' => $event->room ? [
-                    'id' => $event->room->id,
-                    'name' => $event->room->name,
-                ] : null,
-                'category' => $event->category ? [
-                    'id' => $event->category->id,
-                    'name' => $event->category->name,
-                ] : null,
-            ]);
-
-        $recentEvents = Event::query()
-            ->with('creator:id,name')
-            ->orderByDesc('created_at')
-            ->limit(5)
-            ->get()
-            ->map(fn (Event $event): array => [
-                'id' => $event->id,
-                'title' => $event->title,
-                'status' => $event->currentStatus(),
-                'created_at' => $event->created_at?->toDateTimeString(),
-                'creator' => $event->creator ? ['id' => $event->creator->id, 'name' => $event->creator->name] : null,
-            ]);
 
         return Inertia::render('dashboard', [
             'stats' => [
@@ -133,10 +90,80 @@ class DashboardController extends Controller
                     'cancelled' => (int) ($eventSummary->cancelled ?? 0),
                 ],
             ],
-            'upcomingEvents' => $upcomingEvents->values(),
-            'recentEvents' => $recentEvents->values(),
+            'upcomingEvents' => $this->upcomingEvents($now),
+            'recentEvents' => $this->recentEvents(),
             'eventsTrend' => $eventsTrend,
             'categoryDistribution' => $categoryDistribution,
         ]);
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function upcomingEvents(CarbonInterface $now): array
+    {
+        /** @var Collection<int, Event> $upcomingEventModels */
+        $upcomingEventModels = Event::query()
+            ->with(['leader:id,name,position', 'room:id,name', 'category:id,name'])
+            ->where('start_time', '>=', $now)
+            ->where('status', '!=', 'completed')
+            ->where('status', '!=', 'cancelled')
+            ->orderBy('start_time')
+            ->limit(5)
+            ->get();
+
+        return $upcomingEventModels
+            ->map(fn (Event $event): array => [
+                'id' => $event->id,
+                'title' => $event->title,
+                'description' => $event->description,
+                'start_time' => $event->start_time->toDateTimeString(),
+                'end_time' => $event->end_time->toDateTimeString(),
+                'dress_code' => $event->dress_code,
+                'participants' => $event->participants,
+                'custom_location' => $event->custom_location,
+                'attachment_name' => $event->attachment_name,
+                'attachment_url' => $event->attachment_path ? route('events.attachment', $event) : null,
+                'status' => $event->currentStatus(),
+                'leader' => $event->leader ? [
+                    'id' => $event->leader->id,
+                    'name' => $event->leader->name,
+                    'position' => $event->leader->position,
+                ] : null,
+                'room' => $event->room ? [
+                    'id' => $event->room->id,
+                    'name' => $event->room->name,
+                ] : null,
+                'category' => $event->category ? [
+                    'id' => $event->category->id,
+                    'name' => $event->category->name,
+                ] : null,
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function recentEvents(): array
+    {
+        /** @var Collection<int, Event> $recentEventModels */
+        $recentEventModels = Event::query()
+            ->with('creator:id,name')
+            ->orderByDesc('created_at')
+            ->limit(5)
+            ->get();
+
+        return $recentEventModels
+            ->map(fn (Event $event): array => [
+                'id' => $event->id,
+                'title' => $event->title,
+                'status' => $event->currentStatus(),
+                'created_at' => $event->created_at?->toDateTimeString(),
+                'creator' => $event->creator ? ['id' => $event->creator->id, 'name' => $event->creator->name] : null,
+            ])
+            ->values()
+            ->all();
     }
 }

@@ -21,6 +21,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon $end_time
  * @property string|null $dress_code
  * @property string|null $participants
+ * @property string|null $attachment_path
+ * @property string|null $attachment_name
  * @property string $status
  * @property int|null $created_by
  * @property Carbon|null $created_at
@@ -46,6 +48,8 @@ class Event extends Model
         'end_time',
         'dress_code',
         'participants',
+        'attachment_path',
+        'attachment_name',
         'status',
         'created_by',
     ];

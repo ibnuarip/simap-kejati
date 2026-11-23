@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Event;
+use App\Services\EventAttachmentService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
@@ -37,6 +38,8 @@ class EventRequest extends FormRequest
             'end_time' => ['required', 'date', 'after:start_time'],
             'dress_code' => ['nullable', 'string', 'max:255'],
             'participants' => ['nullable', 'string', 'max:5000'],
+            'attachment' => EventAttachmentService::rules(),
+            'remove_attachment' => ['nullable', 'boolean'],
             'force_save' => ['nullable', 'boolean'],
         ];
     }
@@ -48,6 +51,9 @@ class EventRequest extends FormRequest
     {
         return [
             'leader_id.in' => 'Pimpinan tersebut bukan kewenangan Anda.',
+            'attachment.file' => 'Lampiran harus berupa berkas yang valid.',
+            'attachment.mimes' => 'Lampiran harus berformat PDF.',
+            'attachment.max' => 'Ukuran lampiran PDF maksimal '.ceil(EventAttachmentService::MAX_KILOBYTES / 1024).' MB.',
         ];
     }
 

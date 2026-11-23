@@ -77,7 +77,7 @@ class AppServiceProvider extends ServiceProvider
         $isLocalHost = in_array($host, ['localhost', '127.0.0.1'], true)
             || str_ends_with($host, '.test');
 
-        if (! $isLocalHost) {
+        if (app()->isProduction() || ! $isLocalHost) {
             Vite::useHotFile(storage_path('framework/vite.hot.disabled'));
 
             if ($request->header('X-Forwarded-Proto') === 'https' || $request->isSecure()) {

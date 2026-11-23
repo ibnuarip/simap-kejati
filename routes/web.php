@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AvatarController;
+use App\Http\Controllers\EventAttachmentController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\Leadership\CalendarController as LeadershipCalendarController;
 use App\Http\Controllers\Leadership\DashboardController as LeadershipDashboardController;
@@ -48,6 +49,11 @@ if (! Features::enabled(Features::registration())) {
 
 // Foto profil: privat, hanya pemilik akun yang sedang login.
 Route::get('/avatar/{user}', AvatarController::class)->middleware('auth')->name('avatar.show');
+
+// Lampiran PDF agenda: privat, diakses sesuai kewenangan peran (superadmin, protokol ditugaskan, pimpinan pemilik).
+Route::get('/events/{event}/attachment', EventAttachmentController::class)
+    ->middleware(['auth', 'verified'])
+    ->name('events.attachment');
 
 // Penyegar session agar tab yang lama terbuka tidak 419 saat submit.
 Route::get('/session/ping', fn () => response()->json(['ok' => true]))->middleware('auth')->name('session.ping');

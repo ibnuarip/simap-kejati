@@ -15,6 +15,7 @@ mkdir -p /var/www/html/storage/framework/views
 mkdir -p /var/www/html/storage/logs
 mkdir -p /var/www/html/storage/app/public
 mkdir -p /var/www/html/storage/app/avatars
+mkdir -p /var/www/html/storage/app/event-attachments
 mkdir -p /var/www/html/bootstrap/cache
 mkdir -p /var/log/php
 mkdir -p /var/log/supervisor
